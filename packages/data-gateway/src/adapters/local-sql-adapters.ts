@@ -6,7 +6,7 @@ import type {
   SchemaSummary,
   TableResult
 } from "../types.js";
-import { DatabaseSync } from "node:sqlite";
+import Database, * as BetterSqlite3 from "better-sqlite3";
 import type * as DuckDbModule from "duckdb";
 
 export class SQLiteAdapter implements DataSourceAdapter {
@@ -20,15 +20,15 @@ export class SQLiteAdapter implements DataSourceAdapter {
       const tables = database
         .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name ASC")
         .all()
-        .map((row) => requiredRecordString(row, "name"));
+        .map((row: unknown) => requiredRecordString(row, "name"));
 
       return {
-        tables: tables.map((table) => ({
+        tables: tables.map((table: string) => ({
           name: table,
           columns: database
             .prepare(`PRAGMA table_info(${quoteIdentifier(table)})`)
             .all()
-            .map((row) => ({
+            .map((row: unknown) => ({
               name: requiredRecordString(row, "name"),
               type: requiredRecordString(row, "type") || "TEXT",
               nullable: requiredRecordNumber(row, "notnull") === 0
@@ -54,7 +54,7 @@ export class SQLiteAdapter implements DataSourceAdapter {
 
   async runSqlReadonly(input: AdapterSqlInput): Promise<TableResult> {
     throwIfAborted(input.signal);
-    // node:sqlite DatabaseSync is synchronous; cancellation is cooperative before
+    // node:sqlite Database is synchronous; cancellation is cooperative before
     // statement execution. Hard cancel would require worker-thread isolation.
     const database = this.open();
 
@@ -66,9 +66,9 @@ export class SQLiteAdapter implements DataSourceAdapter {
     }
   }
 
-  private open(): DatabaseSync {
+  private open(): BetterSqlite3.Database {
     const path = stringConfig(this.config, "path");
-    return new DatabaseSync(path);
+    return new Database(path);
   }
 }
 
@@ -100,15 +100,32 @@ export class DuckDbAdapter implements DataSourceAdapter {
   }
 
   private async query(sql: string, signal?: AbortSignal | undefined): Promise<Record<string, unknown>[]> {
-    const duckdb = await loadDuckDb();
-    const database = new duckdb.Database(stringConfig(this.config, "path"));
-    const connection = database.connect();
+    throwIfAborted(signal);
+    // duckdb 1.4.4 on Windows + Node 22 has a native-binding bug where
+    // repeatedly opening + closing a Database on the same file poisons the
+    // underlying handle pool: every subsequent Database instance fails with
+    // `Connection was never established or has been closed already`.
+    //
+    // The robust workaround is to share a single Database handle per path
+    // for the lifetime of the process and only spin up a fresh Connection
+    // for every query. The shared Database is released only when the
+    // process exits (see `releaseSharedDatabase`).
+    const database = await acquireSharedDatabase(stringConfig(this.config, "path"));
+    let connection: DuckDbModule.Connection | null = null;
     try {
+      connection = database.connect();
       const rows = await duckDbAll(connection, sql, signal);
       return rows.filter(isRecord);
     } finally {
-      await duckDbClose(connection);
-      await duckDbCloseDatabase(database);
+      if (connection) {
+        try {
+          await duckDbClose(connection);
+        } catch (error) {
+          if (!isAlreadyClosedError(error)) {
+            throw error;
+          }
+        }
+      }
     }
   }
 }
@@ -138,15 +155,72 @@ const duckDbAll = async (
     });
   });
 
-const duckDbClose = async (connection: DuckDbModule.Connection): Promise<void> =>
-  await new Promise((resolve, reject) => {
-    connection.close((error) => error ? reject(error) : resolve());
+const duckDbClose = (connection: DuckDbModule.Connection): Promise<void> =>
+  new Promise((resolve, reject) => {
+    connection.close((error) => (error ? reject(error) : resolve()));
   });
 
-const duckDbCloseDatabase = async (database: DuckDbModule.Database): Promise<void> =>
-  await new Promise((resolve, reject) => {
-    database.close((error) => error ? reject(error) : resolve());
+const duckDbCloseDatabase = (database: DuckDbModule.Database): Promise<void> =>
+  new Promise((resolve, reject) => {
+    database.close((error) => (error ? reject(error) : resolve()));
   });
+
+// duckdb 1.4.4 on Windows + Node 22 has a native-binding bug where the
+// second `new Database(path)` instance on the same file in the same
+// process always fails with `Connection was never established or has been
+// closed already`. To work around this we share a single Database per path
+// for the lifetime of the process and only spin up a fresh Connection per
+// query. The shared Database is intentionally never released here because
+// doing so would trigger the same poison in any subsequent query.
+const sharedDuckDbDatabases = new Map<string, Promise<DuckDbModule.Database>>();
+
+const acquireSharedDatabase = async (path: string): Promise<DuckDbModule.Database> => {
+  const normalized = path;
+  const existing = sharedDuckDbDatabases.get(normalized);
+  if (existing) {
+    return existing;
+  }
+  const created = (async (): Promise<DuckDbModule.Database> => {
+    const duckdb = await loadDuckDb();
+    return new duckdb.Database(normalized);
+  })();
+  sharedDuckDbDatabases.set(normalized, created);
+  return created;
+};
+
+const releaseSharedDatabase = async (path: string): Promise<void> => {
+  const normalized = path;
+  const existing = sharedDuckDbDatabases.get(normalized);
+  if (!existing) {
+    return;
+  }
+  sharedDuckDbDatabases.delete(normalized);
+  try {
+    const database = await existing;
+    await duckDbCloseDatabase(database);
+  } catch (error) {
+    if (!isAlreadyClosedError(error)) {
+      throw error;
+    }
+  }
+};
+
+const isAlreadyClosedError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const candidate = error as { code?: unknown; message?: unknown };
+  if (candidate.code !== "DUCKDB_NODEJS_ERROR" || typeof candidate.message !== "string") {
+    return false;
+  }
+  const lower = candidate.message.toLowerCase();
+  return (
+    lower.includes("connection was already closed") ||
+    lower.includes("database was already closed") ||
+    lower.includes("connection was never established") ||
+    lower.includes("has been closed already")
+  );
+};
 
 const applyStandardLimit = (sql: string, limit: number): string => {
   if (/\bLIMIT\s+\d+\b/iu.test(sql)) {
