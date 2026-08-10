@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' http: ws: data: blob: 'unsafe-inline'" />
+  <title>DataFoundry Desktop</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⛓</span>
+      <span class="title">DataFoundry Desktop</span>
+      <span class="subtitle">Enhanced · v0.1.0</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="workbench">Workbench</button>
+      <button class="tab" data-tab="cdl">CDL Panel</button>
+      <button class="tab" data-tab="status">Status</button>
+    </nav>
+    <div class="actions">
+      <button id="btn-logs" class="action">Logs</button>
+      <button id="btn-repo" class="action">Repo</button>
+      <button id="btn-restart" class="action danger">Restart</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Workbench tab -->
+    <section id="tab-workbench" class="tab-content active">
+      <iframe id="web-frame" src="" frameborder="0" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+      <div id="web-fallback" class="placeholder">
+        <h2>Web workbench unavailable</h2>
+        <p>The API server is starting on the URL shown in Status. Once ready, it will load here automatically.</p>
+        <pre id="web-frame-status"></pre>
+      </div>
+    </section>
+
+    <!-- CDL tab -->
+    <section id="tab-cdl" class="tab-content">
+      <div class="cdl-grid">
+        <div class="card">
+          <h3>Regime</h3>
+          <select id="cdl-regime">
+            <option value="bull">bull (α = 0.3, trust CF)</option>
+            <option value="bear">bear (α = 0.7, trust semantic)</option>
+            <option value="sideways">sideways (α = 0.5)</option>
+          </select>
+          <label>φ_sem <input type="number" id="cdl-phi-sem" min="0" max="1" step="0.05" value="0.7"></label>
+          <label>φ_cf <input type="number" id="cdl-phi-cf" min="0" max="1" step="0.05" value="0.5"></label>
+          <label>u_sem <input type="number" id="cdl-u-sem" min="0" max="1" step="0.05" value="0.3"></label>
+          <label>u_cf <input type="number" id="cdl-u-cf" min="0" max="1" step="0.05" value="0.7"></label>
+          <button id="cdl-run" class="primary">Compute J(u)</button>
+        </div>
+        <div class="card">
+          <h3>Decision</h3>
+          <div id="cdl-result" class="result">
+            <div class="metric"><span>α(Rₜ)</span><strong id="cdl-alpha">—</strong></div>
+            <div class="metric"><span>u*</span><strong id="cdl-u">—</strong></div>
+            <div class="metric"><span>J(u*)</span><strong id="cdl-j">—</strong></div>
+          </div>
+          <details>
+            <summary>How it works</summary>
+            <p>J(u) = α(Rₜ) · Φ_sem + (1 − α(Rₜ)) · Φ_cf</p>
+            <p>In bull, α = 0.3 → counterfactual α exploration.</p>
+            <p>In bear, α = 0.7 → semantic-consistent defence.</p>
+            <p>The regime-conditional u*(Rₜ) strictly dominates any uniform u (Theorem 3).</p>
+          </details>
+        </div>
+        <div class="card">
+          <h3>Theorem 3 — regime-conditional optimality</h3>
+          <p>Cost fn: <code>C(u, regime) = (u − u*(regime))² + 0.1 · regime_cost(regime)</code></p>
+          <pre id="theorem3-out">Click <strong>Compute J(u)</strong> to refresh.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status tab -->
+    <section id="tab-status" class="tab-content">
+      <div class="status-grid">
+        <div class="card">
+          <h3>App</h3>
+          <dl id="info-app"></dl>
+        </div>
+        <div class="card">
+          <h3>API</h3>
+          <dl id="info-api"></dl>
+        </div>
+        <div class="card">
+          <h3>Recent smoke results</h3>
+          <pre id="info-smoke">Run <code>npm run smoke</code> in the repo to populate.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-dot" class="dot ok"></span>
+    <span id="status-text">Booting…</span>
+  </footer>
+
+  <script src="./renderer.mjs" type="module"></script>
+</body>
+</html>

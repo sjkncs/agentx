@@ -1,0 +1,92 @@
+{
+  "name": "datafoundry-desktop",
+  "version": "0.1.0",
+  "description": "Electron desktop wrapper for DataFoundry Enhanced — bundles API server, Web UI, TUI, and CDL panels into a single Windows .exe.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/main.mjs",
+  "author": {
+    "name": "DataGallery Lab",
+    "email": "contact@datagallery.cn"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis portable --x64",
+    "dist:dir": "electron-builder --dir",
+    "dist:cache": "node ../../scripts/builder-desktop.mjs",
+    "dist:cache:init": "node ../../scripts/builder-desktop.mjs --init",
+    "dist:cache:force": "node ../../scripts/builder-desktop.mjs --no-cache",
+    "postinstall": "echo 'DataFoundry Desktop: run npm run dist:dir to build or npm start to launch dev'"
+  },
+  "build": {
+    "appId": "com.datagallery.datafoundry.desktop",
+    "productName": "DataFoundry Desktop",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "icon": "build/icon.ico",
+    "files": [
+      "src/**/*",
+      "build/icon.ico",
+      "build/icon.png",
+      "node_modules/@datafoundry/**/*",
+      "node_modules/better-sqlite3/**/*",
+      "../api/dist/**/*",
+      "../../scripts/dev-isolated.mjs",
+      "../../scripts/port-allocator.mjs",
+      "../../scripts/process-lock.mjs",
+      "!**/*.map",
+      "!**/*.test.mjs"
+    ],
+    "extraResources": [
+      {
+        "from": "../../docs",
+        "to": "docs",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "forceCodeSigning": false,
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DataFoundry"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "asarUnpack": [
+      "node_modules/@datafoundry/**/*",
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/better-sqlite3/lib/binding/*",
+      "node_modules/bindings/**/*",
+      "node_modules/file-uri-to-path/**/*"
+    ],
+    "nodeGypRebuild": false,
+    "npmRebuild": false
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "@datafoundry/counterfactual": "*",
+    "better-sqlite3": "^11.3.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
