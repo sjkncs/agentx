@@ -3,7 +3,7 @@ import type { ArtifactSummary, ArtifactType, RunEventEnvelope } from "@datafound
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { DatabaseSync } from "node:sqlite";
+import Database, * as BetterSqlite3 from "better-sqlite3";
 
 import {
   ConfigJobRepository,
@@ -652,7 +652,7 @@ export class MetadataStore {
   readonly workspaceMemberships: WorkspaceMembershipRepository;
   readonly workspaces: WorkspaceRepository;
 
-  constructor(readonly db: DatabaseSync, secretMasterKey?: string) {
+  constructor(readonly db: BetterSqlite3.Database, secretMasterKey?: string) {
     this.users = new UserRepository(db);
     this.userPasswordCredentials = new UserPasswordCredentialRepository(db);
     this.authSessions = new AuthSessionRepository(db);
@@ -690,7 +690,7 @@ export class MetadataStore {
 }
 
 export class InteractionRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   request(input: {
     id: string;
@@ -739,8 +739,8 @@ export class InteractionRepository {
         ORDER BY created_at ASC
       `)
       .all(input.user_id, input.session_id)
-      .map((row) => mapInteractionRow(row))
-      .filter((record): record is InteractionRecord => Boolean(record));
+      .map((row: unknown) => mapInteractionRow(row))
+      .filter((record: unknown): record is InteractionRecord => Boolean(record));
   }
 
   /**
@@ -758,8 +758,8 @@ export class InteractionRepository {
         ORDER BY created_at ASC
       `)
       .all(input.user_id, input.session_id)
-      .map((row) => mapInteractionRow(row))
-      .filter((record): record is InteractionRecord => Boolean(record));
+      .map((row: unknown) => mapInteractionRow(row))
+      .filter((record: unknown): record is InteractionRecord => Boolean(record));
   }
 
   getByToolCall(input: { user_id: string; run_id: string; tool_call_id: string }): InteractionRecord {
@@ -827,7 +827,7 @@ export class InteractionRepository {
 }
 
 export class UserRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   createPasswordUser(input: { id: string; email: string; display_name?: string }): UserRecord {
     const now = new Date().toISOString();
@@ -862,7 +862,7 @@ export class UserRepository {
     return this.db
       .prepare("SELECT * FROM users ORDER BY updated_at DESC")
       .all()
-      .map((row) => {
+      .map((row: unknown) => {
         const user = mapUserRow(row);
         if (!user) {
           throw new Error("Invalid user row");
@@ -883,7 +883,7 @@ export class UserRepository {
 }
 
 export class UserPasswordCredentialRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   set(input: { user_id: string; password_hash: string; password_hash_params: string }): UserPasswordCredentialRecord {
     const now = new Date().toISOString();
@@ -914,7 +914,7 @@ export class UserPasswordCredentialRepository {
 }
 
 export class AuthSessionRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: {
     id: string;
@@ -968,7 +968,7 @@ export class AuthSessionRepository {
       ORDER BY last_seen_at DESC
     `).all(input.user_id, new Date().toISOString())
       .map(mapAuthSessionRow)
-      .filter((record): record is AuthSessionRecord => Boolean(record));
+      .filter((record: unknown): record is AuthSessionRecord => Boolean(record));
   }
 
   touch(input: { id: string; last_seen_at?: string }): void {
@@ -1010,7 +1010,7 @@ export class AuthSessionRepository {
 }
 
 export class AuthTokenRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: {
     id: string;
@@ -1051,7 +1051,7 @@ export class AuthTokenRepository {
 }
 
 export class WorkspaceRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   createPersonal(input: { id: string; owner_user_id: string; name: string }): WorkspaceRecord {
     const now = new Date().toISOString();
@@ -1081,7 +1081,7 @@ export class WorkspaceRepository {
 }
 
 export class WorkspaceMembershipRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   upsertOwner(input: { workspace_id: string; user_id: string }): WorkspaceMembershipRecord {
     const now = new Date().toISOString();
@@ -1105,7 +1105,7 @@ export class WorkspaceMembershipRepository {
 }
 
 export class AuthAuditEventRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   append(input: {
     id: string;
@@ -1144,7 +1144,7 @@ export class AuthAuditEventRepository {
 }
 
 export class SessionRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateSessionInput): SessionRecord {
     const now = new Date().toISOString();
@@ -1301,8 +1301,8 @@ export class SessionRepository {
       const runIds = this.db.prepare(`
         SELECT id FROM runs WHERE user_id = ? AND session_id IN (${placeholders})
       `).all(...scope)
-        .map((row) => (isRecord(row) && typeof row.id === "string" ? row.id : null))
-        .filter((id): id is string => Boolean(id));
+        .map((row: unknown) => (isRecord(row) && typeof row.id === "string" ? row.id : null))
+        .filter((id: unknown): id is string => Boolean(id));
       const runPlaceholders = runIds.map(() => "?").join(", ");
 
       this.db.prepare(`
@@ -1420,7 +1420,7 @@ export class SessionRepository {
   }
 }
 
-function collectDescendantSessionIds(db: DatabaseSync, userId: string, sessionId: string): string[] {
+function collectDescendantSessionIds(db: BetterSqlite3.Database, userId: string, sessionId: string): string[] {
   const ordered: string[] = [];
   const seen = new Set<string>();
   const stack = [sessionId];
@@ -1449,7 +1449,7 @@ function collectDescendantSessionIds(db: DatabaseSync, userId: string, sessionId
 }
 
 export class SessionBranchRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateSessionBranchInput): SessionBranchRecord {
     const createdAt = new Date().toISOString();
@@ -1524,7 +1524,7 @@ export class SessionBranchRepository {
 }
 
 export class DataSourceRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateDataSourceInput): DataSourceRecord {
     const now = new Date().toISOString();
@@ -1629,7 +1629,7 @@ export class DataSourceRepository {
 }
 
 export class RunRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateRunInput): RunRecord {
     const result = this.claim(input);
@@ -1719,8 +1719,8 @@ export class RunRepository {
       )
       .all(...input.statuses, limit);
     return rows
-      .map((row) => mapRunRow(row))
-      .filter((run): run is RunRecord => run !== undefined);
+      .map((row: unknown) => mapRunRow(row))
+      .filter((run: unknown): run is RunRecord => run !== undefined);
   }
 
   get(input: { user_id: string; run_id: string }): RunRecord {
@@ -1756,7 +1756,7 @@ export class RunRepository {
 }
 
 export class RunEventRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   append(input: WriteRunEventInput): RunEventRecord {
     const protocolEventId = protocolEventIdFromBaseEvent(input.event);
@@ -1840,7 +1840,7 @@ const protocolEventIdFromBaseEvent = (event: BaseEvent): string | undefined => {
 };
 
 export class ConversationMessageRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   append(input: CreateConversationMessageInput): ConversationMessageRecord {
     const createdAt = new Date().toISOString();
@@ -2055,7 +2055,7 @@ export class ConversationMessageRepository {
 }
 
 export class ConversationSummaryRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateConversationSummaryInput): ConversationSummaryRecord {
     const createdAt = new Date().toISOString();
@@ -2156,7 +2156,7 @@ export class ConversationSummaryRepository {
 }
 
 export class LongTermMemoryRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   upsert(input: CreateLongTermMemoryInput): LongTermMemoryRecord {
     const now = new Date().toISOString();
@@ -2242,11 +2242,11 @@ export class LongTermMemoryRepository {
     const queryTerms = tokenizeMemoryText(input.query);
     return rows
       .map(mapRequiredLongTermMemoryRow)
-      .map((memory) => ({ memory, score: scoreLongTermMemory(memory, queryTerms, input) }))
-      .filter((entry) => entry.score > 0)
-      .sort((left, right) => right.score - left.score)
+      .map((memory: unknown) => ({ memory, score: scoreLongTermMemory(memory as never, queryTerms, input) as number }))
+      .filter((entry: { score: number }) => entry.score > 0)
+      .sort((left: { score: number }, right: { score: number }) => right.score - left.score)
       .slice(0, limit)
-      .map((entry) => entry.memory);
+      .map((entry: { memory: unknown }) => entry.memory);
   }
 
   markAccessed(input: { user_id: string; memory_ids: string[] }): void {
@@ -2283,7 +2283,7 @@ export class LongTermMemoryRepository {
 }
 
 export class ContextPackageSnapshotRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateContextPackageSnapshotInput): ContextPackageSnapshotRecord {
     const createdAt = new Date().toISOString();
@@ -2361,7 +2361,7 @@ export class ContextPackageSnapshotRepository {
 }
 
 export class ProtocolStateSnapshotRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   compareAndSet(input: CompareAndSetProtocolStateInput): ProtocolStateSnapshotRecord {
     const state = requireProtocolStateFields(input.state);
@@ -2522,7 +2522,7 @@ export class ProtocolStateSnapshotRepository {
       SELECT event_json FROM protocol_event_journal
       WHERE user_id = ? AND run_id = ? AND published_at IS NULL
       ORDER BY created_at ASC, rowid ASC
-    `).all(input.user_id, input.run_id).map((row) => {
+    `).all(input.user_id, input.run_id).map((row: unknown) => {
       if (!isRecord(row) || typeof row.event_json !== "string") {
         throw new Error(`PROTOCOL_EVENT_JOURNAL_INVALID:${input.run_id}`);
       }
@@ -2554,7 +2554,7 @@ export class ProtocolStateSnapshotRepository {
 }
 
 export class CheckpointRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateCheckpointInput): CheckpointRecord {
     const createdAt = new Date().toISOString();
@@ -2654,7 +2654,7 @@ export class CheckpointRepository {
 }
 
 export class TraceSectionRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   upsert(input: UpsertTraceSectionInput): TraceSectionRecord {
     const now = new Date().toISOString();
@@ -2729,7 +2729,7 @@ export class TraceSectionRepository {
 }
 
 export class ArtifactRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateArtifactInput): ArtifactRecord {
     const createdAt = new Date().toISOString();
@@ -2846,7 +2846,7 @@ export class ArtifactRepository {
 }
 
 export class ArtifactVersionRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateArtifactVersionInput): ArtifactVersionRecord {
     const createdAt = new Date().toISOString();
@@ -2897,7 +2897,7 @@ export class ArtifactVersionRepository {
 }
 
 export class FileAssetRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateFileAssetInput): FileAssetRecord {
     const createdAt = new Date().toISOString();
@@ -2956,7 +2956,7 @@ export class FileAssetRepository {
         WHERE r.file_asset_id = a.id AND r.status != 'deleted'
       )
     `).all();
-    return rows.map(mapFileAssetRow).filter((asset): asset is FileAssetRecord => Boolean(asset));
+    return rows.map(mapFileAssetRow).filter((asset: unknown): asset is FileAssetRecord => Boolean(asset));
   }
 
   /** Hard-delete an asset record (use only after confirming it is orphaned). */
@@ -2966,7 +2966,7 @@ export class FileAssetRepository {
 }
 
 export class FileAssetRefRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateFileAssetRefInput): FileAssetRefRecord {
     const createdAt = new Date().toISOString();
@@ -3109,7 +3109,7 @@ export class FileAssetRefRepository {
 }
 
 export class SqlAuditLogRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateSqlAuditLogInput): SqlAuditLogRecord {
     const createdAt = new Date().toISOString();
@@ -3170,7 +3170,7 @@ export class SqlAuditLogRepository {
 }
 
 export class QueryHistoryRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   create(input: CreateQueryHistoryInput): QueryHistoryRecord {
     const now = new Date().toISOString();
@@ -3280,7 +3280,7 @@ export const createMetadataStore = (options: MetadataStoreOptions = {}): Metadat
   const databasePath = resolve(options.database_path ?? "storage/metadata/workbench.sqlite");
   mkdirSync(dirname(databasePath), { recursive: true });
 
-  const db = new DatabaseSync(databasePath);
+  const db = new Database(databasePath);
   db.exec("PRAGMA journal_mode = WAL");
   db.exec("PRAGMA foreign_keys = ON");
   runMigrations(db);
@@ -3318,7 +3318,7 @@ export function createVerifiedTestIdentity(
   return { userId: user.id, workspaceId: workspace.id, email: user.email ?? email };
 }
 
-const assertPasswordOnlyUsersSchema = (db: DatabaseSync): void => {
+const assertPasswordOnlyUsersSchema = (db: BetterSqlite3.Database): void => {
   const columns = db
     .prepare("PRAGMA table_info(users)")
     .all() as Array<{ name: string }>;
@@ -3379,7 +3379,7 @@ const artifactOriginFromMetadata = (
   };
 };
 
-const runMigrations = (db: DatabaseSync): void => {
+const runMigrations = (db: BetterSqlite3.Database): void => {
   initializeSchemaMigrationTable(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -3829,7 +3829,7 @@ const runMigrations = (db: DatabaseSync): void => {
   });
 };
 
-const initializeSchemaMigrationTable = (db: DatabaseSync): void => {
+const initializeSchemaMigrationTable = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       id TEXT PRIMARY KEY,
@@ -3840,7 +3840,7 @@ const initializeSchemaMigrationTable = (db: DatabaseSync): void => {
 };
 
 const runSchemaMigration = (
-  db: DatabaseSync,
+  db: BetterSqlite3.Database,
   id: string,
   description: string,
   runner: () => void
@@ -3849,55 +3849,55 @@ const runSchemaMigration = (
   recordSchemaMigration(db, id, description);
 };
 
-const recordSchemaMigration = (db: DatabaseSync, id: string, description: string): void => {
+const recordSchemaMigration = (db: BetterSqlite3.Database, id: string, description: string): void => {
   db.prepare(`
     INSERT OR IGNORE INTO schema_migrations (id, description, applied_at)
     VALUES (?, ?, ?)
   `).run(id, description, new Date().toISOString());
 };
 
-const requiresUserScopedIdentityMigration = (db: DatabaseSync): boolean => {
+const requiresUserScopedIdentityMigration = (db: BetterSqlite3.Database): boolean => {
   const primaryKeyColumns = db
     .prepare("PRAGMA table_info(sessions)")
     .all()
-    .filter((row) => isRecord(row) && typeof row.pk === "number" && row.pk > 0)
-    .sort((left, right) => Number((left as Record<string, unknown>).pk) - Number((right as Record<string, unknown>).pk))
-    .map((row) => (row as Record<string, unknown>).name);
+    .filter((row: unknown) => isRecord(row) && typeof row.pk === "number" && row.pk > 0)
+    .sort((left: Record<string, unknown>, right: Record<string, unknown>) => Number((left as Record<string, unknown>).pk) - Number((right as Record<string, unknown>).pk))
+    .map((row: Record<string, unknown>) => (row as Record<string, unknown>).name);
 
   return primaryKeyColumns.join(",") !== "user_id,id";
 };
 
-const requiresUserScopedDataSourcesMigration = (db: DatabaseSync): boolean => {
+const requiresUserScopedDataSourcesMigration = (db: BetterSqlite3.Database): boolean => {
   const primaryKeyColumns = db
     .prepare("PRAGMA table_info(data_sources)")
     .all()
-    .filter((row) => isRecord(row) && typeof row.pk === "number" && row.pk > 0)
-    .sort((left, right) => Number((left as Record<string, unknown>).pk) - Number((right as Record<string, unknown>).pk))
-    .map((row) => (row as Record<string, unknown>).name);
+    .filter((row: unknown) => isRecord(row) && typeof row.pk === "number" && row.pk > 0)
+    .sort((left: Record<string, unknown>, right: Record<string, unknown>) => Number((left as Record<string, unknown>).pk) - Number((right as Record<string, unknown>).pk))
+    .map((row: Record<string, unknown>) => (row as Record<string, unknown>).name);
 
   return primaryKeyColumns.join(",") !== "user_id,id";
 };
 
-const ensureDataSourceRevision = (db: DatabaseSync): void => {
+const ensureDataSourceRevision = (db: BetterSqlite3.Database): void => {
   const hasRevision = db.prepare("PRAGMA table_info(data_sources)").all()
-    .some((row) => isRecord(row) && row.name === "revision");
+    .some((row: unknown) => isRecord(row) && row.name === "revision");
   if (!hasRevision) {
     db.exec("ALTER TABLE data_sources ADD COLUMN revision INTEGER NOT NULL DEFAULT 1");
   }
 };
 
-const ensureArtifactFileAssetRefColumn = (db: DatabaseSync): void => {
+const ensureArtifactFileAssetRefColumn = (db: BetterSqlite3.Database): void => {
   const hasColumn = db.prepare("PRAGMA table_info(artifacts)").all()
-    .some((row) => isRecord(row) && row.name === "file_asset_ref_id");
+    .some((row: unknown) => isRecord(row) && row.name === "file_asset_ref_id");
   if (!hasColumn) {
     db.exec("ALTER TABLE artifacts ADD COLUMN file_asset_ref_id TEXT");
   }
 };
 
-const ensureSessionTitleColumns = (db: DatabaseSync): void => {
+const ensureSessionTitleColumns = (db: BetterSqlite3.Database): void => {
   const columns = db.prepare("PRAGMA table_info(sessions)").all();
-  const hasTitleSource = columns.some((row) => isRecord(row) && row.name === "title_source");
-  const hasLastMessageAt = columns.some((row) => isRecord(row) && row.name === "last_message_at");
+  const hasTitleSource = columns.some((row: unknown) => isRecord(row) && row.name === "title_source");
+  const hasLastMessageAt = columns.some((row: unknown) => isRecord(row) && row.name === "last_message_at");
   if (!hasTitleSource) {
     db.exec("ALTER TABLE sessions ADD COLUMN title_source TEXT");
   }
@@ -3906,15 +3906,15 @@ const ensureSessionTitleColumns = (db: DatabaseSync): void => {
   }
 };
 
-const ensureInteractionInterruptEventColumn = (db: DatabaseSync): void => {
+const ensureInteractionInterruptEventColumn = (db: BetterSqlite3.Database): void => {
   const hasColumn = db.prepare("PRAGMA table_info(interactions)").all()
-    .some((row) => isRecord(row) && row.name === "interrupt_event_json");
+    .some((row: unknown) => isRecord(row) && row.name === "interrupt_event_json");
   if (!hasColumn) {
     db.exec("ALTER TABLE interactions ADD COLUMN interrupt_event_json TEXT");
   }
 };
 
-const ensureSessionBranchCheckpointColumn = (db: DatabaseSync): void => {
+const ensureSessionBranchCheckpointColumn = (db: BetterSqlite3.Database): void => {
   ensureColumn(db, "session_branches", "fork_checkpoint_id", "TEXT");
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_session_branches_parent_checkpoint
@@ -3922,11 +3922,11 @@ const ensureSessionBranchCheckpointColumn = (db: DatabaseSync): void => {
   `);
 };
 
-const ensureTraceSectionPhaseKeyColumn = (db: DatabaseSync): void => {
+const ensureTraceSectionPhaseKeyColumn = (db: BetterSqlite3.Database): void => {
   ensureColumn(db, "trace_sections", "phase_key", "TEXT");
 };
 
-const initializeTraceSectionSchema = (db: DatabaseSync): void => {
+const initializeTraceSectionSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS trace_sections (
       id TEXT NOT NULL,
@@ -3953,7 +3953,7 @@ const initializeTraceSectionSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const initializeProtocolStateSnapshotSchema = (db: DatabaseSync): void => {
+const initializeProtocolStateSnapshotSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS protocol_state_snapshots (
       user_id TEXT NOT NULL,
@@ -3979,7 +3979,7 @@ const initializeProtocolStateSnapshotSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const initializeProtocolEventJournalSchema = (db: DatabaseSync): void => {
+const initializeProtocolEventJournalSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS protocol_event_journal (
       user_id TEXT NOT NULL,
@@ -3999,7 +3999,7 @@ const initializeProtocolEventJournalSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const initializeAuthSchema = (db: DatabaseSync): void => {
+const initializeAuthSchema = (db: BetterSqlite3.Database): void => {
   ensureColumn(db, "users", "email_verified_at", "TEXT");
   ensureColumn(db, "users", "disabled_at", "TEXT");
   ensureColumn(db, "users", "password_updated_at", "TEXT");
@@ -4091,7 +4091,7 @@ const initializeAuthSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const initializeSessionBranchSchema = (db: DatabaseSync): void => {
+const initializeSessionBranchSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS session_branches (
       id TEXT NOT NULL,
@@ -4115,7 +4115,7 @@ const initializeSessionBranchSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const initializeArtifactVersionSchema = (db: DatabaseSync): void => {
+const initializeArtifactVersionSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS artifact_versions (
       id TEXT PRIMARY KEY,
@@ -4135,15 +4135,15 @@ const initializeArtifactVersionSchema = (db: DatabaseSync): void => {
   `);
 };
 
-const ensureColumn = (db: DatabaseSync, table: string, column: string, definition: string): void => {
+const ensureColumn = (db: BetterSqlite3.Database, table: string, column: string, definition: string): void => {
   const hasColumn = db.prepare(`PRAGMA table_info(${table})`).all()
-    .some((row) => isRecord(row) && row.name === column);
+    .some((row: unknown) => isRecord(row) && row.name === column);
   if (!hasColumn) {
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
 };
 
-const migrateUserScopedIdentity = (db: DatabaseSync): void => {
+const migrateUserScopedIdentity = (db: BetterSqlite3.Database): void => {
   db.exec("PRAGMA foreign_keys = OFF");
 
   try {
@@ -4293,7 +4293,7 @@ const migrateUserScopedIdentity = (db: DatabaseSync): void => {
   }
 };
 
-const migrateUserScopedDataSources = (db: DatabaseSync): void => {
+const migrateUserScopedDataSources = (db: BetterSqlite3.Database): void => {
   db.exec("PRAGMA foreign_keys = OFF");
 
   try {
@@ -4370,7 +4370,7 @@ const migrateUserScopedDataSources = (db: DatabaseSync): void => {
   }
 };
 
-const createMetadataIndexes = (db: DatabaseSync): void => {
+const createMetadataIndexes = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
     CREATE INDEX IF NOT EXISTS idx_session_branches_parent_fork

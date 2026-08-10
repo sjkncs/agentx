@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from "node:crypto";
-import type { DatabaseSync } from "node:sqlite";
+import Database, * as BetterSqlite3 from "better-sqlite3";
 
 export type ConfigResourceKind =
   | "datasource-schema"
@@ -58,7 +58,7 @@ export type JobRecord = {
   finished_at?: string;
 };
 
-export const initializeConfigSchema = (db: DatabaseSync): void => {
+export const initializeConfigSchema = (db: BetterSqlite3.Database): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS config_resources (
       id TEXT NOT NULL,
@@ -123,7 +123,7 @@ export const initializeConfigSchema = (db: DatabaseSync): void => {
 };
 
 export class ConfigResourceRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   /** Create or update one workspace-scoped configuration resource. */
   upsert(input: UpsertConfigResourceInput): ConfigResourceRecord {
@@ -212,7 +212,7 @@ export class ConfigResourceRepository {
 export class EncryptedSecretStore {
   private readonly key: Buffer | undefined;
 
-  constructor(private readonly db: DatabaseSync, masterKey?: string) {
+  constructor(private readonly db: BetterSqlite3.Database, masterKey?: string) {
     this.key = masterKey ? createHash("sha256").update(masterKey).digest() : undefined;
   }
 
@@ -309,7 +309,7 @@ export class EncryptedSecretStore {
 }
 
 export class ConfigJobRepository {
-  constructor(private readonly db: DatabaseSync) {}
+  constructor(private readonly db: BetterSqlite3.Database) {}
 
   /** Create a queued persistent configuration job. */
   create(input: {
