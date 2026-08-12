@@ -271,6 +271,40 @@ Join the DataFoundry community to discuss the product, roadmap, and real-world a
   </tr>
 </table>
 
+## Enhancements in this fork
+
+This fork extends upstream DataFoundry with an agentic-engineering layer inspired by Anthropic agent-skills patterns and Language Agent Tree Search (LATS, arXiv:2310.04406). All enhancements are incremental and backward compatible; governed protocols remain the safety guardrail.
+
+### Anthropic-style skill extension layer
+
+- `packages/agent-runtime/src/skills/markdown-skill.ts` provides bidirectional `SkillDefinition` to `SKILL.md` conversion with a zero-dependency YAML-subset parser.
+- `packages/skills/builtin/feature-dev/SKILL.md` is a builtin skill with phased workflow, human gates, and sub-agent prompts, registered alongside `data-analysis`.
+
+### Protocol phase guidance and progress UI
+
+- Every governed protocol phase carries a natural-language `guidance` string injected into the agent prompt, while the finite-state machine still enforces hard gates.
+- The runtime emits a `protocol.definition` event at run start; the web client renders a phase stepper (`protocol-phase-stepper.tsx`) above the composer, highlighting the current phase and its guidance.
+
+### Human-in-the-loop approval cards
+
+- `submit_plan` interrupts render as structured approval cards with a draft preview, an Approve action, and a Request Changes flow that captures free-text feedback.
+- Approval cards surface a human-gate badge when the active protocol phase requires explicit confirmation.
+
+### Composer affordances
+
+- A slash-command palette lists user-invocable skills when the input starts with `/`.
+- Follow-up suggestion chips appear after a completed run and inject a localized prompt into the composer.
+
+### LATS tree-search tracking (opt-in)
+
+- `packages/agent-runtime/src/lats/` implements a multi-path trajectory (`MultiPathTrajectory`), UCB branch selection, backpropagation, and Reflexion failure reflection.
+- `LatsRuntime` hooks the governed tool boundary (success and failure) and emits `tree.*` AG-UI custom events; the web client renders the branch DAG (`TrajectoryDag.tsx`) in the Task Console overview.
+- Disabled by default (ReAct mode). Enable with `DATAFOUNDRY_LATS_ENABLED=true`; when enabled, Reflexion and self-evaluation use the resolved LLM provider.
+
+### Verification
+
+- `packages/agent-runtime`: 213 tests green. `apps/web`: 592 tests green. TypeScript strict build passes with zero errors.
+
 ## 🙏 Acknowledgements
 
 DataFoundry is inspired by and built with ideas from excellent open-source projects and communities:

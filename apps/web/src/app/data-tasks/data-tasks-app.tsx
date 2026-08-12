@@ -1109,6 +1109,12 @@ function DataTaskWorkspace({
   const clearDraftPromptRequest = useCallback(() => {
     setDraftPromptRequest(null);
   }, []);
+  const requestDraftPrompt = useCallback((text: string) => {
+    setDraftPromptRequest((current) => ({
+      id: (current?.id ?? 0) + 1,
+      text,
+    }));
+  }, []);
   const [pendingBranchRun, setPendingBranchRun] = useState<PendingBranchRun | null>(null);
   const [pendingCheckpointResume, setPendingCheckpointResume] =
     useState<PendingCheckpointResume | null>(null);
@@ -1959,6 +1965,7 @@ function DataTaskWorkspace({
       onToggleSessionResource: toggleSessionResourceItem,
       draftPromptRequest,
       onDraftPromptConsumed: consumeDraftPromptRequest,
+      onRequestDraftPrompt: requestDraftPrompt,
       chatColumnWidth,
       agentId: activeAgentId,
       activeThreadId: activeThreadId ?? null,
@@ -1981,6 +1988,7 @@ function DataTaskWorkspace({
       capabilitiesReady,
       draftPromptRequest,
       consumeDraftPromptRequest,
+      requestDraftPrompt,
       handleUserMessageSubmitted,
       cancelCurrentRun,
       stopActiveRun,

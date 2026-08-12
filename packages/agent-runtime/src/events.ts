@@ -72,7 +72,8 @@ export const createArtifactEvent = (artifact: ArtifactSummary & {
     title: artifact.name,
     summary: artifactEventSummary(artifact),
     preview_available: artifact.preview_json !== undefined || Boolean(artifact.file_id),
-    ...(artifact.preview_json !== undefined ? { preview_json: artifact.preview_json } : {}),
+    // AG-UI event must stay slim: preview data is fetched lazily via REST.
+    // Intentionally NOT spreading artifact.preview_json — keep payload lean.
     ...(artifact.download_url ? { download_url: artifact.download_url } : {}),
     ...(artifact.file_id ? { file_id: artifact.file_id } : {}),
     ...(artifact.run_id ? { run_id: artifact.run_id } : {}),

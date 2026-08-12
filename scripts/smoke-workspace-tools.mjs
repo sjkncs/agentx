@@ -33,8 +33,7 @@ try {
     "list_files",
     "file_stat",
     "mkdir",
-    "grep",
-    "execute_command"
+    "grep"
   ];
 
   await runWorkspace.workspace.init();
@@ -46,6 +45,14 @@ try {
   });
   for (const name of expectedTools) {
     assert(name in tools, `workspace should inject the ${name} tool`);
+  }
+  if (runWorkspace.commandExecutionEnabled) {
+    assert("execute_command" in tools, "workspace should inject the execute_command tool when commandExecutionEnabled");
+  } else {
+    assert(
+      !("execute_command" in tools),
+      "execute_command must stay absent when commandExecutionEnabled is false (no sandbox on this platform)"
+    );
   }
 
   const execCtx = {

@@ -409,13 +409,18 @@ const createRuntimeActionPlugin = (
     "data.query.validate",
     "analysis.result.validate",
     "analysis.evidence.bind",
-    "analysis.requirements.commit"
+    "analysis.requirements.commit",
+    "human.confirmation.request",
+    "human.confirmation.granted",
+    "human.confirmation.revised"
   ];
   return {
     manifest: { id: "protocol-runtime-actions", version: "1", provides: names },
     actions: names.map((name) => ({
       name,
-      exposure: name === "protocol.handoff.propose" || name === "analysis.requirements.commit" ? "agent" : "runtime",
+      exposure: name === "protocol.handoff.propose"
+        || name === "analysis.requirements.commit"
+        || name.startsWith("human.confirmation.") ? "agent" : "runtime",
       inputSchema: z.unknown(),
       outputSchema: z.unknown(),
       idempotency: "supported",

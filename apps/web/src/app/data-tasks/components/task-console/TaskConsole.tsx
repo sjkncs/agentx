@@ -59,6 +59,7 @@ import {
 } from "../../table-rows";
 import { RunConfigurationPanel } from "./RunConfigurationPanel";
 import { TraceList } from "./TraceList";
+import { TrajectoryDag } from "./TrajectoryDag";
 import { EmbeddedTraceDag } from "./TraceOverlay";
 import { ArtifactMarkdownPreview } from "./ArtifactMarkdownPreview";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
@@ -326,6 +327,7 @@ export function TaskConsole({
               }
               return <ToolDistributionZone key={section.id} liveRun={liveRun} />;
             })}
+            {liveRun.trajectory ? <TrajectoryDag trajectory={liveRun.trajectory} /> : null}
           </div>
         ) : null}
 

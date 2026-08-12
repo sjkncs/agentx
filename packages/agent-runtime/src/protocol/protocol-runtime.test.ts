@@ -231,8 +231,35 @@ describe("ProtocolRuntime", () => {
     runtime.start({ runId: "run-1", segmentId: "segment-1", contextPackageRef });
 
     expect(events).toEqual([
+      { type: "protocol.definition", revision: 0 },
       { type: "protocol.run.started", revision: 0 },
       { type: "protocol.phase.entered", revision: 0 }
+    ]);
+  });
+
+  it("emits a protocol.definition payload with the ordered phase list for stepper UIs", () => {
+    const definitions: Array<Record<string, unknown>> = [];
+    const runtime = new ProtocolRuntime(createDefinition(), new InMemoryProtocolStateStore(), {
+      onEvent: (event) => {
+        if (event.type === "protocol.definition" && event.payload) {
+          definitions.push(event.payload as Record<string, unknown>);
+        }
+      }
+    });
+
+    runtime.start({ runId: "run-1", segmentId: "segment-1", contextPackageRef });
+
+    expect(definitions).toHaveLength(1);
+    const payload = definitions[0];
+    if (!payload) {
+      throw new Error("TEST_DEFINITION_PAYLOAD_REQUIRED");
+    }
+    expect(payload.protocolId).toBe("test/protocol");
+    expect(payload.version).toBe("1");
+    expect(payload.initialPhase).toBe("inspect");
+    expect(payload.phases).toEqual([
+      { id: "inspect" },
+      { id: "query" }
     ]);
   });
 

@@ -1,5 +1,5 @@
 import { EventType } from "@ag-ui/core";
-import { join } from "node:path";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -64,7 +64,7 @@ describe("maybeIngestSessionFileOutput", () => {
       session_id: "session-1",
       run_id: "run-1",
       path: "reports/summary.md",
-      source_path: join("/tmp/session", "reports/summary.md"),
+      source_path: resolve("/tmp/session", "reports/summary.md"),
       tool_call_id: "tool-1"
     }]);
     expect(emitted).toHaveLength(1);
@@ -152,7 +152,7 @@ describe("maybeIngestSessionFileOutput", () => {
       session_id: "session-1",
       run_id: "run-1",
       path: "order_analysis_report.md",
-      source_path: join("/tmp/session", "order_analysis_report.md"),
+      source_path: resolve("/tmp/session", "order_analysis_report.md"),
       tool_call_id: "call-write-1"
     }]);
     expect(emitted).toHaveLength(1);

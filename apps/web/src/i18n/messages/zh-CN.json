@@ -44,6 +44,58 @@
     "parsing": "解析中…",
     "uploading": "上传中…"
   },
+  "hitl": {
+    "askUserTitle": "询问用户",
+    "answerPlaceholder": "请输入答案...",
+    "submitAnswer": "提交",
+    "planApprovalTitle": "执行计划审批",
+    "approve": "批准",
+    "reject": "拒绝",
+    "requestChanges": "要求修改",
+    "feedbackPlaceholder": "请描述需要修改的内容...",
+    "sendFeedback": "发送反馈",
+    "humanGate": "人工审核",
+    "needsYourInput": "需要你确认"
+  },
+  "protocolPhase": {
+    "protocols": {
+      "dataAnalysis": {
+        "label": "数据分析",
+        "scope": "范围",
+        "semanticGrounding": "语义 grounding",
+        "queryPlanning": "查询规划",
+        "execution": "执行",
+        "validation": "验证",
+        "humanApproval": "人工审批",
+        "synthesis": "综合"
+      },
+      "generalTask": {
+        "label": "通用任务",
+        "understand": "理解",
+        "clarify": "澄清",
+        "gather": "收集",
+        "preCommitReview": "提交前审查",
+        "answer": "回答"
+      }
+    }
+  },
+  "slash": {
+    "title": "技能",
+    "empty": "没有匹配的技能",
+    "hint": "Enter 选择 · Esc 关闭",
+    "skillChipLabel": "技能"
+  },
+  "followUp": {
+    "suggestionExportResults": "将查询结果导出为 CSV",
+    "suggestionSummarizeOutputs": "总结输出的关键发现",
+    "suggestionGoDeeper": "从数据还能学到什么？",
+    "labelPrefix": "下一步："
+  },
+  "trajectory": {
+    "title": "推理树 (LATS)",
+    "root": "起点",
+    "reflection": "反思"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",

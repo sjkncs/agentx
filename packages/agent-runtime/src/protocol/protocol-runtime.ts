@@ -50,6 +50,15 @@ export class ProtocolRuntime<TDomainState> {
     const events = [
       ...(this.options.startEvents ?? []).map((event) =>
         this.createEvent(event.type, initialState, event.payload)),
+      this.createEvent("protocol.definition", initialState, {
+        protocolId: this.definition.id,
+        version: this.definition.version,
+        initialPhase: this.definition.initialPhase,
+        phases: Object.entries(this.definition.phases).map(([phaseId, phase]) => ({
+          id: phaseId,
+          ...(phase.guidance ? { guidance: phase.guidance } : {})
+        }))
+      }),
       this.createEvent("protocol.run.started", initialState),
       this.createEvent("protocol.phase.entered", initialState, { phase: initialState.phase })
     ];

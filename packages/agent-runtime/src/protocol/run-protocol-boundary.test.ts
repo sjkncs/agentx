@@ -122,6 +122,20 @@ describe("createRunProtocolBoundary", () => {
         }]
       }
     });
+    await boundary.actionRouter.execute({
+      runId: "run-requirement-evidence",
+      segmentId: boundary.segmentId,
+      actionId: "human-request-1",
+      actionName: "human.confirmation.request",
+      input: {}
+    });
+    await boundary.actionRouter.execute({
+      runId: "run-requirement-evidence",
+      segmentId: boundary.segmentId,
+      actionId: "human-granted-1",
+      actionName: "human.confirmation.granted",
+      input: { approved: "yes" }
+    });
     state = boundary.protocolRuntime.getState("run-requirement-evidence");
     const terminal = boundary.protocolRuntime.proposeCompletion({
       runId: "run-requirement-evidence",
@@ -273,6 +287,20 @@ describe("createRunProtocolBoundary", () => {
       actionName: "run_sql_readonly",
       input: { schema_id: "schema-1", sql: "select 1" }
     });
+    await boundary.actionRouter.execute({
+      runId: "run-1",
+      segmentId: boundary.segmentId,
+      actionId: "action-3",
+      actionName: "human.confirmation.request",
+      input: {}
+    });
+    await boundary.actionRouter.execute({
+      runId: "run-1",
+      segmentId: boundary.segmentId,
+      actionId: "action-4",
+      actionName: "human.confirmation.granted",
+      input: { approved: "yes" }
+    });
     const state = boundary.protocolRuntime.getState("run-1");
     expect(state.phase).toBe("synthesis");
     expect(state.actions.map((action) => action.actionName)).toEqual([
@@ -282,7 +310,9 @@ describe("createRunProtocolBoundary", () => {
       "data.query.validate",
       "run_sql_readonly",
       "analysis.result.validate",
-      "analysis.evidence.bind"
+      "analysis.evidence.bind",
+      "human.confirmation.request",
+      "human.confirmation.granted"
     ]);
     const terminal = boundary.protocolRuntime.proposeCompletion({
       runId: "run-1",
@@ -976,6 +1006,20 @@ describe("createRunProtocolBoundary", () => {
       actionName: "run_sql_readonly",
       input: { schema_id: "schema-1", sql: "select 3" }
     });
+    await boundary.actionRouter.execute({
+      runId: "run-sql-recovery",
+      segmentId: boundary.segmentId,
+      actionId: "human-request-1",
+      actionName: "human.confirmation.request",
+      input: {}
+    });
+    await boundary.actionRouter.execute({
+      runId: "run-sql-recovery",
+      segmentId: boundary.segmentId,
+      actionId: "human-granted-1",
+      actionName: "human.confirmation.granted",
+      input: { approved: "yes" }
+    });
 
     const state = boundary.protocolRuntime.getState("run-sql-recovery");
     expect(state.phase).toBe("synthesis");
@@ -1056,9 +1100,10 @@ describe("createRunProtocolBoundary", () => {
       runtimeOptions: { onEvent: (event) => eventTypes.push(event.type) }
     });
 
-    expect(eventTypes.slice(0, 4)).toEqual([
+    expect(eventTypes.slice(0, 5)).toEqual([
       "protocol.route.requested",
       "protocol.route.resolved",
+      "protocol.definition",
       "protocol.run.started",
       "protocol.phase.entered"
     ]);
@@ -1086,7 +1131,7 @@ describe("createRunProtocolBoundary", () => {
       runId: "run-agent-handoff",
       userInput: "先解释，随后分析",
       authorizedProtocolIds: ["general-task", "data-analysis"],
-      explicitProtocol: { protocolId: "general-task", protocolVersion: "1" },
+      explicitProtocol: { protocolId: "general-task", protocolVersion: "2" },
       initialContextPackageRef: { packageId: "context-handoff", revision: 0 },
       tools: { inspect_schema: { execute: async () => ({ schema_id: "schema-1" }) } },
       semanticProvider: {

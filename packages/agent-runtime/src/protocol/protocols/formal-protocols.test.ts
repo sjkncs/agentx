@@ -47,7 +47,7 @@ describe("formal protocols", () => {
     expect(protocol.phases.execution?.allowedActions).toContain("run_sql_readonly");
   });
 
-  it("requires validated evidence before completing data analysis", () => {
+  it("requires validated evidence and human approval before completing data analysis", () => {
     const protocol = createDataAnalysisProtocol(["inspect_schema", "run_sql_readonly"]);
     let state = protocol.createInitialState({ contextPackageRef, runId: "run-1" });
     state = reduceDataAnalysisAction(state, "inspect_schema", {});
@@ -63,10 +63,21 @@ describe("formal protocols", () => {
 
     state = reduceDataAnalysisAction(state, "analysis.result.validate", { valid: true });
     state = reduceDataAnalysisAction(state, "analysis.evidence.bind", { evidence_refs: ["artifact-1"] });
+
+    // Still waiting for human approval — does not complete yet
+    const afterEvidence = protocol.completionPolicy({ contextPackageRef, state });
+    expect(afterEvidence.status).toBe("continue");
+    if (afterEvidence.status !== "continue") {
+      throw new Error(`expected continue, got ${afterEvidence.status}`);
+    }
+    expect(afterEvidence.reasons).toContain("HUMAN_APPROVAL_REQUIRED");
+
+    // Human grants approval
+    state = reduceDataAnalysisAction(state, "human.confirmation.granted", { approved: "yes" });
     expect(protocol.completionPolicy({ contextPackageRef, state }).status).toBe("completed");
   });
 
-  it("discloses local semantic fallback as degraded completion", () => {
+  it("discloses local semantic fallback as degraded completion after human approval", () => {
     const protocol = createDataAnalysisProtocol([]);
     let state = protocol.createInitialState({ contextPackageRef, runId: "run-1" });
     state = reduceDataAnalysisAction(state, "inspect_schema", {});
@@ -80,6 +91,7 @@ describe("formal protocols", () => {
     state = reduceDataAnalysisAction(state, "run_sql_readonly", { artifact_id: "artifact-1" });
     state = reduceDataAnalysisAction(state, "analysis.result.validate", { valid: true });
     state = reduceDataAnalysisAction(state, "analysis.evidence.bind", { evidence_refs: ["artifact-1"] });
+    state = reduceDataAnalysisAction(state, "human.confirmation.granted", { approved: "yes" });
 
     expect(protocol.completionPolicy({ contextPackageRef, state })).toMatchObject({
       status: "degraded",
@@ -484,5 +496,72 @@ describe("formal protocols", () => {
     expect(() => reduceDataAnalysisAction(initial, "analysis.requirements.commit", {
       claims: [{ requirement_id: "R1", claim: "profit", evidence_binding_ids: ["E404"] }]
     })).toThrow("ANALYSIS_REQUIREMENT_EVIDENCE_INVALID:R1:E404");
+  });
+
+  // ─── General Task v2: Anthropic-style clarifying questions & human confirmation ───
+
+  it("transitions to clarifying phase when agent raises questions", () => {
+    const protocol = createGeneralTaskProtocol(["read_file", "search_files"]);
+    expect(protocol.initialPhase).toBe("understand");
+    expect(protocol.phases.clarify).toBeDefined();
+  });
+
+  it("requires human approval before committing answer", () => {
+    const protocol = createGeneralTaskProtocol([]);
+    let state = protocol.createInitialState({ contextPackageRef, runId: "run-clarify" });
+
+    // Agent wants to commit an answer
+    state = reduceGeneralTaskAction(state, "general.answer.commit", {});
+    // Should be in pre_commit_review phase (answerMessageId NOT set yet without human approval)
+    const decision = protocol.completionPolicy({ contextPackageRef, state });
+    expect(decision.status).toBe("continue");
+
+    // Human approves
+    state = reduceGeneralTaskAction(state, "general.human.confirmation.granted", { approved: "yes" });
+    // After approval, answer can be committed
+    state = reduceGeneralTaskAction(state, "general.answer.commit", { messageId: "msg-1" });
+    expect(protocol.completionPolicy({ contextPackageRef, state }).status).toBe("completed");
+  });
+
+  it("records clarifying questions and transitions after human answers", () => {
+    const protocol = createGeneralTaskProtocol([]);
+    let state = protocol.createInitialState({ contextPackageRef, runId: "run-clarify-2" });
+
+    state = reduceGeneralTaskAction(state, "general.clarifying.questions", {
+      questions: ["Which API version?", "Error tolerance?"],
+      summary: "Need more info"
+    });
+    expect(state.clarifyingQuestionsRaised).toBe(true);
+    expect(state.clarifyingQuestionsAnswered).toBe(false);
+
+    state = reduceGeneralTaskAction(state, "general.clarifying.questions.answered", {
+      summary: "Use v2 API, 1% tolerance"
+    });
+    expect(state.clarifyingQuestionsAnswered).toBe(true);
+
+    const decision = protocol.completionPolicy({ contextPackageRef, state });
+    expect(decision.status).toBe("continue");
+  });
+
+  it("allows agent to revise and loop back when human rejects pre-commit", () => {
+    const protocol = createGeneralTaskProtocol([]);
+    let state = protocol.createInitialState({ contextPackageRef, runId: "run-reject" });
+
+    // Commit attempt → pre_commit_review
+    state = reduceGeneralTaskAction(state, "general.answer.commit", {});
+    expect(protocol.completionPolicy({ contextPackageRef, state }).status).toBe("continue");
+
+    // Human rejects with a revision request
+    state = reduceGeneralTaskAction(state, "general.human.confirmation.revised", {
+      comment: "Please recalculate with different parameters"
+    });
+    expect(state.preCommitApproval).toBe("revised");
+    expect(state.preCommitComment).toBe("Please recalculate with different parameters");
+
+    // Agent gathers more info and retries
+    state = reduceGeneralTaskAction(state, "general.answer.commit", {});
+    state = reduceGeneralTaskAction(state, "general.human.confirmation.granted", { approved: "yes" });
+    state = reduceGeneralTaskAction(state, "general.answer.commit", { messageId: "msg-revised" });
+    expect(protocol.completionPolicy({ contextPackageRef, state }).status).toBe("completed");
   });
 });

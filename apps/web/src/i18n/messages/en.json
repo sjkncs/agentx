@@ -44,6 +44,58 @@
     "parsing": "Parsing...",
     "uploading": "Uploading..."
   },
+  "hitl": {
+    "askUserTitle": "Ask User",
+    "answerPlaceholder": "Enter your answer...",
+    "submitAnswer": "Submit",
+    "planApprovalTitle": "Execution Plan Approval",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestChanges": "Request Changes",
+    "feedbackPlaceholder": "Please describe what needs to be changed...",
+    "sendFeedback": "Send Feedback",
+    "humanGate": "Human Gate",
+    "needsYourInput": "Needs Your Input"
+  },
+  "protocolPhase": {
+    "protocols": {
+      "dataAnalysis": {
+        "label": "Data Analysis",
+        "scope": "Scope",
+        "semanticGrounding": "Semantic Grounding",
+        "queryPlanning": "Query Planning",
+        "execution": "Execution",
+        "validation": "Validation",
+        "humanApproval": "Human Approval",
+        "synthesis": "Synthesis"
+      },
+      "generalTask": {
+        "label": "General Task",
+        "understand": "Understand",
+        "clarify": "Clarify",
+        "gather": "Gather",
+        "preCommitReview": "Pre-commit Review",
+        "answer": "Answer"
+      }
+    }
+  },
+  "slash": {
+    "title": "Skills",
+    "empty": "No matching skills found",
+    "hint": "Enter to select · Esc to close",
+    "skillChipLabel": "Skill"
+  },
+  "followUp": {
+    "suggestionExportResults": "Export query results to CSV",
+    "suggestionSummarizeOutputs": "Summarize key findings from outputs",
+    "suggestionGoDeeper": "What else can we learn from this data?",
+    "labelPrefix": "Next:"
+  },
+  "trajectory": {
+    "title": "Reasoning Tree (LATS)",
+    "root": "Start",
+    "reflection": "Reflection"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",

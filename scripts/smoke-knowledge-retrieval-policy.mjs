@@ -48,6 +48,7 @@ try {
 
   const configuredTopK = await knowledge.retrieve({
     user_id: userId,
+    workspace_id: workspaceId,
     collection_id: collectionId,
     query: "alpha revenue metric"
   });
@@ -55,6 +56,7 @@ try {
 
   const explicitTopK = await knowledge.retrieve({
     user_id: userId,
+    workspace_id: workspaceId,
     collection_id: collectionId,
     query: "alpha revenue metric",
     top_k: 3
@@ -74,6 +76,7 @@ try {
   });
   const filtered = await knowledge.retrieve({
     user_id: userId,
+    workspace_id: workspaceId,
     collection_id: collectionId,
     query: "alpha revenue metric"
   });
@@ -91,6 +94,7 @@ try {
   });
   await knowledge.ingestText({
     user_id: userId,
+    workspace_id: workspaceId,
     collection_id: chunkPolicyCollectionId,
     filename: "long.md",
     content: "alpha ".repeat(120)

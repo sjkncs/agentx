@@ -75,6 +75,7 @@ describe("ProtocolRouter", () => {
 
   it("uses the authorized general protocol when classifier confidence is low", async () => {
     const router = new ProtocolRouter(createRegistry(), {
+      defaultProtocol: { protocolId: "general-task", protocolVersion: "1" },
       classifier: async () => ({
         protocolId: "data-analysis",
         protocolVersion: "1",
@@ -95,6 +96,7 @@ describe("ProtocolRouter", () => {
 
   it("uses the authorized general protocol when classification fails transiently", async () => {
     const router = new ProtocolRouter(createRegistry(), {
+      defaultProtocol: { protocolId: "general-task", protocolVersion: "1" },
       classifier: async () => {
         throw new Error("MODEL_TEMPORARILY_UNAVAILABLE");
       }

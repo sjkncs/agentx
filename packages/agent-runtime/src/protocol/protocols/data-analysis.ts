@@ -42,6 +42,14 @@ export type DataAnalysisState = {
   evidenceBindings: AnalysisEvidenceBinding[];
   reportedClaims: AnalysisReportedClaim[];
   taskRequirementLinks: TaskRequirementLink[];
+  /** When true, the protocol pauses for human review before proceeding to synthesis.
+   *  Mirrors the Anthropic human-in-the-loop pattern in feature-dev Phase 6.
+   *  Set by the human_confirmation_request action; cleared after approval. */
+  humanConfirmationPending: boolean;
+  /** Human's approval status: 'approved' | 'rejected' | 'revised' | undefined */
+  humanApproval?: "approved" | "rejected" | "revised" | undefined;
+  /** Optional human comment attached to the approval decision. */
+  humanApprovalComment?: string | undefined;
 };
 
 export const createDataAnalysisProtocol = (
@@ -58,6 +66,9 @@ export const createDataAnalysisProtocol = (
     initialPhase: "scope",
     phases: {
       scope: {
+        guidance:
+          "Scope the data question first. Identify the datasource and inspect its schema before writing any "
+          + "SQL. Never query blind: you need a valid schema grounding before anything else.",
         allowedActions: unique([
           ...commonActions,
           "list_data_sources",
@@ -66,6 +77,9 @@ export const createDataAnalysisProtocol = (
         transitions: [{ targetPhase: "semantic_grounding", when: ({ state }) => state.schemaInspected }]
       },
       semantic_grounding: {
+        guidance:
+          "Ground the analysis in the semantic layer and the analysis contract. Resolve the semantic context "
+          + "and ground the requirements contract so the query targets real, verified tables and columns.",
         allowedActions: unique([
           ...commonActions,
           "inspect_schema",
@@ -79,6 +93,9 @@ export const createDataAnalysisProtocol = (
         }]
       },
       query_planning: {
+        guidance:
+          "Plan and validate the SQL before running it. Write a read-only SELECT/WITH query, then validate it "
+          + "against the schema. Only proceed to execution once the query passes validation.",
         allowedActions: unique([
           ...commonActions,
           "inspect_schema",
@@ -90,6 +107,9 @@ export const createDataAnalysisProtocol = (
         transitions: [{ targetPhase: "execution", when: ({ state }) => state.currentQueryValidated }]
       },
       execution: {
+        guidance:
+          "Execute the validated read-only query through run_sql_readonly. If it fails, go back to planning "
+          + "and fix the SQL rather than guessing. Capture the resulting artifact as evidence.",
         allowedActions: unique([
           ...commonActions,
           "inspect_schema",
@@ -107,6 +127,10 @@ export const createDataAnalysisProtocol = (
         ]
       },
       validation: {
+        guidance:
+          "Validate the query results and bind them as evidence. Run result validation checks, bind the "
+          + "artifact evidence to the analysis requirements, and commit claims. When validation passes, "
+          + "request human confirmation before synthesizing the final answer.",
         allowedActions: unique([
           ...commonActions,
           "inspect_schema",
@@ -115,17 +139,47 @@ export const createDataAnalysisProtocol = (
           "data.query.plan",
           "analysis.result.validate",
           "analysis.evidence.bind",
-          "analysis.requirements.commit"
+          "analysis.requirements.commit",
+          "human.confirmation.request"
         ]),
         transitions: [
           { targetPhase: "query_planning", when: ({ actionName }) => actionName === "data.query.plan" },
           {
+            targetPhase: "human_approval",
+            when: ({ actionName, state }) =>
+              actionName === "human.confirmation.request" && state.validationPassed
+          }
+        ]
+      },
+      human_approval: {
+        guidance:
+          "Wait for the user's explicit approval of the validated findings. If they approve, move on to "
+          + "synthesis. If they request changes or reject, return to query planning and revise. Do not "
+          + "synthesize a final answer without sign-off.",
+        allowedActions: unique([
+          ...commonActions,
+          "human.confirmation.granted",
+          "human.confirmation.revised"
+        ]),
+        transitions: [
+          {
             targetPhase: "synthesis",
-            when: ({ state }) => state.validationPassed && (state.currentEvidenceRefs ?? []).length > 0
+            when: ({ actionName, state }) =>
+              actionName === "human.confirmation.granted" && state.humanApproval === "approved"
+          },
+          {
+            targetPhase: "query_planning",
+            when: ({ actionName, state }) =>
+              (actionName === "human.confirmation.revised" && state.humanApproval === "revised") ||
+              (actionName === "human.confirmation.granted" && state.humanApproval === "rejected")
           }
         ]
       },
       synthesis: {
+        guidance:
+          "Synthesize the approved, evidenced results into the final answer. Match the depth and format to "
+          + "what the user asked for, cite the bound evidence, and surface any caveats. The human has "
+          + "approved, so you may now write the deliverable.",
         allowedActions: unique([
           ...commonActions,
           "inspect_schema",
@@ -134,12 +188,17 @@ export const createDataAnalysisProtocol = (
           "data.query.plan",
           "analysis.result.validate",
           "analysis.evidence.bind",
-          "analysis.requirements.commit"
+          "analysis.requirements.commit",
+          "human.confirmation.request"
         ]),
-        transitions: [{
-          targetPhase: "query_planning",
-          when: ({ actionName }) => actionName === "data.query.plan"
-        }]
+        transitions: [
+          { targetPhase: "query_planning", when: ({ actionName }) => actionName === "data.query.plan" },
+          {
+            targetPhase: "human_approval",
+            when: ({ actionName, state }) =>
+              actionName === "human.confirmation.request" && state.validationPassed
+          }
+        ]
       }
     },
     createInitialState: () => ({
@@ -159,7 +218,8 @@ export const createDataAnalysisProtocol = (
       queryAttempts: [],
       evidenceBindings: [],
       reportedClaims: [],
-      taskRequirementLinks: []
+      taskRequirementLinks: [],
+      humanConfirmationPending: false,
     }),
     completionPolicy: ({ contextPackageRef, state }) => {
       const requirementReasons = incompleteRequirementReasons(state);
@@ -171,6 +231,7 @@ export const createDataAnalysisProtocol = (
         && state.queryExecuted
         && state.validationPassed
         && (state.currentEvidenceRefs ?? []).length > 0
+        && state.humanApproval === "approved"
         && requirementReasons.length === 0
       ) {
         if (state.semanticMode === "fallback") {
@@ -198,6 +259,9 @@ export const createDataAnalysisProtocol = (
         ...(state.queryExecuted ? [] : ["QUERY_EXECUTION_REQUIRED"]),
         ...(state.validationPassed ? [] : ["RESULT_VALIDATION_REQUIRED"]),
         ...((state.evidenceRefs ?? []).length > 0 ? [] : ["EVIDENCE_BINDING_REQUIRED"]),
+        // Don't require human approval if already in the human_approval phase
+        // — the phase itself is the gate; the agent is waiting correctly
+        ...(state.humanApproval !== undefined || state.humanConfirmationPending ? [] : ["HUMAN_APPROVAL_REQUIRED"]),
         ...requirementReasons
       ];
       return { status: "continue", reasons: missing, allowedActions: allowedRecoveryActions(state) };
@@ -419,6 +483,31 @@ export const reduceDataAnalysisAction = (
   }
   if (actionName === "task_write" || actionName === "task_update" || actionName === "task_complete") {
     return linkTasksToRequirements(state, result);
+  }
+  if (actionName === "human.confirmation.request") {
+    return {
+      ...state,
+      humanConfirmationPending: true,
+      humanApproval: undefined,
+      humanApprovalComment: recordString(result, "comment"),
+    };
+  }
+  if (actionName === "human.confirmation.granted") {
+    const approval = recordString(result, "approved");
+    return {
+      ...state,
+      humanConfirmationPending: false,
+      humanApproval: approval === "true" || approval === "yes" ? "approved" : "rejected",
+      humanApprovalComment: recordString(result, "comment"),
+    };
+  }
+  if (actionName === "human.confirmation.revised") {
+    return {
+      ...state,
+      humanConfirmationPending: false,
+      humanApproval: "revised",
+      humanApprovalComment: recordString(result, "comment"),
+    };
   }
   return state;
 };

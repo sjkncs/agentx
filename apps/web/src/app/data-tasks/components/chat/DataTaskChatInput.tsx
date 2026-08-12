@@ -36,6 +36,9 @@ import { useDataTaskChatInputBindings } from "./DataTaskChatInputBindingsContext
 import type { ChatSession, WorkspaceConfigStore } from "../../data-task-state";
 import type { QueuedChatPrompt } from "./queued-chat-runs";
 import { createChatTextareaKeyDownCaptureHandler } from "../../chat-textarea-submit";
+import { useLiveRun } from "../../use-data-foundry-run";
+import { ProtocolPhaseStepper } from "./protocol-phase-stepper";
+import { FollowUpSuggestionChips } from "./follow-up-suggestions";
 
 type DataTaskChatInputProps = CopilotChatInputProps & {
   llmOptions: WorkspaceConfigItem[];
@@ -258,8 +261,13 @@ function DataTaskChatInputLayout({
   sessionLockSlot?: ReactNode;
 }) {
   const t = useT();
-  const { chatColumnWidth, draftPromptRequest, onDraftPromptConsumed } =
-    useDataTaskChatInputBindings();
+  const liveRunSnapshot = useLiveRun();
+  const {
+    chatColumnWidth,
+    draftPromptRequest,
+    onDraftPromptConsumed,
+    onRequestDraftPrompt,
+  } = useDataTaskChatInputBindings();
   const chatInputWidth = resolveChatInputWidth(chatColumnWidth);
   const mention = useMentionAutocomplete({
     resources: mentionResources,
@@ -374,6 +382,17 @@ function DataTaskChatInputLayout({
           onEdit={onEditQueuedPrompt}
           onDelete={onDeleteQueuedPrompt}
           onSendNow={onSendQueuedPromptNow}
+        />
+        {liveRunSnapshot.liveRun.protocolDefinition && liveRunSnapshot.liveRun.protocolPhase ? (
+          <ProtocolPhaseStepper
+            definition={liveRunSnapshot.liveRun.protocolDefinition}
+            currentPhase={liveRunSnapshot.liveRun.protocolPhase}
+            runStatus={liveRunSnapshot.liveRun.runStatus}
+          />
+        ) : null}
+        <FollowUpSuggestionChips
+          liveRun={liveRunSnapshot.liveRun}
+          onPick={onRequestDraftPrompt}
         />
         {sessionLockSlot}
         {submitError ? (

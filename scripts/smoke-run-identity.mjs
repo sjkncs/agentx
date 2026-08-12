@@ -6,11 +6,13 @@ import {
   validateParentRun
 } from "../apps/api/dist/run-identity.js";
 import { resolveRunIdentity } from "../apps/api/dist/run-identity-orchestrator.js";
+import { RunCancelRegistry } from "../apps/api/dist/run-cancel-registry.js";
 import { RunEventWriter, createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createVerifiedTestIdentity } from "./lib/metadata-test-identity.mjs";
 
 const databasePath = `storage/metadata/run-identity-smoke-${Date.now()}.sqlite`;
 const store = createMetadataStore({ database_path: databasePath });
+const runCancelRegistry = new RunCancelRegistry();
 const __testIdentity = createVerifiedTestIdentity(store);
 const userId = __testIdentity.userId;
 const workspaceId = __testIdentity.workspaceId;
@@ -169,6 +171,7 @@ try {
     effectiveRunConfig,
     metadataStore: store,
     modelName: "identity-smoke-model",
+    runCancelRegistry,
     runEventWriter: writer,
     runInput: requestInput,
     userId,
@@ -189,6 +192,14 @@ try {
     user_input: "active query",
     status: "running"
   });
+  // Register a live cancel handle so orphan reclaim leaves this run alone;
+  // resolveLiveSessionActiveRun should then surface RUN_ALREADY_ACTIVE.
+  runCancelRegistry.register({
+    userId,
+    runId: activeRunId,
+    sessionId: activeSessionId,
+    cancel() {}
+  });
 
   assertThrows(
     () =>
@@ -196,6 +207,7 @@ try {
         effectiveRunConfig,
         metadataStore: store,
         modelName: "identity-smoke-model",
+        runCancelRegistry,
         runEventWriter: writer,
         runInput: {
           threadId: activeSessionId,

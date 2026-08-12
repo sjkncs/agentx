@@ -24,3 +24,5 @@ storage/
 !.env.example
 *.tsbuildinfo
 docs/public/assets/
+*.log
+.run/

@@ -2,6 +2,7 @@
 
 import { CopilotChatAssistantMessage, useAgent, useCopilotKit } from "@copilotkit/react-core/v2";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { useT } from "../../../../i18n/locale-context";
 import {
   btnPrimaryClass,
   btnSecondaryClass,
@@ -27,6 +28,15 @@ import {
   clearPendingCollaborationInterrupt,
   setPendingCollaborationInterrupt,
 } from "./pending-collaboration-interrupt";
+
+/** Humanize phase id for display (`pre_commit_review` -> `Pre Commit Review`). */
+function humanizePhaseId(phaseId: string): string {
+  return phaseId
+    .split(/[_\s-]+/u)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 type MastraInterrupt = {
   type?: string;
@@ -199,6 +209,9 @@ function AskUserPrompt({
   const [submitted, setSubmitted] = useState(false);
   const question = readQuestion(interrupt);
   const options = readOptions(interrupt);
+  const t = useT();
+  const { liveRun } = useLiveRun();
+  const currentPhase = liveRun.protocolPhase;
 
   const submit = useCallback(
     (value: unknown) => {
@@ -229,13 +242,21 @@ function AskUserPrompt({
       submitted,
       threadId,
       canResume,
+      t,
     ],
   );
 
   if (options.length > 0) {
     return (
       <CollaborationInterruptPanel data-testid="collaboration-interrupt-ask-user">
-        <div className={sectionLabelClass}>User Collaboration</div>
+        <div className="mb-1 flex items-center gap-2">
+          <p className={sectionLabelClass}>{t("hitl.askUserTitle")}</p>
+          {currentPhase && currentPhase !== "scope" && currentPhase !== "semantic_grounding" ? (
+            <span className="rounded-full border border-primary/40 bg-primary-light/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
+              {t("hitl.humanGate")} · {humanizePhaseId(currentPhase)}
+            </span>
+          ) : null}
+        </div>
         <p className="mt-1.5 text-sm font-medium leading-6 text-foreground">{question}</p>
         <ChoiceOptionList
           options={options}
@@ -248,7 +269,14 @@ function AskUserPrompt({
 
   return (
     <CollaborationInterruptPanel data-testid="collaboration-interrupt-ask-user">
-      <div className={sectionLabelClass}>User Collaboration</div>
+      <div className="mb-1 flex items-center gap-2">
+        <p className={sectionLabelClass}>{t("hitl.askUserTitle")}</p>
+        {currentPhase && currentPhase !== "scope" && currentPhase !== "semantic_grounding" ? (
+          <span className="rounded-full border border-primary/40 bg-primary-light/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">
+            {t("hitl.humanGate")} · {humanizePhaseId(currentPhase)}
+          </span>
+        ) : null}
+      </div>
       <p className="mt-1.5 text-sm font-medium text-foreground">{question}</p>
       <textarea
         value={answer}
@@ -256,7 +284,7 @@ function AskUserPrompt({
         rows={3}
         disabled={submitted}
         className="mt-3 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition-colors duration-150 focus:border-muted-light focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-60"
-        placeholder="Enter your answer..."
+        placeholder={t("hitl.answerPlaceholder")}
       />
       <div className="mt-3 flex justify-end">
         <button
@@ -265,7 +293,7 @@ function AskUserPrompt({
           disabled={submitted || !answer.trim()}
           onClick={() => submit(answer.trim())}
         >
-          Submit Answer
+          {t("hitl.submitAnswer")}
         </button>
       </div>
     </CollaborationInterruptPanel>
@@ -285,14 +313,20 @@ function SubmitPlanPrompt({
   agentId: string;
   canResume: boolean;
 }) {
+  const t = useT();
   const { recordResponse } = useCollaborationResponses();
   const { agent } = useAgent({ agentId });
+  const { liveRun } = useLiveRun();
   const [submitted, setSubmitted] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
   const title =
     typeof interrupt.args?.title === "string"
       ? interrupt.args.title
-      : "Execution Plan Approval";
+      : t("hitl.planApprovalTitle");
   const plan = readPlan(interrupt);
+  const currentPhase = liveRun.protocolPhase;
+  const isGatePhase = currentPhase === "clarify" || currentPhase === "pre_commit_review";
 
   const submit = (response: unknown) => {
     if (submitted || !canResume) return;
@@ -316,28 +350,77 @@ function SubmitPlanPrompt({
 
   return (
     <CollaborationInterruptPanel data-testid="collaboration-interrupt-submit-plan">
-      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <div className="mb-1 flex items-center gap-2">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {isGatePhase && currentPhase ? (
+          <span className="rounded-full border border-amber-300/60 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-600">
+            {t("hitl.humanGate")} · {humanizePhaseId(currentPhase)}
+          </span>
+        ) : null}
+      </div>
       {plan ? (
         <PlanMarkdown content={plan} />
       ) : null}
-      <div className="mt-3 flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
-          className={`hitl-action-btn-secondary ${btnSecondaryClass}`}
-          disabled={submitted}
-          onClick={() => submit({ action: "rejected", feedback: "Needs changes" })}
-        >
-          Reject
-        </button>
-        <button
-          type="button"
-          className={btnPrimaryClass}
-          disabled={submitted}
-          onClick={() => submit({ action: "approved" })}
-        >
-          Approve
-        </button>
-      </div>
+      {!feedbackOpen ? (
+        <div className="mt-3 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            className={`hitl-action-btn-secondary ${btnSecondaryClass}`}
+            disabled={submitted}
+            onClick={() => {
+              setFeedbackOpen(true);
+              // Keep focus on button until user decides
+            }}
+          >
+            {t("hitl.requestChanges")}
+          </button>
+          <button
+            type="button"
+            className={btnPrimaryClass}
+            disabled={submitted}
+            onClick={() => submit({ action: "approved" })}
+          >
+            {t("hitl.approve")}
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3 space-y-2">
+          <textarea
+            value={feedback}
+            onChange={(event) => setFeedback(event.target.value)}
+            rows={3}
+            disabled={submitted}
+            placeholder={t("hitl.feedbackPlaceholder")}
+            className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition-colors duration-150 focus:border-muted-light focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-60"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className={`hitl-action-btn-secondary ${btnSecondaryClass}`}
+              disabled={submitted}
+              onClick={() => {
+                setFeedbackOpen(false);
+                setFeedback("");
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              className={btnPrimaryClass}
+              disabled={submitted || (!feedback.trim())}
+              onClick={() => {
+                const payload = feedback.trim()
+                  ? { action: "rejected", feedback: feedback.trim() }
+                  : { action: "rejected", feedback: "Needs changes" };
+                submit(payload);
+              }}
+            >
+              {t("hitl.sendFeedback")}
+            </button>
+          </div>
+        </div>
+      )}
     </CollaborationInterruptPanel>
   );
 }

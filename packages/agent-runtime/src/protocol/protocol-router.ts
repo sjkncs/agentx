@@ -115,7 +115,7 @@ export class ProtocolRouter {
     }
     const defaultProtocol = this.options.defaultProtocol ?? {
       protocolId: "general-task",
-      protocolVersion: "1"
+      protocolVersion: "2"
     };
     if (input.authorizedProtocolIds.includes(defaultProtocol.protocolId)) {
       const definition = this.registry.find(defaultProtocol.protocolId, defaultProtocol.protocolVersion);

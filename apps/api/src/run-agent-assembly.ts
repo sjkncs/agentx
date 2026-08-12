@@ -23,6 +23,7 @@ import type { LongTermMemoryRecord } from "@datafoundry/metadata";
 import type { SkillRecord, SkillSelectionResult } from "@datafoundry/skills";
 
 import type { InteractionResume } from "./interaction-runtime-adapter.js";
+import { createLatsLlmApi } from "./lats-llm-adapter.js";
 import { createPolicyMcpTools } from "./policy-mcp-tools.js";
 import type { McpRuntime, ResolvedRunConfig } from "./run-config-resolver.js";
 import type { EffectiveRunConfig } from "./run-input.js";
@@ -162,6 +163,9 @@ export const createRunAgentAssembly = async (
     messages: input.messages,
     ...(input.modelContextProfile ? { modelContextProfile: input.modelContextProfile } : {}),
     modelProvider: input.modelProvider,
+    ...(isLatsEnabled()
+      ? { lats: { enabled: true, llm: createLatsLlmApi(input.modelProvider) } }
+      : {}),
     protocolStateStore: input.protocolStateStore,
     ...(input.effectiveRunConfig.resourceRevisions
       ? { resourceRevisions: input.effectiveRunConfig.resourceRevisions }
@@ -218,3 +222,9 @@ const resolveWorkspaceAttachments = (input: CreateRunAgentAssemblyInput): Worksp
       source_path: resolved.asset.storage_path
     };
   });
+
+/** Whether LATS tree-search tracking is enabled via environment configuration. */
+const isLatsEnabled = (): boolean => {
+  const raw = (process.env.DATAFOUNDRY_LATS_ENABLED ?? "").trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
+};

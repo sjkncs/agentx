@@ -40,6 +40,13 @@ export type ProtocolPhaseDefinition<TState> = {
   allowedActions: string[];
   actionGuards?: Record<string, ProtocolGuard<TState>[]>;
   transitions: ProtocolTransition<TState>[];
+  /**
+   * Natural-language brief for this phase, injected into the agent prompt.
+   * Follows the Anthropic "simple patterns over rigid frameworks" approach:
+   * the FSM below stays the guardrail, while this text steers the model by
+   * explaining the phase goal, what to do next, and any human gates.
+   */
+  guidance?: string;
 };
 
 export type AgentProtocolDefinition<TState = unknown> = {

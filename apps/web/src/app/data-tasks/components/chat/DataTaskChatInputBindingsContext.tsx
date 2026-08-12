@@ -45,6 +45,8 @@ export type DataTaskChatInputBindings = {
   onToggleSessionResource: (kind: PerRunMentionKind, id: string) => void;
   draftPromptRequest: DataTaskDraftPromptRequest | null;
   onDraftPromptConsumed: (id: number) => void;
+  /** Inject text into the composer (used by follow-up suggestion chips). */
+  onRequestDraftPrompt: (text: string) => void;
   chatColumnWidth: number;
   agentId: string;
   activeThreadId: string | null;

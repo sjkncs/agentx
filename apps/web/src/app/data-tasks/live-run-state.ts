@@ -156,6 +156,37 @@ export type LiveSessionTitle = {
   title: string;
 };
 
+export type LiveProtocolPhase = {
+  id: string;
+  guidance?: string;
+};
+
+/** Definition snapshot emitted by the protocol runtime at run start. */
+export type LiveProtocolDefinition = {
+  protocolId: string;
+  version?: string;
+  phases: LiveProtocolPhase[];
+};
+
+export type LiveTrajectoryNodeStatus = "active" | "failed" | "open";
+
+export type LiveTrajectoryNode = {
+  nodeId: string;
+  parentId: string | null;
+  depth: number;
+  status: LiveTrajectoryNodeStatus;
+  score: number | null;
+  reflection: string | null;
+  actions: string[];
+  failureReason?: string;
+};
+
+/** LATS tree-search snapshot for DAG rendering. */
+export type LiveTrajectory = {
+  currentNodeId: string;
+  nodes: LiveTrajectoryNode[];
+};
+
 export type LiveRunHistoryEntry = {
   startedAt?: number;
   finishedAt?: number;
@@ -187,6 +218,12 @@ export type LiveRun = {
   resolvedRunConfig?: LiveResolvedRunConfig;
   sessionTitle?: LiveSessionTitle;
   contextReports: LiveContextReport[];
+  /** Governed protocol definition for the current run (phase stepper source). */
+  protocolDefinition?: LiveProtocolDefinition;
+  /** Phase id of the latest protocol.phase.entered event. */
+  protocolPhase?: string;
+  /** LATS tree-search snapshot for branch DAG rendering (when LATS is enabled). */
+  trajectory?: LiveTrajectory;
   /** Completed run segments within the current chat thread. */
   runHistory?: LiveRunHistoryEntry[];
 };
@@ -413,6 +450,8 @@ export function reduceLiveRunEvent(state: LiveRun, event: AgUiLikeEvent): LiveRu
           resolvedRunConfig: undefined,
           skillSelection: undefined,
           goal: undefined,
+          protocolDefinition: undefined,
+          protocolPhase: undefined,
         };
       }
       return {
@@ -1165,7 +1204,81 @@ function reduceCustomEvent(state: LiveRun, event: AgUiLikeEvent): LiveRun {
     }
   }
 
+  if (event.name === "protocol.definition") {
+    const definition = parseProtocolDefinition(event.value);
+    return definition ? { ...state, protocolDefinition: definition } : state;
+  }
+
+  if (event.name === "protocol.phase.entered") {
+    const envelope = recordValue(event.value);
+    const payload = recordValue(envelope?.payload);
+    const phase = stringValue(payload?.phase);
+    return phase ? { ...state, protocolPhase: phase } : state;
+  }
+
+  if (event.name === "tree.snapshot") {
+    const trajectory = parseTrajectory(event.value);
+    return trajectory ? { ...state, trajectory } : state;
+  }
+
   return state;
+}
+
+function parseTrajectory(value: unknown): LiveTrajectory | undefined {
+  const record = recordValue(value);
+  if (!record) return undefined;
+  const currentNodeId = stringValue(record.currentNodeId);
+  if (!currentNodeId) return undefined;
+  const nodes = arrayValue(record.nodes)
+    .map((item) => {
+      const node = recordValue(item);
+      const nodeId = stringValue(node?.nodeId);
+      if (!nodeId) return undefined;
+      const status = stringValue(node?.status);
+      const typedStatus: LiveTrajectoryNodeStatus =
+        status === "active" || status === "failed" ? status : "open";
+      return {
+        nodeId,
+        parentId: stringValue(node?.parentId) ?? null,
+        depth: numberValue(node?.depth) ?? 0,
+        status: typedStatus,
+        score: numberValue(node?.score) ?? null,
+        reflection: stringValue(node?.reflection) ?? null,
+        actions: stringArrayValue(node?.actions),
+        ...(stringValue(node?.failureReason)
+          ? { failureReason: stringValue(node?.failureReason) }
+          : {}),
+      };
+    })
+    .filter((node): node is LiveTrajectoryNode => Boolean(node));
+  if (nodes.length === 0) return undefined;
+  return { currentNodeId, nodes };
+}
+
+function parseProtocolDefinition(value: unknown): LiveProtocolDefinition | undefined {
+  const envelope = recordValue(value);
+  // Protocol events stream as the full envelope; recovery replays the same shape.
+  const payload = recordValue(envelope?.payload) ?? envelope;
+  if (!payload) return undefined;
+  const protocolId =
+    stringValue(payload.protocolId) ?? stringValue(envelope?.protocolId);
+  if (!protocolId) return undefined;
+  const phases = arrayValue(payload.phases)
+    .map((item) => {
+      const phase = recordValue(item);
+      const id = stringValue(phase?.id);
+      if (!id) return undefined;
+      const guidance = stringValue(phase?.guidance);
+      return { id, ...(guidance ? { guidance } : {}) };
+    })
+    .filter((phase): phase is LiveProtocolPhase => Boolean(phase));
+  if (phases.length === 0) return undefined;
+  const version = stringValue(payload.version) ?? stringValue(envelope?.protocolVersion);
+  return {
+    protocolId,
+    ...(version ? { version } : {}),
+    phases,
+  };
 }
 
 function parseSkillSelection(value: unknown): LiveSkillSelection {
