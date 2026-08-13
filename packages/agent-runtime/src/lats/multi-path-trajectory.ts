@@ -184,8 +184,8 @@ export async function expandBranch(
     const childNodeId = `${currentNode.nodeId}/branch/${index}/${Date.now()}`;
     const childState = structuredClone(currentNode.currentState);
     
-    // Simulate execution (no actual tool call yet; just predict result)
-    const simulatedResult = await simulateActionExecution(candidateAction, childState);
+    // Simulate execution via the LLM world-model (no real tool call; predicts result).
+    const simulatedResult = await simulateActionExecution(candidateAction, childState, llm);
 
     const child: TrajectoryBranch = {
       nodeId: childNodeId,
@@ -347,21 +347,60 @@ export function backpropagateValueUpdates(trajectory: MultiPathTrajectory, leafN
 }
 
 /**
- * Simulated execution helper (does not call real tools).
- * Returns predicted state transition for tree expansion.
+ * World-model simulator: uses the LLM to predict the likely result and state
+ * transition of a candidate action WITHOUT executing the real tool. This is the
+ * "Simulate" step of LATS (rollout via a learned model rather than the environment).
+ * Falls back to a cheap heuristic when no LLM is available or the call fails, so
+ * tree expansion never blocks on simulation.
  */
-async function simulateActionExecution(action: ToolCall, state: AgentState): Promise<{
+async function simulateActionExecution(
+  action: ToolCall,
+  state: AgentState,
+  llm?: LLMAPI,
+): Promise<{
   state: AgentState;
   result: unknown;
   tokenUsage: { inputTokens: number; outputTokens: number };
 }> {
-  // TODO: Implement lightweight simulator using cached results or mock responses
-  // For now, return dummy prediction (replace with real logic later)
+  if (llm) {
+    try {
+      const prompt = [
+        "You are a world model simulating a data-analysis agent. Predict the likely outcome of the next action WITHOUT executing it.",
+        `Current phase: ${state.currentPhase ?? "unknown"}. Has error: ${Boolean(state.error)}.`,
+        `History length: ${state.conversationHistory?.length ?? 0} steps.`,
+        `Candidate action: ${action.name}(${JSON.stringify(action.args ?? {})})`,
+        'Respond with JSON only: {"success": true|false, "summary": "<one sentence likely result>", "progress": 0..1}',
+      ].join("\n");
+      const raw = await llm.call(prompt);
+      const parsed = JSON.parse(raw) as {
+        success?: boolean;
+        summary?: string;
+        progress?: number;
+      };
+      const summary = typeof parsed.summary === "string" ? parsed.summary : "simulated outcome";
+      const progress = clamp01(typeof parsed.progress === "number" ? parsed.progress : 0.5);
+      return {
+        state: { ...state, currentPhase: state.currentPhase, error: parsed.success === false ? summary : undefined },
+        result: { simulated: true, actionName: action.name, summary, success: parsed.success !== false },
+        tokenUsage: { inputTokens: Math.round(50 + summary.length / 4), outputTokens: Math.round(summary.length / 4) },
+        // progress surfaced via result for downstream scoring
+        ...{ progressHint: progress },
+      } as { state: AgentState; result: unknown; tokenUsage: { inputTokens: number; outputTokens: number } };
+    } catch {
+      // fall through to heuristic
+    }
+  }
+  // Heuristic fallback: assume read-only data actions succeed and advance progress slightly.
+  const readOnly = /inspect|list|preview|select|query|search|retrieve/i.test(action.name);
   return {
     state,
-    result: { mocked: true, actionName: action.name },
+    result: { simulated: true, actionName: action.name, success: readOnly, summary: readOnly ? "heuristic: likely success" : "heuristic: uncertain" },
     tokenUsage: { inputTokens: 10, outputTokens: 20 },
   };
+}
+
+function clamp01(v: number): number {
+  return Math.max(0, Math.min(1, v));
 }
 
 /**
