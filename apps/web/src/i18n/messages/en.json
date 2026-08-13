@@ -287,7 +287,8 @@
       "overview": "Overview",
       "trace": "Trace",
       "outputs": "Outputs",
-      "details": "Details"
+      "details": "Details",
+      "pool": "Task Pool"
     },
     "sections": {
       "summary": "Summary",

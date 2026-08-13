@@ -64,6 +64,7 @@ import { TrajectoryDag } from "./TrajectoryDag";
 import { MonitorPanel } from "./MonitorPanel";
 import { AwarenessPanel } from "./AwarenessPanel";
 import { WebSourcesPanel } from "./WebSourcesPanel";
+import { TaskPoolPanel } from "./TaskPoolPanel";
 import { ScheduledTasksPanel } from "./ScheduledTasksPanel";
 import { SkillMarketPanel } from "./SkillMarketPanel";
 import { EmbeddedTraceDag } from "./TraceOverlay";
@@ -98,7 +99,7 @@ import {
 
 type ActiveSelection = Exclude<TaskSelection, null>;
 
-type ConsoleTab = "overview" | "trace" | "outputs" | "detail";
+type ConsoleTab = "overview" | "trace" | "outputs" | "detail" | "pool";
 
 export type TaskConsoleProps = {
   artifacts: DataArtifact[];
@@ -306,6 +307,9 @@ export function TaskConsole({
         >
           {t("console.tabs.details")}
         </TabButton>
+        <TabButton active={activeTab === "pool"} onClick={() => handleTabClick("pool")}>
+          {t("console.tabs.pool")}
+        </TabButton>
       </nav>
 
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4">
@@ -402,6 +406,15 @@ export function TaskConsole({
               onAction={() => handleTabClick("overview")}
             />
           )
+        ) : null}
+
+        {activeTab === "pool" ? (
+          <TaskPoolPanel
+            liveRun={liveRun}
+            sessionUsage={sessionUsage}
+            skills={skills}
+            onToggleSkill={onToggleSkill}
+          />
         ) : null}
       </div>
     </section>

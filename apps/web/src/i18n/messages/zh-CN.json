@@ -287,7 +287,8 @@
       "overview": "概览",
       "trace": "追踪",
       "outputs": "输出",
-      "details": "详情"
+      "details": "详情",
+      "pool": "任务池"
     },
     "sections": {
       "summary": "摘要",
