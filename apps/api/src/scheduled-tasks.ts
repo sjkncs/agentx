@@ -1,5 +1,45 @@
 import type { AgUiEventEmitter } from "@datafoundry/agent-runtime";
 import { createCustomEvent } from "@datafoundry/agent-runtime";
+import { createSupabaseClient, type SupabaseScheduledTaskRow } from "./supabase.js";
+
+const supabase = createSupabaseClient();
+const loadedUsers = new Set<string>();
+
+function toRow(task: ScheduledTask): SupabaseScheduledTaskRow {
+  return {
+    id: task.id,
+    user_id: task.userId,
+    name: task.name,
+    prompt: task.prompt,
+    interval_minutes: task.intervalMinutes,
+    enabled: task.enabled,
+    created_at: task.createdAt,
+    next_run_at: task.nextRunAt,
+  };
+}
+
+function fromRow(row: SupabaseScheduledTaskRow): ScheduledTask {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    prompt: row.prompt,
+    intervalMinutes: row.interval_minutes,
+    enabled: row.enabled,
+    createdAt: row.created_at,
+    nextRunAt: row.next_run_at,
+  };
+}
+
+/** Load a user's tasks from Supabase into memory once (no-op when not configured). */
+export async function ensureTasksLoaded(userId: string): Promise<void> {
+  if (!supabase.enabled || loadedUsers.has(userId)) return;
+  const rows = await supabase.listTasks(userId);
+  for (const row of rows) {
+    if (!tasks.has(row.id)) tasks.set(row.id, fromRow(row));
+  }
+  loadedUsers.add(userId);
+}
 
 /**
  * Lightweight scheduled-task (cron) system for DataFoundry.
@@ -57,6 +97,7 @@ export function createScheduledTask(input: {
     nextRunAt: computeNextRun(now, input.intervalMinutes),
   };
   tasks.set(task.id, task);
+  void supabase.upsertTask(toRow(task));
   return task;
 }
 
@@ -64,6 +105,7 @@ export function deleteScheduledTask(userId: string, id: string): boolean {
   const task = tasks.get(id);
   if (!task || task.userId !== userId) return false;
   tasks.delete(id);
+  void supabase.deleteTask(id);
   return true;
 }
 
@@ -72,6 +114,7 @@ export function setScheduledTaskEnabled(userId: string, id: string, enabled: boo
   if (!task || task.userId !== userId) return null;
   task.enabled = enabled;
   if (enabled) task.nextRunAt = computeNextRun(Date.now(), task.intervalMinutes);
+  void supabase.upsertTask(toRow(task));
   return task;
 }
 
@@ -131,6 +174,7 @@ export async function handleScheduledTasksRequest(input: {
   const id = parts[4]; // /api/v1/scheduled-tasks/:id
 
   if (method === "GET" && !id) {
+    await ensureTasksLoaded(userId);
     return { status: 200, body: { success: true, data: { tasks: listScheduledTasks(userId) } } };
   }
 
