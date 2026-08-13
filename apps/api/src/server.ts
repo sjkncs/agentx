@@ -40,6 +40,7 @@ import { Observable } from "rxjs";
 import { handleConfigApiRequest } from "./config-api.js";
 import {
   handleScheduledTasksRequest,
+  onScheduledTaskDue,
   startScheduledTaskScheduler,
 } from "./scheduled-tasks.js";
 
@@ -247,6 +248,11 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     JSON.stringify(startupTimings),
   );
   startScheduledTaskScheduler();
+  onScheduledTaskDue((task) => {
+    console.log(
+      `[scheduled] task due: id=${task.id} name=${task.name} prompt=${task.prompt}`,
+    );
+  });
 
   const server = createHttpServer(async (request, response) => {
     try {

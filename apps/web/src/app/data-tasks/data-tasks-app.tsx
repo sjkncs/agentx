@@ -2359,6 +2359,8 @@ function DataTaskWorkspace({
               setSelection({ type: "toolGroup", id: groupId })
             }
             promotedArtifactIds={promotedArtifactIds}
+            skills={workspaceConfig.skill}
+            onToggleSkill={(id) => toggleSessionResourceItem("skill", id)}
           />
         </div>
       ) : null}
@@ -2393,6 +2395,8 @@ function DataTaskWorkspace({
           setSelection({ type: "toolGroup", id: groupId })
         }
         promotedArtifactIds={promotedArtifactIds}
+        skills={workspaceConfig.skill}
+        onToggleSkill={(id) => toggleSessionResourceItem("skill", id)}
       />
 
       <TraceOverlay

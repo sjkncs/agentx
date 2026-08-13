@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { EvidenceRef } from "@datafoundry/contracts";
-import type { DataArtifact, TimelineEvent } from "../../data-task-state";
+import type { DataArtifact, TimelineEvent, WorkspaceConfigItem } from "../../data-task-state";
 import type { JobDto } from "../../../../lib/config-api";
 import type { LiveRun, SessionUsageStats } from "../../live-run-state";
 import type { ProcessToolGroup } from "../../process-tool-groups";
@@ -32,6 +32,8 @@ type TaskConsoleDrawerProps = {
   onSelectEvent: (eventId: string) => void;
   onSelectToolGroup: (groupId: string) => void;
   promotedArtifactIds?: ReadonlySet<string>;
+  skills?: WorkspaceConfigItem[];
+  onToggleSkill?: (id: string) => void;
 };
 
 export function TaskConsoleDrawer({
@@ -58,6 +60,8 @@ export function TaskConsoleDrawer({
   onSelectEvent,
   onSelectToolGroup,
   promotedArtifactIds,
+  skills,
+  onToggleSkill,
 }: TaskConsoleDrawerProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -105,6 +109,8 @@ export function TaskConsoleDrawer({
           onSelectEvent={onSelectEvent}
           onSelectToolGroup={onSelectToolGroup}
           promotedArtifactIds={promotedArtifactIds}
+          skills={skills}
+          onToggleSkill={onToggleSkill}
         />
       </div>
     </div>
