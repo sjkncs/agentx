@@ -39,6 +39,7 @@ import { createChatTextareaKeyDownCaptureHandler } from "../../chat-textarea-sub
 import { useLiveRun } from "../../use-data-foundry-run";
 import { ProtocolPhaseStepper } from "./protocol-phase-stepper";
 import { FollowUpSuggestionChips } from "./follow-up-suggestions";
+import { ScreenshotAnnotator } from "../annotation/ScreenshotAnnotator";
 
 type DataTaskChatInputProps = CopilotChatInputProps & {
   llmOptions: WorkspaceConfigItem[];
@@ -262,6 +263,7 @@ function DataTaskChatInputLayout({
 }) {
   const t = useT();
   const liveRunSnapshot = useLiveRun();
+  const [annotateOpen, setAnnotateOpen] = useState(false);
   const {
     chatColumnWidth,
     draftPromptRequest,
@@ -497,6 +499,18 @@ function DataTaskChatInputLayout({
                     onChange={attachmentsApi.handleFileUpload}
                   />
                   <ChatAddMenu actions={addActions} />
+                  <button
+                    type="button"
+                    title={t("annotate.open")}
+                    aria-label={t("annotate.open")}
+                    onClick={() => setAnnotateOpen(true)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-md text-muted transition-colors hover:bg-surface-subtle hover:text-foreground"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 5h3l1.5-2h5.5v8H3z" />
+                      <path d="M5 10l2.5-3 2 2.5L11 8l2 2.5" />
+                    </svg>
+                  </button>
                 </div>
               }
               trailing={
@@ -515,6 +529,7 @@ function DataTaskChatInputLayout({
         </div>
       </div>
       {showDisclaimer ? disclaimer : null}
+      <ScreenshotAnnotator open={annotateOpen} onClose={() => setAnnotateOpen(false)} />
     </div>
   );
 }

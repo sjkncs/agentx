@@ -145,6 +145,24 @@
   "webSources": {
     "title": "网络来源"
   },
+  "annotate": {
+    "title": "截图标注",
+    "open": "截图标注",
+    "pen": "画笔",
+    "highlight": "荧光笔",
+    "rect": "矩形",
+    "arrow": "箭头",
+    "select": "选择",
+    "undo": "撤销",
+    "redo": "重做",
+    "clear": "清空",
+    "copy": "复制",
+    "download": "下载",
+    "recapture": "重新截取",
+    "capturing": "截取中…",
+    "close": "关闭",
+    "captureDenied": "截屏被拒绝或不可用。你仍可在空白画布上绘制。"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",

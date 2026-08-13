@@ -145,6 +145,24 @@
   "webSources": {
     "title": "Web Sources"
   },
+  "annotate": {
+    "title": "Screenshot Annotator",
+    "open": "Screenshot & annotate",
+    "pen": "Pen",
+    "highlight": "Highlight",
+    "rect": "Box",
+    "arrow": "Arrow",
+    "select": "Select",
+    "undo": "Undo",
+    "redo": "Redo",
+    "clear": "Clear",
+    "copy": "Copy",
+    "download": "Download",
+    "recapture": "Re-capture",
+    "capturing": "Capturing…",
+    "close": "Close",
+    "captureDenied": "Screen capture was denied or unavailable. You can still draw on a blank canvas."
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",
