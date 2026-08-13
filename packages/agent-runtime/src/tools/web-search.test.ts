@@ -4,6 +4,17 @@ import { createWebSearchTool } from "./web-search.js";
 
 type EmittedEvent = { type?: string; name?: string; value?: unknown };
 
+type WebSearchResultShape = {
+  provider: string;
+  count: number;
+  results: Array<{ title: string; url?: string; snippet: string }>;
+};
+type ExecutableTool = { execute: (i: unknown, c?: unknown) => Promise<WebSearchResultShape> };
+
+function run(tool: unknown, input: unknown): Promise<WebSearchResultShape> {
+  return (tool as unknown as ExecutableTool).execute(input, {});
+}
+
 function makeEmitter() {
   const events: EmittedEvent[] = [];
   return {
@@ -46,21 +57,18 @@ describe("web_search tool", () => {
     const { emitter, events } = makeEmitter();
     const tool = createWebSearchTool({ emitter, provider: "tavily", apiKey: "tvly-test" });
 
-    const result = await (tool as { execute: (i: unknown, c?: unknown) => Promise<never> }).execute(
-      { query: "oladipo 2026" },
-      {},
-    );
+    const result = await run(tool, { query: "oladipo 2026" });
 
     expect(result.provider).toBe("tavily");
     expect(result.count).toBe(3);
     // url-less / title fallback handled
-    expect(result.results[2].title).toBe("https://no-title.example");
+    expect(result.results[2]?.title).toBe("https://no-title.example");
 
     const emitted = events.find((e) => e.name === "web.search.results");
     expect(emitted).toBeDefined();
     const value = emitted!.value as { sources: Array<{ index: number; url: string }> };
     expect(value.sources.map((s) => s.index)).toEqual([1, 2, 3]);
-    expect(value.sources[0].url).toBe("https://a.example");
+    expect(value.sources[0]?.url).toBe("https://a.example");
   });
 
   it("duckduckgo provider parses abstract + related topics, dropping url-less entries", async () => {
@@ -74,15 +82,12 @@ describe("web_search tool", () => {
     const { emitter, events } = makeEmitter();
     const tool = createWebSearchTool({ emitter, provider: "duckduckgo" });
 
-    const result = await (tool as { execute: (i: unknown, c?: unknown) => Promise<never> }).execute(
-      { query: "oladipo" },
-      {},
-    );
+    const result = await run(tool, { query: "oladipo" });
 
     expect(result.provider).toBe("duckduckgo");
     // abstract + 1 related topic with url (the url-less topic dropped)
     expect(result.count).toBe(2);
-    expect(result.results[0].url).toBe("https://en.wikipedia.org/wiki/Victor_Oladipo");
+    expect(result.results[0]?.url).toBe("https://en.wikipedia.org/wiki/Victor_Oladipo");
 
     const emitted = events.find((e) => e.name === "web.search.results");
     expect(emitted).toBeDefined();
@@ -98,10 +103,7 @@ describe("web_search tool", () => {
     const { emitter } = makeEmitter();
     const tool = createWebSearchTool({ emitter, provider: "duckduckgo" });
 
-    const result = await (tool as { execute: (i: unknown, c?: unknown) => Promise<never> }).execute(
-      { query: "anything" },
-      {},
-    );
+    const result = await run(tool, { query: "anything" });
     expect(result.count).toBe(0);
     expect(result.results).toEqual([]);
   });

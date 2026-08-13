@@ -223,8 +223,9 @@ const resolveWorkspaceAttachments = (input: CreateRunAgentAssemblyInput): Worksp
     };
   });
 
-/** Whether LATS tree-search tracking is enabled via environment configuration. */
+/** Whether LATS tree-search tracking is enabled. On by default (opt-out). */
 const isLatsEnabled = (): boolean => {
   const raw = (process.env.DATAFOUNDRY_LATS_ENABLED ?? "").trim().toLowerCase();
-  return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
+  if (raw === "0" || raw === "false" || raw === "no" || raw === "off") return false;
+  return true;
 };
