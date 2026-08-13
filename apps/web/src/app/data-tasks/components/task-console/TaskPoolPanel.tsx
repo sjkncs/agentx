@@ -8,6 +8,7 @@ import { MonitorPanel } from "./MonitorPanel";
 import { ScheduledTasksPanel } from "./ScheduledTasksPanel";
 import { SkillMarketPanel } from "./SkillMarketPanel";
 import { WebSourcesPanel } from "./WebSourcesPanel";
+import { RetrievalInspector } from "./RetrievalInspector";
 
 /**
  * Unified Task Pool view: aggregates automation (scheduled tasks), capabilities
@@ -42,6 +43,7 @@ export function TaskPoolPanel({
         <SkillMarketPanel skills={skills} onToggle={onToggleSkill} />
       ) : null}
       <WebSourcesPanel liveRun={liveRun} />
+      <RetrievalInspector liveRun={liveRun} />
     </div>
   );
 }

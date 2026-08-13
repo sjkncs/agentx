@@ -164,6 +164,12 @@
     "close": "Close",
     "captureDenied": "Screen capture was denied or unavailable. You can still draw on a blank canvas."
   },
+  "inspector": {
+    "title": "Retrieval Inspector",
+    "web": "Web",
+    "kb": "Knowledge",
+    "untitled": "(retrieval)"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",

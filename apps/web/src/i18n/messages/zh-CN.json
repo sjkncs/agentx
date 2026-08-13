@@ -164,6 +164,12 @@
     "close": "关闭",
     "captureDenied": "截屏被拒绝或不可用。你仍可在空白画布上绘制。"
   },
+  "inspector": {
+    "title": "检索检视器",
+    "web": "网络",
+    "kb": "知识库",
+    "untitled": "（检索）"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",
