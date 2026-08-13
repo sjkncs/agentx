@@ -142,6 +142,9 @@
     "enable": "Enable",
     "disable": "Disable"
   },
+  "webSources": {
+    "title": "Web Sources"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",

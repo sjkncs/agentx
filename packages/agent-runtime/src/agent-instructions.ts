@@ -272,6 +272,12 @@ export const buildAgentInstructions = (input: AgentInstructionsInput): string =>
     );
   }
   policies.push(
+    "When the question needs external or current information beyond the connected datasources, call web_search to "
+      + "retrieve open-web sources. Synthesize across multiple sources rather than relying on a single result, and "
+      + "cite them inline as [source:n] where n matches the index in the returned source list. Prefer combining web "
+      + "evidence with internal data when both are relevant."
+  );
+  policies.push(
     "Reply in the same natural language as the user's latest request. If the user mixes languages, use the dominant "
       + "language from the request. Keep SQL, code, table names, column names, and other technical identifiers "
       + "unchanged."

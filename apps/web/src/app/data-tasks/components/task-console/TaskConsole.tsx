@@ -63,6 +63,7 @@ import { TraceList } from "./TraceList";
 import { TrajectoryDag } from "./TrajectoryDag";
 import { MonitorPanel } from "./MonitorPanel";
 import { AwarenessPanel } from "./AwarenessPanel";
+import { WebSourcesPanel } from "./WebSourcesPanel";
 import { ScheduledTasksPanel } from "./ScheduledTasksPanel";
 import { SkillMarketPanel } from "./SkillMarketPanel";
 import { EmbeddedTraceDag } from "./TraceOverlay";
@@ -339,6 +340,7 @@ export function TaskConsole({
             {liveRun.trajectory ? <TrajectoryDag trajectory={liveRun.trajectory} /> : null}
             <MonitorPanel liveRun={liveRun} sessionUsage={sessionUsage} />
             <AwarenessPanel liveRun={liveRun} />
+            <WebSourcesPanel liveRun={liveRun} />
             <ScheduledTasksPanel />
             {skills && onToggleSkill ? (
               <SkillMarketPanel skills={skills} onToggle={onToggleSkill} />

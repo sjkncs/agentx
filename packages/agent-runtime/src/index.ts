@@ -62,6 +62,7 @@ import {
 import { GoalRuntimeAdapter, type GoalRequest } from "./memory/goal-runtime-adapter.js";
 import { createDataFoundryToolRegistry } from "./tools/data-tools.js";
 import { GovernedToolFactory, type GovernedToolErrorHandler } from "./tools/governed-tool-factory.js";
+import { createWebSearchTool } from "./tools/web-search.js";
 import { LatsRuntime } from "./lats/lats-runtime.js";
 import type { LLMAPI } from "./lats/multi-path-trajectory.js";
 import {
@@ -506,12 +507,14 @@ export const createDataFoundry = async (
     ...taskTools,
     ...collaborationTools,
     ...workspaceTools,
-    ...skillTools
+    ...skillTools,
+    web_search: createWebSearchTool({ emitter: input.emitter })
   };
   // Platform tools for enabled KB / datasources must survive skill allowed-tools
   // unions: maxSkills truncation often leaves import-oriented skills that never
   // declare retrieve_knowledge or SQL tools.
   const alwaysAllowTools = new Set<string>();
+  alwaysAllowTools.add("web_search");
   if ((input.runContext.enabled_knowledge_ids?.length ?? 0) > 0) {
     alwaysAllowTools.add("retrieve_knowledge");
   }

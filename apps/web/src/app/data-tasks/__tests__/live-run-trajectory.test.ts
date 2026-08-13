@@ -31,6 +31,35 @@ describe("live-run-state awareness (memory events)", () => {
   });
 });
 
+describe("live-run-state web sources (citation tracing)", () => {
+  it("populates webSources from web.search.results, dropping url-less entries", () => {
+    const state = reduceLiveRunEvent(createInitialLiveRun(), {
+      type: "CUSTOM",
+      name: "web.search.results",
+      value: {
+        query: "q",
+        provider: "duckduckgo",
+        sources: [
+          { index: 1, title: "A", url: "https://a.example", snippet: "sa" },
+          { index: 2, title: "B", snippet: "no-url" },
+          { index: 3, title: "C", url: "https://c.example", snippet: "sc" },
+        ],
+      },
+    });
+    expect(state.webSources?.map((s) => s.index)).toEqual([1, 3]);
+    expect(state.webSources?.[0]?.url).toBe("https://a.example");
+  });
+
+  it("leaves webSources undefined when no valid sources", () => {
+    const state = reduceLiveRunEvent(createInitialLiveRun(), {
+      type: "CUSTOM",
+      name: "web.search.results",
+      value: { sources: [] },
+    });
+    expect(state.webSources).toBeUndefined();
+  });
+});
+
 /**
  * Mirrors the exact AG-UI CUSTOM event shape produced by the backend
  * `createCustomEvent("tree.snapshot", snapshot)` (see packages/agent-runtime

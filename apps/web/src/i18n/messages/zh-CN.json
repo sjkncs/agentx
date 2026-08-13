@@ -142,6 +142,9 @@
     "enable": "启用",
     "disable": "停用"
   },
+  "webSources": {
+    "title": "网络来源"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",

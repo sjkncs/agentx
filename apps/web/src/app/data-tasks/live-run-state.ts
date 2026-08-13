@@ -194,6 +194,13 @@ export type LiveMemoryEvent = {
   receivedAt: number;
 };
 
+export type LiveWebSource = {
+  index: number;
+  title: string;
+  url: string;
+  snippet: string;
+};
+
 export type LiveRunHistoryEntry = {
   startedAt?: number;
   finishedAt?: number;
@@ -231,6 +238,8 @@ export type LiveRun = {
   protocolPhase?: string;
   /** Long-term memory events emitted by the backend during runs (for awareness UI). */
   memoryEvents?: LiveMemoryEvent[];
+  /** External web sources retrieved via web_search (for citation tracing). */
+  webSources?: LiveWebSource[];
   /** LATS tree-search snapshot for branch DAG rendering (when LATS is enabled). */
   trajectory?: LiveTrajectory;
   /** Completed run segments within the current chat thread. */
@@ -1243,6 +1252,24 @@ function reduceCustomEvent(state: LiveRun, event: AgUiLikeEvent): LiveRun {
       ...state,
       memoryEvents: [memoryEvent, ...(state.memoryEvents ?? [])].slice(0, 20),
     };
+  }
+
+  if (event.name === "web.search.results") {
+    const value = recordValue(event.value);
+    const sources = arrayValue(value?.sources)
+      .map((item) => {
+        const s = recordValue(item);
+        const url = stringValue(s?.url);
+        if (!url) return undefined;
+        return {
+          index: numberValue(s?.index) ?? 0,
+          title: stringValue(s?.title) ?? url,
+          url,
+          snippet: stringValue(s?.snippet) ?? "",
+        };
+      })
+      .filter((s): s is LiveWebSource => Boolean(s));
+    return sources.length > 0 ? { ...state, webSources: sources } : state;
   }
 
   return state;
