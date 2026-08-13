@@ -96,6 +96,52 @@
     "root": "Start",
     "reflection": "Reflection"
   },
+  "monitor": {
+    "title": "Task Monitor",
+    "health": "Run health",
+    "usage": "Resource usage",
+    "runs": "Runs",
+    "tokens": "Tokens",
+    "tools": "Tool calls",
+    "sql": "SQL",
+    "needsAction": "Needs action",
+    "waitingHuman": "Waiting for your confirmation",
+    "noAction": "No pending action",
+    "status": {
+      "idle": "Idle",
+      "running": "Running",
+      "suspended": "Awaiting input",
+      "completed": "Completed",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    }
+  },
+  "awareness": {
+    "title": "Awareness",
+    "memories": "Long-term memories",
+    "empty": "No memories extracted yet. Completed runs distill long-term memories here.",
+    "extracted": "Extracted {{count}} memories"
+  },
+  "scheduled": {
+    "title": "Scheduled Tasks",
+    "empty": "No scheduled tasks. Create one to run analysis on a timer.",
+    "add": "New scheduled task",
+    "name": "Name",
+    "cron": "Cron expression",
+    "prompt": "Question to run",
+    "nextRun": "Next run",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "delete": "Delete"
+  },
+  "market": {
+    "title": "Skill Market",
+    "installed": "Installed",
+    "builtin": "Built-in",
+    "enabled": "Enabled",
+    "enable": "Enable",
+    "disable": "Disable"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",

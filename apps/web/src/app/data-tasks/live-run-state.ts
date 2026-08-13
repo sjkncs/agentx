@@ -187,6 +187,13 @@ export type LiveTrajectory = {
   nodes: LiveTrajectoryNode[];
 };
 
+export type LiveMemoryEvent = {
+  count: number;
+  memoryIds: string[];
+  source?: string;
+  receivedAt: number;
+};
+
 export type LiveRunHistoryEntry = {
   startedAt?: number;
   finishedAt?: number;
@@ -222,6 +229,8 @@ export type LiveRun = {
   protocolDefinition?: LiveProtocolDefinition;
   /** Phase id of the latest protocol.phase.entered event. */
   protocolPhase?: string;
+  /** Long-term memory events emitted by the backend during runs (for awareness UI). */
+  memoryEvents?: LiveMemoryEvent[];
   /** LATS tree-search snapshot for branch DAG rendering (when LATS is enabled). */
   trajectory?: LiveTrajectory;
   /** Completed run segments within the current chat thread. */
@@ -1219,6 +1228,21 @@ function reduceCustomEvent(state: LiveRun, event: AgUiLikeEvent): LiveRun {
   if (event.name === "tree.snapshot") {
     const trajectory = parseTrajectory(event.value);
     return trajectory ? { ...state, trajectory } : state;
+  }
+
+  if (event.name === "memory.long-term.extracted") {
+    const value = recordValue(event.value);
+    const count = numberValue(value?.count) ?? 0;
+    const memoryEvent: LiveMemoryEvent = {
+      count,
+      memoryIds: stringArrayValue(value?.memory_ids),
+      ...(stringValue(value?.source) ? { source: stringValue(value?.source) } : {}),
+      receivedAt: Date.now(),
+    };
+    return {
+      ...state,
+      memoryEvents: [memoryEvent, ...(state.memoryEvents ?? [])].slice(0, 20),
+    };
   }
 
   return state;

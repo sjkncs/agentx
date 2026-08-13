@@ -20,6 +20,7 @@ import type {
   DataArtifact,
   GenericStepPayload,
   TimelineEvent,
+  WorkspaceConfigItem,
 } from "../../data-task-state";
 import type { JobDto } from "../../../../lib/config-api";
 import { configApi } from "../../../../lib/config-api";
@@ -60,6 +61,10 @@ import {
 import { RunConfigurationPanel } from "./RunConfigurationPanel";
 import { TraceList } from "./TraceList";
 import { TrajectoryDag } from "./TrajectoryDag";
+import { MonitorPanel } from "./MonitorPanel";
+import { AwarenessPanel } from "./AwarenessPanel";
+import { ScheduledTasksPanel } from "./ScheduledTasksPanel";
+import { SkillMarketPanel } from "./SkillMarketPanel";
 import { EmbeddedTraceDag } from "./TraceOverlay";
 import { ArtifactMarkdownPreview } from "./ArtifactMarkdownPreview";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
@@ -120,6 +125,8 @@ export type TaskConsoleProps = {
   promotedArtifactIds?: ReadonlySet<string>;
   sessionId?: string;
   onCreateCheckpointBranch?: (checkpointId: string) => Promise<void> | void;
+  skills?: WorkspaceConfigItem[];
+  onToggleSkill?: (id: string) => void;
 };
 
 function runStatusLabel(status: LiveRun["runStatus"], t: ReturnType<typeof useT>): string {
@@ -184,6 +191,8 @@ export function TaskConsole({
   promotedArtifactIds,
   sessionId,
   onCreateCheckpointBranch,
+  skills,
+  onToggleSkill,
 }: TaskConsoleProps) {
   const t = useT();
   const [activeTab, setActiveTab] = useState<ConsoleTab>("overview");
@@ -328,6 +337,12 @@ export function TaskConsole({
               return <ToolDistributionZone key={section.id} liveRun={liveRun} />;
             })}
             {liveRun.trajectory ? <TrajectoryDag trajectory={liveRun.trajectory} /> : null}
+            <MonitorPanel liveRun={liveRun} sessionUsage={sessionUsage} />
+            <AwarenessPanel liveRun={liveRun} />
+            <ScheduledTasksPanel />
+            {skills && onToggleSkill ? (
+              <SkillMarketPanel skills={skills} onToggle={onToggleSkill} />
+            ) : null}
           </div>
         ) : null}
 

@@ -38,6 +38,29 @@ import { fileURLToPath } from "node:url";
 import { Observable } from "rxjs";
 
 import { handleConfigApiRequest } from "./config-api.js";
+import {
+  handleScheduledTasksRequest,
+  startScheduledTaskScheduler,
+} from "./scheduled-tasks.js";
+
+function readJsonBody(request: import("node:http").IncomingMessage): Promise<Record<string, unknown> | undefined> {
+  return new Promise((resolve) => {
+    let raw = "";
+    request.on("data", (chunk) => {
+      raw += chunk;
+      if (raw.length > 1_000_000) request.destroy();
+    });
+    request.on("end", () => {
+      try {
+        resolve(raw ? (JSON.parse(raw) as Record<string, unknown>) : undefined);
+      } catch {
+        resolve(undefined);
+      }
+    });
+    request.on("error", () => resolve(undefined));
+  });
+}
+
 import { createAsyncMemoByKey, createStartupTimer } from "./async-memo.js";
 import { ensureBuiltinDtcGrowthDatasource } from "./builtin-dtc-growth-datasource.js";
 import { reclaimOrphanedQueuedAndRunningRuns } from "./stale-active-runs.js";
@@ -223,6 +246,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     `[startup] createServer ready in ${startupTotalMs}ms`,
     JSON.stringify(startupTimings),
   );
+  startScheduledTaskScheduler();
 
   const server = createHttpServer(async (request, response) => {
     try {
@@ -279,6 +303,25 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         authContext.user.id,
         authContext.workspaceId,
       );
+
+      const scheduledBody =
+        request.method === "POST" || request.method === "PATCH"
+          ? await readJsonBody(request)
+          : undefined;
+      const scheduledResponse = await handleScheduledTasksRequest({
+        method: request.method ?? "GET",
+        pathname: requestUrl.pathname,
+        userId: authContext.user.id,
+        ...(scheduledBody ? { body: scheduledBody } : {}),
+      });
+      if (scheduledResponse) {
+        response.writeHead(scheduledResponse.status, {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        });
+        response.end(JSON.stringify(scheduledResponse.body));
+        return;
+      }
 
       const configResponse = await handleConfigApiRequest(request, requestUrl.pathname, {
         dataGateway,

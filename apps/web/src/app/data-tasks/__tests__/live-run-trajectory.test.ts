@@ -5,6 +5,32 @@ import {
   reduceLiveRunEvent,
 } from "../live-run-state";
 
+describe("live-run-state awareness (memory events)", () => {
+  it("populates memoryEvents from memory.long-term.extracted", () => {
+    const state = reduceLiveRunEvent(createInitialLiveRun(), {
+      type: "CUSTOM",
+      name: "memory.long-term.extracted",
+      value: { count: 2, memory_ids: ["m1", "m2"], source: "completed-run" },
+    });
+    expect(state.memoryEvents).toHaveLength(1);
+    expect(state.memoryEvents?.[0]?.count).toBe(2);
+    expect(state.memoryEvents?.[0]?.memoryIds).toEqual(["m1", "m2"]);
+    expect(state.memoryEvents?.[0]?.source).toBe("completed-run");
+  });
+
+  it("caps memoryEvents at 20", () => {
+    let state = createInitialLiveRun();
+    for (let i = 0; i < 25; i++) {
+      state = reduceLiveRunEvent(state, {
+        type: "CUSTOM",
+        name: "memory.long-term.extracted",
+        value: { count: 1, memory_ids: [`m${i}`] },
+      });
+    }
+    expect(state.memoryEvents?.length).toBe(20);
+  });
+});
+
 /**
  * Mirrors the exact AG-UI CUSTOM event shape produced by the backend
  * `createCustomEvent("tree.snapshot", snapshot)` (see packages/agent-runtime

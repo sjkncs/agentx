@@ -96,6 +96,52 @@
     "root": "起点",
     "reflection": "反思"
   },
+  "monitor": {
+    "title": "任务监控",
+    "health": "运行健康",
+    "usage": "资源用量",
+    "runs": "运行次数",
+    "tokens": "令牌",
+    "tools": "工具调用",
+    "sql": "SQL",
+    "needsAction": "需要处理",
+    "waitingHuman": "等待你的确认",
+    "noAction": "暂无待处理",
+    "status": {
+      "idle": "空闲",
+      "running": "运行中",
+      "suspended": "等待输入",
+      "completed": "已完成",
+      "failed": "失败",
+      "canceled": "已取消"
+    }
+  },
+  "awareness": {
+    "title": "意识",
+    "memories": "长期记忆",
+    "empty": "暂无记忆。完成的运行会在此沉淀长期记忆。",
+    "extracted": "提取了 {{count}} 条记忆"
+  },
+  "scheduled": {
+    "title": "定时任务",
+    "empty": "暂无定时任务。创建一个以按定时运行分析。",
+    "add": "新建定时任务",
+    "name": "名称",
+    "cron": "Cron 表达式",
+    "prompt": "要运行的问题",
+    "nextRun": "下次运行",
+    "enabled": "已启用",
+    "disabled": "已停用",
+    "delete": "删除"
+  },
+  "market": {
+    "title": "技能市场",
+    "installed": "已安装",
+    "builtin": "内置",
+    "enabled": "已启用",
+    "enable": "启用",
+    "disable": "停用"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",
