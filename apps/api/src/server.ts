@@ -248,11 +248,65 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     JSON.stringify(startupTimings),
   );
   startScheduledTaskScheduler();
-  onScheduledTaskDue((task) => {
-    console.log(
-      `[scheduled] task due: id=${task.id} name=${task.name} prompt=${task.prompt}`,
-    );
-  });
+  onScheduledTaskDue((task) => launchScheduledRun(task));
+
+  /**
+   * Headless executor for scheduled tasks: builds the same DataFoundryAgUiAgent used by
+   * the CopilotKit endpoint and drains its AG-UI event stream so the run executes
+   * server-side without a browser client.
+   */
+  function launchScheduledRun(task: import("./scheduled-tasks.js").ScheduledTask): void {
+    const user: MeResponse = { id: task.userId };
+    const workspaceId = "default";
+    const agent = new DataFoundryAgUiAgent({
+      dataGateway,
+      artifactService,
+      sessionOutputService,
+      fileAssetService,
+      conversationMemoryMode,
+      knowledgeService,
+      memoryExtractionTimeoutMs: 60_000,
+      metadataStore,
+      runCancelRegistry,
+      taskStateRuntime,
+      user,
+      workspaceId,
+      workspaceRoot:
+        process.env.WORKSPACE_ROOT ??
+        join(process.env.STORAGE_ROOT_DIR ?? "storage", "workspaces"),
+    });
+
+    const threadId = `sched-${task.id}-${Date.now().toString(36)}`;
+    const runInput: RunAgentInput = {
+      threadId,
+      runId: `run-${task.id}-${Date.now().toString(36)}`,
+      messages: [
+        { id: `${threadId}-m1`, role: "user", content: task.prompt },
+      ],
+      state: {},
+      tools: [],
+      context: [],
+      forwardedProps: {},
+    } as RunAgentInput;
+
+    let eventCount = 0;
+    agent.run(runInput).subscribe({
+      next: (event) => {
+        eventCount += 1;
+        if (event.type === EventType.RUN_FINISHED || event.type === EventType.RUN_ERROR) {
+          console.log(
+            `[scheduled] run ${event.type === EventType.RUN_FINISHED ? "finished" : "failed"}: task=${task.id} thread=${threadId} events=${eventCount}`,
+          );
+        }
+      },
+      error: (error) => {
+        console.log(`[scheduled] run error: task=${task.id} error=${String(error)}`);
+      },
+      complete: () => {
+        console.log(`[scheduled] run complete: task=${task.id} thread=${threadId} events=${eventCount}`);
+      },
+    });
+  }
 
   const server = createHttpServer(async (request, response) => {
     try {
