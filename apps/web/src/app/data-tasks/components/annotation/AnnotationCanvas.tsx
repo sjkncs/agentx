@@ -33,9 +33,11 @@ function drawElement(ctx: CanvasRenderingContext2D, el: AnnotationElement) {
     ctx.beginPath();
     el.points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
     ctx.stroke();
-  } else if (el.tool === "rect") {
+  } else if (el.tool === "rect" || el.tool === "crop") {
     const bb = boundingBox(el);
+    if (el.tool === "crop") ctx.setLineDash([6, 4]);
     ctx.strokeRect(bb.x0, bb.y0, bb.x1 - bb.x0, bb.y1 - bb.y0);
+    ctx.setLineDash([]);
   } else if (el.tool === "arrow") {
     ctx.beginPath();
     ctx.moveTo(el.start.x, el.start.y);
@@ -58,7 +60,13 @@ function drawElement(ctx: CanvasRenderingContext2D, el: AnnotationElement) {
  * drag to move elements, undo/redo/clear, copy to clipboard, download PNG.
  * Renders an optional base image (e.g. a captured screenshot) underneath.
  */
-export function AnnotationCanvas({ image }: { image: HTMLImageElement | null }) {
+export function AnnotationCanvas({
+  image,
+  onCropped,
+}: {
+  image: HTMLImageElement | null;
+  onCropped?: (img: HTMLImageElement) => void;
+}) {
   const t = useT();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [history, setHistory] = useState<AnnotationHistory>(createHistory);
@@ -130,6 +138,32 @@ export function AnnotationCanvas({ image }: { image: HTMLImageElement | null }) 
     redraw();
   };
 
+  const performCrop = (el: AnnotationElement) => {
+    const bb = boundingBox(el);
+    const x = Math.max(0, Math.round(bb.x0));
+    const y = Math.max(0, Math.round(bb.y0));
+    const w = Math.round(bb.x1 - bb.x0);
+    const h = Math.round(bb.y1 - bb.y0);
+    if (w < 4 || h < 4) return;
+    const off = document.createElement("canvas");
+    off.width = w;
+    off.height = h;
+    const ctx = off.getContext("2d");
+    if (!ctx) return;
+    if (image) ctx.drawImage(image, x, y, w, h, 0, 0, w, h);
+    // Bake existing annotations (shifted into crop space) so they survive the crop.
+    ctx.save();
+    ctx.translate(-x, -y);
+    for (const el2 of history.elements) drawElement(ctx, el2);
+    ctx.restore();
+    const img = new Image();
+    img.onload = () => {
+      onCropped?.(img);
+      setHistory(createHistory());
+    };
+    img.src = off.toDataURL("image/png");
+  };
+
   const onPointerUp = () => {
     if (tool === "select") {
       dragRef.current = null;
@@ -137,7 +171,12 @@ export function AnnotationCanvas({ image }: { image: HTMLImageElement | null }) 
     }
     const el = inProgressRef.current;
     inProgressRef.current = null;
-    if (el) setHistory((h) => pushElement(h, el));
+    if (!el) return;
+    if (el.tool === "crop") {
+      performCrop(el);
+      return;
+    }
+    setHistory((h) => pushElement(h, el));
   };
 
   const copyToClipboard = async () => {
@@ -182,6 +221,7 @@ export function AnnotationCanvas({ image }: { image: HTMLImageElement | null }) 
         {toolBtn("rect", t("annotate.rect"))}
         {toolBtn("arrow", t("annotate.arrow"))}
         {toolBtn("select", t("annotate.select"))}
+        {toolBtn("crop", t("annotate.crop"))}
         <span className="mx-1 h-4 w-px bg-border" />
         {COLORS.map((c) => (
           <button

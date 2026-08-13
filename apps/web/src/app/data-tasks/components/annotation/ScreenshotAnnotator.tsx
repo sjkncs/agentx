@@ -93,7 +93,7 @@ export function ScreenshotAnnotator({ open, onClose }: { open: boolean; onClose:
           </div>
         </div>
         {error ? <p className="mb-2 text-[12px] text-rose-600">{error}</p> : null}
-        <AnnotationCanvas image={image} />
+        <AnnotationCanvas image={image} onCropped={setImage} />
       </div>
     </div>
   );

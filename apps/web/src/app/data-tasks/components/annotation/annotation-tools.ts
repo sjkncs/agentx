@@ -8,7 +8,7 @@ export interface Point {
   y: number;
 }
 
-export type AnnotationTool = "pen" | "highlighter" | "rect" | "arrow" | "select";
+export type AnnotationTool = "pen" | "highlighter" | "rect" | "arrow" | "select" | "crop";
 
 export type AnnotationElement =
   | {
@@ -20,7 +20,7 @@ export type AnnotationElement =
     }
   | {
       id: string;
-      tool: "rect" | "arrow";
+      tool: "rect" | "arrow" | "crop";
       start: Point;
       end: Point;
       color: string;

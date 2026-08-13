@@ -153,6 +153,7 @@
     "rect": "Box",
     "arrow": "Arrow",
     "select": "Select",
+    "crop": "Crop",
     "undo": "Undo",
     "redo": "Redo",
     "clear": "Clear",
