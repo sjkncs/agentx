@@ -233,6 +233,7 @@ import {
   useDataTaskIdentity,
 } from "./data-task-identity";
 import type { LiveRun } from "./live-run-state";
+import { linkifyWebCitations } from "./web-citations";
 import {
   buildProcessToolGroups,
   processToolGroupsEqual,
@@ -3554,7 +3555,10 @@ function StepAssistantMessage({
   const rawToolNames = effectiveToolCalls
     .map((call) => call?.function?.name ?? "")
     .filter((name) => isDisplayableToolName(name));
-  const processContent = isCollaborationFollowUpAnswer ? "" : content;
+  const processContent = linkifyWebCitations(
+    isCollaborationFollowUpAnswer ? "" : content,
+    liveRun?.webSources,
+  );
   const showSplitAnswerBlock = isCollaborationFollowUpAnswer && content.length > 0;
   const matchingRecaps = collaborationResponses.filter((response) =>
     shouldShowCollaborationRecapOnMessage(message, response, allMessages),
