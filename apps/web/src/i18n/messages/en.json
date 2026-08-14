@@ -177,6 +177,26 @@
     "tool": "tools {{time}}",
     "tokens": "in {{in}} tok · out {{out}} tok"
   },
+  "stepPhase": {
+    "search": "Search",
+    "think": "Think",
+    "tool": "Tool"
+  },
+  "theme": {
+    "title": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "deepseek": "DeepSeek"
+  },
+  "concurrent": {
+    "title": "Concurrent Tasks",
+    "running": "Running",
+    "idle": "Idle"
+  },
+  "statsBall": {
+    "title": "Live stats",
+    "cache": "cache {{rate}}"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",

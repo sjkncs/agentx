@@ -167,6 +167,10 @@ const DatasourceTypeGallery = nextDynamic(
 );
 import { DatasourceTypeIcon } from "./components/DatasourceTypeIcon";
 import { DataTaskChatInput } from "./components/chat/DataTaskChatInput";
+import { ThemeSwitcher } from "./components/chat/ThemeSwitcher";
+import { FloatingStatsBall } from "./components/chat/FloatingStatsBall";
+import { ConcurrentTasksPanel } from "./components/task-console/ConcurrentTasksPanel";
+import { buildConcurrentTasks } from "./concurrent-tasks";
 import { QuickStartGuide } from "./components/guide/QuickStartGuide";
 import {
   createChatStopHandler,
@@ -2281,6 +2285,7 @@ function DataTaskWorkspace({
       <ToolActionSelectionContext.Provider value={handleSelectToolAction}>
       <ToolGroupSelectionContext.Provider value={handleSelectToolGroup}>
       <div className="relative z-10 min-h-0 min-w-0 overflow-hidden">
+      <FloatingStatsBall liveRun={liveRun} />
       <ChatPane
         activeThreadId={activeThreadId}
         sessionAgentsReady={sessionAgentsReady}
@@ -5144,6 +5149,11 @@ function SessionPaneContent({
             : "min-h-0 flex-1 overflow-y-auto p-2"
         }
       >
+        <div className="px-2 pb-2">
+          <ConcurrentTasksPanel
+            tasks={buildConcurrentTasks(filteredSessions, runningThreadIds)}
+          />
+        </div>
         <div className="px-2 pb-2 text-xs font-semibold text-muted-light">
           {preview ? t("sidebar.history") : t("sidebar.sessions")}
         </div>
@@ -7881,6 +7891,7 @@ function ChatPane({
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeSwitcher />
           <RunStatusPill status={liveRunStatus} />
           {!rightPanelOpen ? (
             <ChatOpenConsoleButton onOpenRightPanel={onOpenRightPanel} />

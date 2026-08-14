@@ -177,6 +177,26 @@
     "tool": "工具 {{time}}",
     "tokens": "输入 {{in}} tok · 输出 {{out}} tok"
   },
+  "stepPhase": {
+    "search": "搜索",
+    "think": "思考",
+    "tool": "工具"
+  },
+  "theme": {
+    "title": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "deepseek": "DeepSeek"
+  },
+  "concurrent": {
+    "title": "并发任务",
+    "running": "运行中",
+    "idle": "空闲"
+  },
+  "statsBall": {
+    "title": "实时统计",
+    "cache": "缓存 {{rate}}"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",

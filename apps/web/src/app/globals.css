@@ -49,6 +49,49 @@
     "Courier New", monospace;
 }
 
+/* Dark theme — inverted neutral workbench. */
+:root[data-theme="dark"] {
+  --primary: #f5f5f5;
+  --primary-light: #c9c9c9;
+  --accent: #8a8a8a;
+  --surface: #17181c;
+  --surface-subtle: #1e2026;
+  --border: #2a2c34;
+  --foreground: #f5f5f5;
+  --text-secondary: #b8bac2;
+  --text-tertiary: #7d8089;
+  --code-bg: #0d0e11;
+  --step-glow: rgb(245 245 245 / 0.08);
+  --scrollbar-thumb: rgb(245 245 245 / 0.16);
+  --scrollbar-thumb-hover: rgb(245 245 245 / 0.28);
+}
+
+/* DeepSeek Harness style — dark with purple accent. */
+:root[data-theme="deepseek"] {
+  --primary: #7c6cf0;
+  --primary-light: #9a8cf5;
+  --accent: #6b5ce0;
+  --surface: #14141c;
+  --surface-subtle: #1a1a24;
+  --border: #2a2a3a;
+  --foreground: #eceaf8;
+  --text-secondary: #b6b3cc;
+  --text-tertiary: #807d99;
+  --code-bg: #0d0d14;
+  --step-inspect: #6f8fc9;
+  --step-query: #9a8cf5;
+  --step-transform: #5fb3ae;
+  --step-fetch: #5f9bc9;
+  --step-visualize: #8f86d8;
+  --step-knowledge: #5fa3b3;
+  --step-success: #5fb389;
+  --step-warning: #c99a5f;
+  --step-error: #d87973;
+  --step-glow: rgb(124 108 240 / 0.12);
+  --scrollbar-thumb: rgb(124 108 240 / 0.2);
+  --scrollbar-thumb-hover: rgb(124 108 240 / 0.35);
+}
+
 @theme inline {
   --color-background: var(--surface-subtle);
   --color-foreground: var(--foreground);

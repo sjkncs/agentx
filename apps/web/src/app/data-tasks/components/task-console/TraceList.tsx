@@ -18,6 +18,8 @@ import {
   sectionLabelClass,
 } from "../../ui-tokens";
 import { toolResultLooksLikeError } from "../../tool-call-display";
+import { stepPhaseForTool } from "../../step-phase";
+import { StepPhaseBadge } from "./StepPhaseBadge";
 import { ToolFailureResult, ToolFormattedResult } from "../../tool-result-format";
 import {
   ArtifactMarkdownPreview,
@@ -221,17 +223,20 @@ export function TraceEntryCard({
         ) : null}
       </div>
 
-      {canOpenDetail ? (
-        <button
-          type="button"
-          onClick={() => onSelectEvent(entry.eventId!)}
-          className="mt-2 cursor-pointer text-left text-sm font-semibold text-foreground underline-offset-2 hover:underline"
-        >
-          {entry.title}
-        </button>
-      ) : (
-        <h3 className="mt-2 text-sm font-semibold text-foreground">{entry.title}</h3>
-      )}
+      <div className="mt-2 flex items-center gap-2">
+        <StepPhaseBadge phase={stepPhaseForTool(entry.toolName)} />
+        {canOpenDetail ? (
+          <button
+            type="button"
+            onClick={() => onSelectEvent(entry.eventId!)}
+            className="cursor-pointer text-left text-sm font-semibold text-foreground underline-offset-2 hover:underline"
+          >
+            {entry.title}
+          </button>
+        ) : (
+          <h3 className="text-sm font-semibold text-foreground">{entry.title}</h3>
+        )}
+      </div>
 
       <div className={[consoleScrollXShellClass, "mt-1"].join(" ")}>
         <p className="min-w-max whitespace-pre text-xs leading-5 text-muted">
