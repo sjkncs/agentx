@@ -39,6 +39,7 @@ import { createChatTextareaKeyDownCaptureHandler } from "../../chat-textarea-sub
 import { useLiveRun } from "../../use-data-foundry-run";
 import { ProtocolPhaseStepper } from "./protocol-phase-stepper";
 import { FollowUpSuggestionChips } from "./follow-up-suggestions";
+import { RunStatsBar } from "./RunStatsBar";
 import { ScreenshotAnnotator } from "../annotation/ScreenshotAnnotator";
 
 type DataTaskChatInputProps = CopilotChatInputProps & {
@@ -406,6 +407,7 @@ function DataTaskChatInputLayout({
             {submitError}
           </div>
         ) : null}
+        <RunStatsBar liveRun={liveRunSnapshot.liveRun} />
         <div
           data-guide-id="chat-input"
           data-testid="copilot-chat-input"

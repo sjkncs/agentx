@@ -170,6 +170,13 @@
     "kb": "知识库",
     "untitled": "（检索）"
   },
+  "runStats": {
+    "rounds": "{{count}} 轮",
+    "steps": "{{count}} 步",
+    "llm": "LLM {{time}}",
+    "tool": "工具 {{time}}",
+    "tokens": "输入 {{in}} tok · 输出 {{out}} tok"
+  },
   "language": {
     "switchToEnglish": "切换到英文",
     "switchToChinese": "切换到中文",

@@ -170,6 +170,13 @@
     "kb": "Knowledge",
     "untitled": "(retrieval)"
   },
+  "runStats": {
+    "rounds": "{{count}} rounds",
+    "steps": "{{count}} steps",
+    "llm": "LLM {{time}}",
+    "tool": "tools {{time}}",
+    "tokens": "in {{in}} tok · out {{out}} tok"
+  },
   "language": {
     "switchToEnglish": "Switch to English",
     "switchToChinese": "Switch to Chinese",
