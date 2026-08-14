@@ -472,7 +472,8 @@
     "deleteConfirm": "删除工作区文件「{{name}}」？此操作不可撤销。",
     "loading": "加载中…",
     "empty": "暂无可复用的工作区文件。上传文件以添加。",
-    "fileCount": "{{count}} 个文件"
+    "fileCount": "{{count}} 个文件",
+    "view": "查看"
   },
   "configPanel": {
     "workspaceConfiguration": "工作区配置",

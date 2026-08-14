@@ -472,7 +472,8 @@
     "deleteConfirm": "Delete workspace file \"{{name}}\"? This cannot be undone.",
     "loading": "Loading...",
     "empty": "No reusable workspace files yet. Upload a file to add one.",
-    "fileCount": "{{count}} files"
+    "fileCount": "{{count}} files",
+    "view": "View"
   },
   "configPanel": {
     "workspaceConfiguration": "Workspace configuration",

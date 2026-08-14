@@ -10,6 +10,7 @@ import {
   WorkspaceUploadPromoteError,
 } from "../../workspace-file-upload";
 import { btnSecondaryClass, panelShellClass, panelTitleClass, sectionLabelClass } from "../../ui-tokens";
+import { FileViewerModal } from "./FileViewerModal";
 
 function formatBytes(bytes?: number): string {
   if (bytes === undefined || !Number.isFinite(bytes)) return "—";
@@ -32,6 +33,7 @@ export function WorkspaceFileAssetsPanel({
   const [files, setFiles] = useState<FileAssetRefDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewFile, setViewFile] = useState<FileAssetRefDto | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const canUpload = Boolean(sessionId?.trim());
 
@@ -195,6 +197,13 @@ export function WorkspaceFileAssetsPanel({
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => setViewFile(file)}
+                  className={btnSecondaryClass}
+                >
+                  {t("assets.view")}
+                </button>
+                <button
+                  type="button"
                   onClick={() => void handleDownload(file)}
                   className={btnSecondaryClass}
                 >
@@ -216,6 +225,7 @@ export function WorkspaceFileAssetsPanel({
       <div className="mt-2">
         <span className={sectionLabelClass}>{t("assets.fileCount", { count: files.length })}</span>
       </div>
+      <FileViewerModal file={viewFile} onClose={() => setViewFile(null)} />
     </section>
   );
 }
