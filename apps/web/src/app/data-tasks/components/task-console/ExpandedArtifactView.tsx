@@ -27,6 +27,7 @@ import {
 } from "./console-scroll-styles";
 import { ChartDetailView, FileDetailView } from "./TaskConsole";
 import { ArtifactMarkdownPreview } from "./ArtifactMarkdownPreview";
+import { FileRenderer } from "./FileRenderer";
 import { SelectableDataGrid, SelectableText } from "./evidence-selection";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
 import { IconSelection } from "./console-icons";
@@ -370,7 +371,16 @@ function ExpandedArtifactBody({
   }
 
   if (detail.type === "file") {
-    const fileView = <FileDetailView detail={detail} artifact={artifact} bare />;
+    const fileView =
+      detail.content !== undefined ? (
+        <FileRenderer
+          filename={baseName(detail.path)}
+          mimeType={mimeForPath(detail.path)}
+          content={detail.content}
+        />
+      ) : (
+        <FileDetailView detail={detail} artifact={artifact} bare />
+      );
     return onReferenceSelection ? (
       <SelectableText onReference={onReferenceSelection}>{fileView}</SelectableText>
     ) : (
@@ -456,6 +466,19 @@ function ReadOnlyDataGrid({
 }
 
 /** Flattens chart points/series into a selectable table so parts can be referenced. */
+function baseName(path: string): string {
+  const cleaned = path.replace(/\\/g, "/");
+  return cleaned.slice(cleaned.lastIndexOf("/") + 1) || path;
+}
+
+function mimeForPath(path: string): string | null {
+  if (/\.md$/i.test(path)) return "text/markdown";
+  if (/\.json$/i.test(path)) return "application/json";
+  if (/\.(csv|tsv)$/i.test(path)) return "text/csv";
+  if (/\.(png|jpe?g|gif|webp|svg)$/i.test(path)) return "image/*";
+  return null;
+}
+
 function chartToGrid(detail: Extract<ArtifactDetail, { type: "chart" }>): {
   columns: string[];
   rows: string[][];
