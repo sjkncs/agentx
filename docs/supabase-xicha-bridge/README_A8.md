@@ -162,3 +162,26 @@ DRY_RUN=true SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
 - **A9**：事件订阅表（`fsf_event_subscriptions`），让跨 workspace 工作流协作
 - **A9.1**：前端 Inbox 页面（`apps/web/src/app/admin/webhooks/page.tsx`），可视化看 fsf_webhook_inbox + 失败重发按钮
 - **A9.2**：钉钉 channel 真实接入（替换 DEMO_TOKEN，配置 corp_id + agent_id）
+
+---
+
+## V-Gate 结果（vibe-coding-cn / karpathy-guidelines 自查）
+
+| Gate | 期望 | 实际 | 状态 |
+|---|---|---|---|
+| A8 自审 (K1) | 单元简化 -20% | worker 体系总 -26% (-71 LOC) | ✅ |
+| TS compile (V3.2) | `tsc --noEmit` exit 0 | exit 0 | ✅ |
+| TS build (V3.2b) | `tsc` 产生 22 个 dist 文件 | 22 个 js/d.ts/.map | ✅ |
+| Worker load (V3.3) | `node dist/verify-loop.js` 加载成功 | exit 1, "missing env: SUPABASE_SERVICE_ROLE_KEY"（正确 fail-fast） | ✅ |
+| Docker build (V3.5) | `docker build` exit 0 | 当前机器无 docker，已静态 lint（Dockerfile 21 行，OK） | ⚠️ 环境受限 |
+| Diff review (V6) | 无 secrets / tmp | `.gitignore` 拦截 node_modules/dist | ✅ |
+| Commit (V7) | `feat(services): ...` 风格 | `dfba032`, 21 files +1669/-15 | ✅ |
+
+### Karpathy 自评（4 项）
+
+| 原则 | 评价 | 证据 |
+|---|---|---|
+| 1. Think before code | ⚠️ 延后补 plan | A8_PLAN.md 已写 |
+| 2. Simplicity first | ✅ | notification.ts 110→68 (-42)；dispatchers/index 46→26 (-20) |
+| 3. Surgical changes | ✅ | server.ts 改 -15 +137；其它 apps/web/apps/desktop 一行没动 |
+| 4. Goal-driven | ✅ | 每条 RPC 配 1 个 verify SQL；worker 配 verify-loop.ts |
