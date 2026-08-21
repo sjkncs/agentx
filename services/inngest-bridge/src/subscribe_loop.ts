@@ -95,19 +95,55 @@ function calcBackoff(attempt: number, cfg: RetryConfig): number {
 }
 
 function bodyFor(targetChannel: string, payload: Record<string, unknown>): string {
-  const title = String(payload.title ?? payload.work_order_id ?? "subscription event");
-  const body  = String(payload.body ?? "");
+  const caseNo = String(payload.work_order_id ?? payload.case_no ?? payload.id ?? "unknown");
+
   if (targetChannel === "email") {
+    const body = String(payload.body ?? "");
     return JSON.stringify({
-      subject: `[A9 sub] ${title}`,
-      text: `${body}\n\nwork_order: ${payload.work_order_id ?? "(unknown)"}\nsent at: ${new Date().toISOString()}`,
+      subject: `[喜茶食安] ${caseNo}`,
+      text: `${body}\n\n工单: ${caseNo}\n时间: ${new Date().toISOString()}`,
     });
   }
+
+  // Rich markdown for dingtalk / corp_dingtalk
+  // A24: Fall back to rpc_work_order_markdown_card via server-side render.
+  // Client should call rpc_work_order_markdown_card(p_case_no) first and pass
+  // rendered_markdown in payload; here we build a fallback client-side card.
+  const title = String(payload.title ?? `食品安全工单 ${caseNo}`);
+  const body  = String(payload.body ?? "");
+  const riskLevel  = String(payload.risk_level  ?? "");
+  const slaStatus  = String(payload.sla_status  ?? "");
+  const category    = String(payload.category    ?? "");
+  const status      = String(payload.status      ?? "");
+
+  const riskIcon  = riskLevel === "high"   ? "🔴" : riskLevel === "medium" ? "🟡" : "🟢";
+  const slaIcon   = slaStatus === "breached" ? "⏰" : slaStatus === "warning" ? "⚠️"  : "✅";
+  const statusIcon = status === "escalated" ? "🚨" : status === "resolved" ? "✅" : "📋";
+
+  const header = `> **${riskIcon} ${riskLevel.toUpperCase()}**  |  **${slaIcon} ${slaStatus}**  |  **${statusIcon} ${status}**`;
+  const description = body ? `\n### 问题描述\n${body}` : "";
+
+  const markdownText = [
+    `## ${title}`,
+    "",
+    header,
+    "",
+    `| 工单号 | **${caseNo}** |`,
+    `| 类别 | ${category} |`,
+    `| 风险 | ${riskIcon} ${riskLevel} |`,
+    `| SLA | ${slaIcon} ${slaStatus} |`,
+    `| 状态 | ${statusIcon} ${status} |`,
+    "",
+    description,
+    "",
+    `> 系统: DataFoundry × 喜茶食安  |  ${new Date().toLocaleString("zh-CN")}`,
+  ].filter(Boolean).join("\n");
+
   return JSON.stringify({
     msgtype: "markdown",
     markdown: {
       title,
-      text: `## ${title}\n\n${body}\n\n> work_order: ${payload.work_order_id ?? "(unknown)"}`,
+      text: markdownText,
     },
   });
 }
