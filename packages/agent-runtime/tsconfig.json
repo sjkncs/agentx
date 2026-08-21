@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@datafoundry/harness-core": ["../harness-core/dist/index.d.ts"],
+      "@datafoundry/harness-core/*": ["../harness-core/dist/*"]
+    }
   },
   "references": [
     {

@@ -52,22 +52,24 @@ import { SemanticLayerRepository } from "./notebook-dashboard/semantic-layer.js"
 import { handleMetricsRequest } from "./metrics.js";
 import { alertsSnapshot, evaluateAlerts, prometheusAlerts } from "./alerts.js";
 
-function readJsonBody(request: import("node:http").IncomingMessage): Promise<Record<string, unknown> | undefined> {
-  return new Promise((resolve) => {
-    let raw = "";
-    request.on("data", (chunk) => {
-      raw += chunk;
-      if (raw.length > 1_000_000) request.destroy();
-    });
-    request.on("end", () => {
-      try {
-        resolve(raw ? (JSON.parse(raw) as Record<string, unknown>) : undefined);
-      } catch {
-        resolve(undefined);
-      }
-    });
-    request.on("error", () => resolve(undefined));
-  });
+async function readJsonBody(request: import("node:http").IncomingMessage): Promise<Record<string, unknown> | undefined> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > 1_000_000) {
+      request.destroy();
+      return undefined;
+    }
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  if (chunks.length === 0) return undefined;
+  const raw = Buffer.concat(chunks).toString("utf8");
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
 }
 
 import { createAsyncMemoByKey, createStartupTimer } from "./async-memo.js";
@@ -111,6 +113,8 @@ import { handleAdminApiRequest } from "./rbac/routes.js";
 import { TaskPlanProjector } from "./task-plan-projector.js";
 import { ToolCallResultBridge } from "./tool-call-result-bridge.js";
 import { handleWebhook, isWebhookPath, loadWebhookEnv } from "./webhooks/index.js";
+import { handleXichaConversationRequest } from "./routes/xicha-conversation.js";
+import { createFoodSafetyClient } from "./supabase-food-safety.js";
 
 const COPILOTKIT_PATH = "/api/copilotkit";
 const DEFAULT_WORKSPACE_ID = "default";
@@ -412,6 +416,26 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         });
         response.end(JSON.stringify(scheduledResponse.body));
         return;
+      }
+
+      if (requestUrl.pathname.startsWith("/api/v1/agent/xicha/")) {
+        const xichaBody = request.method === "POST"
+          ? await readJsonBody(request)
+          : undefined;
+        const xichaResponse = await handleXichaConversationRequest(
+          request,
+          requestUrl.pathname,
+          xichaBody,
+          { foodSafetyClient: createFoodSafetyClient() },
+        );
+        if (xichaResponse) {
+          response.writeHead(xichaResponse.status, {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json",
+          });
+          response.end(JSON.stringify(xichaResponse.body));
+          return;
+        }
       }
 
       const configResponse = await handleConfigApiRequest(request, requestUrl.pathname, {

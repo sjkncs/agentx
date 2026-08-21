@@ -18,6 +18,7 @@
     "@datafoundry/contracts": "0.2.0",
     "@datafoundry/data-gateway": "0.2.0",
     "@datafoundry/files": "0.2.0",
+    "@datafoundry/harness-core": "0.1.0",
     "@datafoundry/knowledge": "0.2.0",
     "@datafoundry/providers": "0.2.0",
     "@datafoundry/skills": "0.2.0",

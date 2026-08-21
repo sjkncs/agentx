@@ -18,7 +18,10 @@
  */
 
 import type { SubagentConfig, SubagentResult, SubagentStatus } from "@datafoundry/harness-core/subagent";
-import type { MastraTool } from "@mastra/core/tools";
+
+// MastraTool type was moved out of @mastra/core/tools; use a permissive local shape.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MastraTool = any;
 
 // Re-export the types for convenience
 export type {
@@ -201,9 +204,9 @@ export class FoodSafetySubagent {
     // 2. Generate Reply
     const replyResult = await this.generateReply({
       intent: classifyResult.intent,
-      sub_intent: classifyResult.sub_intent ?? undefined,
-      risk_level: classifyResult.risk_level ?? undefined,
       user_message: message,
+      ...(classifyResult.sub_intent ? { sub_intent: classifyResult.sub_intent } : {}),
+      ...(classifyResult.risk_level ? { risk_level: classifyResult.risk_level } : {}),
     });
 
     // 3. Audit

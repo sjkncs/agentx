@@ -15,17 +15,9 @@
  *   approve   → WorkOrderSubagent  (补偿审批)
  */
 
-import type { AgentRunContext, AgUiEventEmitter } from "@datafoundry/agent-runtime";
-import type { McpRuntime } from "@datafoundry/harness-core";
-import { SubagentManager, createOrchestrator } from "@datafoundry/harness-core/subagent";
-import type { SubagentManagerConfig } from "@datafoundry/harness-core/subagent";
-import {
-  SessionEventLog,
-  TimelineRecorder,
-  DEFAULT_HARNESS_CAPABILITIES,
-  buildHarnessSystemPrompt,
-} from "@datafoundry/harness-core";
-
+import { createOrchestrator, SessionEventLog, TimelineRecorder, buildHarnessSystemPrompt } from "@datafoundry/harness-core";
+import type { SubagentManagerConfig } from "@datafoundry/harness-core";
+import { SubagentManager } from "@datafoundry/harness-core";
 import {
   FOOD_SAFETY_TOOLS,
   foodSafetyIntentClassifyTool,
@@ -35,7 +27,7 @@ import {
   foodSafetyQueryWorkOrdersTool,
   foodSafetyGetCompensationTool,
   foodSafetyGetSlaTool,
-} from "@datafoundry/agent-runtime";
+} from "../food-safety-tools.js";
 
 import { XichaFSDOrchestrator } from "./xicha-orchestrator.js";
 import { FoodSafetySubagent } from "./food-safety-subagent.js";
@@ -49,7 +41,8 @@ export interface XichaFSDConfig {
   sessionId: string;
   workspaceId: string;
   userId: string;
-  mcpRuntime?: McpRuntime;
+  runId?: string;
+  mcpRuntime?: unknown;
   subagentConfig?: SubagentManagerConfig;
   enableAudit?: boolean;
   enableSessionLog?: boolean;
@@ -65,8 +58,8 @@ export interface XichaFSDAgentResult {
   sessionId: string;
   messageId: string;
   intent?: string;
-  subIntent?: string;
-  riskLevel?: string;
+  subIntent?: string | undefined;
+  riskLevel?: string | undefined;
   reply?: string;
   auditedReply?: string;
   workOrderId?: string;
@@ -116,47 +109,57 @@ export class XichaFSDAgent {
   readonly workspaceId: string;
   readonly userId: string;
   readonly tools = FOOD_SAFETY_TOOLS;
+  readonly runId: string;
 
   private manager: SubagentManager;
   private orchestrator: XichaFSDOrchestrator;
   private sessionLog?: SessionEventLog;
   private timeline?: TimelineRecorder;
   private enableAudit: boolean;
+  // Track child subagent IDs so we can register them with the manager properly
+  private readonly foodSafetyAgent: FoodSafetySubagent;
+  private readonly workOrderAgent: WorkOrderSubagent;
 
   constructor(config: XichaFSDConfig) {
     this.sessionId   = config.sessionId;
     this.workspaceId = config.workspaceId;
     this.userId      = config.userId;
+    this.runId       = config.runId ?? `run-${config.sessionId}`;
     this.enableAudit = config.enableAudit ?? true;
 
-    // Subagent Manager
+    // Subagent Manager (constructs children lazily)
     this.manager = new SubagentManager(config.subagentConfig);
 
     // Food Safety + Work Order Subagents
-    const foodSafetyAgent = new FoodSafetySubagent({
+    this.foodSafetyAgent = new FoodSafetySubagent({
       sessionId: this.sessionId,
       tools: [foodSafetyIntentClassifyTool, foodSafetyGenerateReplyTool, foodSafetyAuditOutputTool],
     });
 
-    const workOrderAgent = new WorkOrderSubagent({
+    this.workOrderAgent = new WorkOrderSubagent({
       sessionId: this.sessionId,
       tools: [foodSafetyCreateWorkOrderTool, foodSafetyQueryWorkOrdersTool,
                foodSafetyGetCompensationTool, foodSafetyGetSlaTool],
     });
 
-    this.manager.register(foodSafetyAgent);
-    this.manager.register(workOrderAgent);
+    // Register as managed subagents so the manager tracks lifecycle & emits events.
+    this.manager.spawn(this.sessionId, this.foodSafetyAgent.getInfo());
+    this.manager.spawn(this.sessionId, this.workOrderAgent.getInfo());
 
     // Orchestrator with routing
-    this.orchestrator = new XichaFSDOrchestrator(this.manager, {
-      foodSafetyAgent,
-      workOrderAgent,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.orchestrator = new XichaFSDOrchestrator(this.manager as any, {
+      foodSafetyAgent: this.foodSafetyAgent,
+      workOrderAgent: this.workOrderAgent,
     });
 
     // Session logging
     if (config.enableSessionLog) {
-      this.sessionLog = new SessionEventLog({ sessionId: this.sessionId });
-      this.timeline = new TimelineRecorder({ sessionId: this.sessionId });
+      this.sessionLog = new SessionEventLog({ sessionId: this.sessionId, runId: this.runId });
+      this.timeline = new TimelineRecorder(this.sessionLog, {
+        sessionId: this.sessionId,
+        runId: this.runId,
+      });
     }
   }
 
@@ -174,13 +177,19 @@ export class XichaFSDAgent {
     const start = Date.now();
     const messageId = `msg-${start}-${Math.random().toString(36).slice(2, 6)}`;
 
-    this.timeline?.record({ type: "agent:start", messageId, input: input.message });
+    this.recordTimeline({
+      type: "session/tag",
+      tag: `agent:start:${messageId}`,
+    });
 
     try {
       // Step 1: Intent Classification
       const classifyResult = await this.orchestrator.classifyIntent(input.message);
 
-      this.timeline?.record({ type: "intent:classified", ...classifyResult });
+      this.recordTimeline({
+        type: "session/tag",
+        tag: `intent:${classifyResult.intent}`,
+      });
 
       if (classifyResult.intent !== "food_safety") {
         return {
@@ -196,12 +205,15 @@ export class XichaFSDAgent {
       // Step 2: Generate Reply (4-step script)
       const replyResult = await this.orchestrator.generateReply({
         intent: classifyResult.intent,
-        sub_intent: classifyResult.sub_intent ?? undefined,
-        risk_level: classifyResult.risk_level ?? undefined,
         user_message: input.message,
+        ...(classifyResult.sub_intent ? { sub_intent: classifyResult.sub_intent } : {}),
+        ...(classifyResult.risk_level ? { risk_level: classifyResult.risk_level } : {}),
       });
 
-      this.timeline?.record({ type: "reply:generated", script: replyResult.four_step_script });
+      this.recordTimeline({
+        type: "session/tag",
+        tag: `reply:${replyResult.four_step_script ? "generated" : "none"}`,
+      });
 
       // Step 3: Audit Output (L4 compliance check)
       let auditedReply = replyResult.four_step_script.compensate;
@@ -211,63 +223,59 @@ export class XichaFSDAgent {
           classifyResult.intent,
         );
         auditedReply = auditResult.audited_text;
-        this.timeline?.record({
-          type: "output:audited",
-          status: auditResult.status,
-          violations: auditResult.violations,
+        this.recordTimeline({
+          type: "session/tag",
+          tag: `audit:${auditResult.status}`,
         });
       }
 
       // Step 4: Auto-escalate for high risk
       let woResult: { caseNo?: string; workOrderId?: string } = {};
       if (classifyResult.should_escalate && input.context?.store_info) {
+        const storeInfo = input.context.store_info as { store_id?: string; store_name?: string; address?: string };
         woResult = await this.orchestrator.createWorkOrder({
-          conversation_id: input.conversationId,
           user_id: parseInt(String(this.userId), 10),
           category: classifyResult.sub_intent ?? "other",
           description: input.message,
           risk_level: classifyResult.risk_level ?? "medium",
-          store_info: input.context.store_info as { store_id?: string; store_name?: string; address?: string },
+          store_info: storeInfo,
+          ...(input.conversationId ? { conversation_id: input.conversationId } : {}),
         });
 
-        this.timeline?.record({ type: "work_order:created", ...woResult });
+        this.recordTimeline({
+          type: "session/tag",
+          tag: `work_order:${woResult.caseNo ?? "none"}`,
+        });
       }
 
       this.sessionLog?.append({
-        sessionId: this.sessionId,
-        role: "assistant",
+        type: "assistant/message",
         content: auditedReply,
-        metadata: {
-          messageId,
-          intent: classifyResult,
-          wo: woResult,
-        },
+        turnId: messageId,
+        timestamp: Date.now(),
       });
 
-      return {
+      const result: XichaFSDAgentResult = {
         sessionId: this.sessionId,
         messageId,
         intent: classifyResult.intent,
-        subIntent: classifyResult.sub_intent ?? undefined,
-        riskLevel: classifyResult.risk_level ?? undefined,
+        success: true,
         reply: replyResult.four_step_script.compensate,
         auditedReply,
-        workOrderId: woResult.workOrderId,
-        caseNo: woResult.caseNo,
-        success: true,
-        subagentResults: {
-          classify: classifyResult,
-          reply: replyResult,
-          audit: this.enableAudit
-            ? await this.orchestrator.auditOutput(replyResult.four_step_script.compensate, classifyResult.intent)
-            : null,
-        },
         durationMs: Date.now() - start,
+        subagentResults: { classify: classifyResult, reply: replyResult },
       };
-
+      if (classifyResult.sub_intent) result.subIntent = classifyResult.sub_intent;
+      if (classifyResult.risk_level) result.riskLevel = classifyResult.risk_level;
+      if (woResult.caseNo) result.caseNo = woResult.caseNo;
+      if (woResult.workOrderId) result.workOrderId = woResult.workOrderId;
+      return result;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      this.timeline?.record({ type: "agent:error", error: errorMsg });
+      this.recordTimeline({
+        type: "session/tag",
+        tag: `agent:error:${messageId}`,
+      });
       return {
         sessionId: this.sessionId,
         messageId,
@@ -275,6 +283,15 @@ export class XichaFSDAgent {
         error: errorMsg,
         durationMs: Date.now() - start,
       };
+    }
+  }
+
+  /**
+   * Helper: safely record to timeline if enabled.
+   */
+  private recordTimeline(event: Parameters<SessionEventLog["append"]>[0]): void {
+    if (this.sessionLog) {
+      this.sessionLog.append(event);
     }
   }
 
@@ -292,17 +309,14 @@ export class XichaFSDAgent {
    * Get agent system prompt (for LLM context injection)
    */
   getSystemPrompt(): string {
-    return buildHarnessSystemPrompt({
-      capabilities: DEFAULT_HARNESS_CAPABILITIES,
-      agentName: "XichaFSD",
-      customInstructions: [
-        "你是喜茶食品安全智能助手，专门处理食品安全投诉和咨询。",
-        "所有回复必须通过 L4 输出审计（禁止承诺全额退款/100%满意/确认责任方）。",
-        "高风险（high）投诉必须自动升级并创建工单。",
-        "使用 4 步话术：共情(empathy) → 收集(collect) → 承诺(promise) → 补偿(compensate)。",
-        "补偿类型：代金券(voucher) > 重新配送(redelivery) > 退款(refund) > 道歉(apology)。",
-      ],
-    });
+    const xichaBrief = [
+      "你是喜茶食品安全智能助手，专门处理食品安全投诉和咨询。",
+      "所有回复必须通过 L4 输出审计（禁止承诺全额退款/100%满意/确认责任方）。",
+      "高风险（high）投诉必须自动升级并创建工单。",
+      "使用 4 步话术：共情(empathy) → 收集(collect) → 承诺(promise) → 补偿(compensate)。",
+      "补偿类型：代金券(voucher) > 重新配送(redelivery) > 退款(refund) > 道歉(apology)。",
+    ].join("\n- ");
+    return buildHarnessSystemPrompt(`# Xicha FSD Agent\n- ${xichaBrief}`);
   }
 
   /**
@@ -317,6 +331,6 @@ export class XichaFSDAgent {
    */
   async destroy(): Promise<void> {
     this.manager.removeAllListeners();
-    this.sessionLog?.flush();
+    this.sessionLog?.dispose?.();
   }
 }

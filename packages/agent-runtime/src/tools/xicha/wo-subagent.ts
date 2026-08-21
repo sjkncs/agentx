@@ -20,7 +20,10 @@
  */
 
 import type { SubagentConfig, SubagentResult, SubagentStatus } from "@datafoundry/harness-core/subagent";
-import type { MastraTool } from "@mastra/core/tools";
+
+// MastraTool type was moved out of @mastra/core/tools; use a permissive local shape.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MastraTool = any;
 
 export type {
   SubagentConfig,

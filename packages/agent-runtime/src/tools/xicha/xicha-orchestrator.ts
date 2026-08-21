@@ -202,9 +202,9 @@ export class XichaFSDOrchestrator {
       case "reply":
         return this.generateReply({
           intent: String(params.intent ?? "food_safety"),
-          sub_intent: params.sub_intent as string | undefined,
-          risk_level: params.risk_level as string | undefined,
-          user_message: params.user_message as string | undefined,
+          ...(params.sub_intent !== undefined ? { sub_intent: String(params.sub_intent) } : {}),
+          ...(params.risk_level !== undefined ? { risk_level: String(params.risk_level) } : {}),
+          ...(params.user_message !== undefined ? { user_message: String(params.user_message) } : {}),
         });
 
       case "audit":
@@ -262,9 +262,9 @@ export class XichaFSDOrchestrator {
     // 2. Generate Reply
     const replyResult = await this.foodSafetyAgent.generateReply({
       intent: classifyResult.intent,
-      sub_intent: classifyResult.sub_intent ?? undefined,
-      risk_level: classifyResult.risk_level ?? undefined,
       user_message: input.message,
+      ...(classifyResult.sub_intent !== null ? { sub_intent: classifyResult.sub_intent } : {}),
+      ...(classifyResult.risk_level !== null ? { risk_level: classifyResult.risk_level } : {}),
     });
 
     // 3. Audit Output
@@ -287,12 +287,12 @@ export class XichaFSDOrchestrator {
     if (classifyResult.should_escalate && input.context?.store_info) {
       try {
         const woResult = await this.workOrderAgent.createWorkOrder({
-          conversation_id: input.conversationId,
           user_id: input.userId,
           category: classifyResult.sub_intent ?? "other",
           description: input.message,
           risk_level: classifyResult.risk_level ?? "medium",
           store_info: input.context.store_info as { store_id?: string; store_name?: string; address?: string },
+          ...(input.conversationId ? { conversation_id: input.conversationId } : {}),
         });
 
         // Trigger notification event

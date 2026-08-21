@@ -33,6 +33,36 @@ const executionOptionsFromMastra = (
   return toolCallId ? { toolCallId } : undefined;
 };
 
+// ---------------------------------------------------------------------------
+// Lenient input schemas: some LLM providers emit boolean flags as strings
+// (e.g. { "enabled_only": "true" }) or numbers as strings. Coerce them before
+// validation so a type slip does not abort the whole run.
+// ---------------------------------------------------------------------------
+
+const lenientOptionalBoolean = z.union([
+  z.boolean(),
+  z.string().transform((value) => {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "yes";
+  })
+]).optional();
+
+const lenientOptionalPositiveInt = (max?: number) => {
+  const intSchema = max === undefined
+    ? z.number().int().positive()
+    : z.number().int().positive().max(max);
+  return z.union([
+    intSchema,
+    z.string().transform((value) => Number(value.trim()))
+  ]).optional();
+};
+
+const lenientOptionalIdArray = (max: number) =>
+  z.union([
+    z.array(z.string().min(1)).max(max),
+    z.string().min(1).transform((value) => [value.trim()])
+  ]).optional();
+
 type TokenUsageCorrelationStore = ReturnType<typeof createTokenUsageCorrelationStore>;
 
 type SchemaCapability = {
@@ -354,10 +384,12 @@ const createMastraDataTools = (executors: DataToolExecutors): ToolRegistry["mast
   list_data_sources: createTool({
     id: "list_data_sources",
     description: "List datasources enabled for this run.",
-    inputSchema: z.object({ enabled_only: z.boolean().optional() }),
-    execute: (toolInput) => executors.listDataSources({
-      ...(toolInput.enabled_only !== undefined ? { enabled_only: toolInput.enabled_only } : {})
-    })
+    inputSchema: z.object({ enabled_only: lenientOptionalBoolean }),
+    execute: (toolInput) => {
+      const opts: { enabled_only?: boolean } = {};
+      if (typeof toolInput.enabled_only === "boolean") opts.enabled_only = toolInput.enabled_only;
+      return executors.listDataSources(opts);
+    }
   }),
   inspect_schema: createTool({
     id: "inspect_schema",
@@ -365,16 +397,18 @@ const createMastraDataTools = (executors: DataToolExecutors): ToolRegistry["mast
       "Inspect a datasource schema and return a run-local schema_id that must precede SQL or preview calls.",
     inputSchema: z.object({
       datasource_id: z.string().optional(),
-      table_names: z.array(z.string()).optional()
+      table_names: lenientOptionalIdArray(512)
     }),
-    execute: (toolInput, options) =>
-      executors.inspectSchema(
-        {
-          ...(toolInput.datasource_id ? { datasource_id: toolInput.datasource_id } : {}),
-          ...(toolInput.table_names ? { table_names: toolInput.table_names } : {}),
-        },
-        executionOptionsFromMastra(options),
-      ),
+    execute: (toolInput, options) => {
+      const inspectOpts: { datasource_id?: string; table_names?: string[] } = {};
+      if (toolInput.datasource_id) inspectOpts.datasource_id = toolInput.datasource_id;
+      if (toolInput.table_names) {
+        inspectOpts.table_names = Array.isArray(toolInput.table_names)
+          ? toolInput.table_names
+          : [toolInput.table_names];
+      }
+      return executors.inspectSchema(inspectOpts, executionOptionsFromMastra(options));
+    },
   }),
   preview_table: createTool({
     id: "preview_table",
@@ -382,13 +416,16 @@ const createMastraDataTools = (executors: DataToolExecutors): ToolRegistry["mast
     inputSchema: z.object({
       schema_id: z.string(),
       table: z.string().min(1),
-      limit: z.number().int().positive().optional()
+      limit: lenientOptionalPositiveInt()
     }),
-    execute: (toolInput) => executors.previewTable({
-      schema_id: toolInput.schema_id,
-      table: toolInput.table,
-      ...(toolInput.limit ? { limit: toolInput.limit } : {})
-    })
+    execute: (toolInput) => {
+      const opts: { schema_id: string; table: string; limit?: number } = {
+        schema_id: toolInput.schema_id,
+        table: toolInput.table,
+      };
+      if (typeof toolInput.limit === "number") opts.limit = toolInput.limit;
+      return executors.previewTable(opts);
+    }
   }),
   run_sql_readonly: createTool({
     id: "run_sql_readonly",
@@ -396,25 +433,24 @@ const createMastraDataTools = (executors: DataToolExecutors): ToolRegistry["mast
     inputSchema: z.object({
       schema_id: z.string(),
       sql: z.string(),
-      assertion_ids: z.array(z.string().min(1)).max(32).optional(),
-      requirement_ids: z.array(z.string().min(1)).max(16).optional(),
-      expected_columns: z.array(z.string().min(1)).max(100).optional(),
-      limit: z.number().int().positive().max(1000).optional(),
-      timeout_ms: z.number().int().positive().max(30000).optional()
+      assertion_ids: lenientOptionalIdArray(32),
+      requirement_ids: lenientOptionalIdArray(16),
+      expected_columns: lenientOptionalIdArray(100),
+      limit: lenientOptionalPositiveInt(1000),
+      timeout_ms: lenientOptionalPositiveInt(30000)
     }),
-    execute: (toolInput, options) =>
-      executors.runSqlReadonly(
-        {
-          schema_id: toolInput.schema_id,
-          sql: toolInput.sql,
-          ...(toolInput.assertion_ids ? { assertion_ids: toolInput.assertion_ids } : {}),
-          ...(toolInput.requirement_ids ? { requirement_ids: toolInput.requirement_ids } : {}),
-          ...(toolInput.expected_columns ? { expected_columns: toolInput.expected_columns } : {}),
-          ...(toolInput.limit ? { limit: toolInput.limit } : {}),
-          ...(toolInput.timeout_ms ? { timeout_ms: toolInput.timeout_ms } : {}),
-        },
-        executionOptionsFromMastra(options),
-      ),
+    execute: (toolInput, options) => {
+      const sqlOpts: { schema_id: string; sql: string; assertion_ids?: string[]; requirement_ids?: string[]; expected_columns?: string[]; limit?: number; timeout_ms?: number } = {
+        schema_id: toolInput.schema_id,
+        sql: toolInput.sql,
+      };
+      if (Array.isArray(toolInput.assertion_ids) || typeof toolInput.assertion_ids === "string") sqlOpts.assertion_ids = Array.isArray(toolInput.assertion_ids) ? toolInput.assertion_ids : [toolInput.assertion_ids];
+      if (Array.isArray(toolInput.requirement_ids) || typeof toolInput.requirement_ids === "string") sqlOpts.requirement_ids = Array.isArray(toolInput.requirement_ids) ? toolInput.requirement_ids : [toolInput.requirement_ids];
+      if (Array.isArray(toolInput.expected_columns) || typeof toolInput.expected_columns === "string") sqlOpts.expected_columns = Array.isArray(toolInput.expected_columns) ? toolInput.expected_columns : [toolInput.expected_columns];
+      if (typeof toolInput.limit === "number") sqlOpts.limit = toolInput.limit;
+      if (typeof toolInput.timeout_ms === "number") sqlOpts.timeout_ms = toolInput.timeout_ms;
+      return executors.runSqlReadonly(sqlOpts, executionOptionsFromMastra(options));
+    },
   })
 });
 
