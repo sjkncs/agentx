@@ -23,8 +23,10 @@ import { AdminWebhooksPanel } from "./admin-webhooks-panel";
 import { AdminWorkOrdersPanel } from "./admin-work-orders";
 import { AdminDeliveryStatsPanel } from "./admin-delivery-stats";
 import { AdminRetryConfigPanel } from "./admin-retry-config";
+import { AdminWorkspaceConfigPanel } from "./admin-workspace-config";
+import { AdminDingtalkTemplatePanel } from "./admin-dingtalk-template";
 
-export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery" | "retry";
+export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery" | "retry" | "wsconfig" | "templates";
 
 export function AdminHome({ initialTab }: { initialTab: AdminTab }) {
   return (
@@ -211,6 +213,8 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         <AdminTabButton active={tab === "workorders"} onClick={() => setTab("workorders")} label={t("admin.tabs.workorders", { defaultValue: "工单" })} />
         <AdminTabButton active={tab === "delivery"} onClick={() => setTab("delivery")} label={t("admin.tabs.delivery", { defaultValue: "投递" })} />
         <AdminTabButton active={tab === "retry"} onClick={() => setTab("retry")} label={t("admin.tabs.retry", { defaultValue: "重试策略" })} />
+        <AdminTabButton active={tab === "wsconfig"} onClick={() => setTab("wsconfig")} label={t("admin.tabs.wsconfig", { defaultValue: "工作区" })} />
+        <AdminTabButton active={tab === "templates"} onClick={() => setTab("templates")} label={t("admin.tabs.templates", { defaultValue: "模板" })} />
       </nav>
 
       {globalError ? (
@@ -242,6 +246,8 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         {tab === "workorders" ? <AdminWorkOrdersPanel /> : null}
         {tab === "delivery" ? <AdminDeliveryStatsPanel /> : null}
         {tab === "retry" ? <AdminRetryConfigPanel /> : null}
+        {tab === "wsconfig" ? <AdminWorkspaceConfigPanel /> : null}
+        {tab === "templates" ? <AdminDingtalkTemplatePanel /> : null}
       </section>
     </main>
   );

@@ -1,16 +1,21 @@
 /**
- * subscribe_loop.ts — A9/A10 订阅 worker
+ * subscribe_loop.ts — A9/A10/A17 订阅 worker
  *
- * 与 A8 worker.ts 并行运行（2 个 process 或 1 个 process 2 个 loop 都行）
  * 主循环：
  *   1) rpc_subscription_poll_match(workspace_id) 一次拿 1 条 queued 事件 + 全部订阅匹配
- *      （FOR UPDATE SKIP LOCKED 让多 worker 安全）
- *   2) 对每个 (event_id, subscription_id) 调用 dispatcher 模板
+ *   2) 对每个 (event_id, subscription_id) 调用 dispatcher
  *   3) 钉钉 dingtalk channel → signDingtalkUrl(target_id, DINGTALK_ROBOT_SECRET)
  *   4) 调 rpc_subscription_record_delivery 写结果
+ *   5) A17: 失败时调用 rpc_subscription_delivery_resend + 指数退避重试
+ *
+ * A17 backoff 策略：
+ *   - 初始延迟: base_delay_s (来自 rpc_workspace_config 或环境变量)
+ *   - 乘数: backoff_multiplier (默认 2.0)
+ *   - 最大延迟: max_delay_s (默认 3600s)
+ *   - 最大次数: max_attempts (默认 5)
+ *   - 退避序列: base × 2^n (cap at max)
  *
  * Inngest Cloud 签名校验: apps/api/src/webhooks/index.ts 用 inngest-signature.ts
- * （subscribe_loop 是 poll worker，不接收 webhook 回调）
  */
 import { loadConfig } from "./config.js";
 import { makeClient } from "./supabase-client.js";
@@ -29,6 +34,20 @@ interface MatchRow {
   work_order_id: string | null;
 }
 
+interface RetryConfig {
+  maxAttempts: number;
+  baseDelaySeconds: number;
+  maxDelaySeconds: number;
+  multiplier: number;
+}
+
+const DEFAULT_RETRY: RetryConfig = {
+  maxAttempts:      5,
+  baseDelaySeconds: 30,
+  maxDelaySeconds:  3600,
+  multiplier:       2.0,
+};
+
 async function pollOnce(rpc: ReturnType<typeof makeClient>): Promise<MatchRow[]> {
   const result = await rpc.rpc<MatchRow[] | null>("rpc_subscription_poll_match", {
     p_dispatched_to: process.env.DISPATCHED_TO ?? "subscriber",
@@ -38,9 +57,46 @@ async function pollOnce(rpc: ReturnType<typeof makeClient>): Promise<MatchRow[]>
   return Array.isArray(result) ? result : [result];
 }
 
+async function fetchRetryConfig(
+  rpc: ReturnType<typeof makeClient>,
+  channel: string,
+): Promise<RetryConfig> {
+  const wsId = process.env.SUBSCRIBER_WORKSPACE_ID ?? "default";
+  const key = `retry_${channel}`;
+  try {
+    const r = await rpc.rpc<{ value: string }[] | null>(
+      "rpc_workspace_config_get",
+      { p_workspace_id: wsId, p_key: key },
+    );
+    if (r && typeof r === "object" && "value" in r) {
+      const cfg = JSON.parse(String((r as { value: string }).value));
+      return {
+        maxAttempts:     Number(cfg.max_attempts      ?? DEFAULT_RETRY.maxAttempts),
+        baseDelaySeconds: Number(cfg.base_delay_s     ?? DEFAULT_RETRY.baseDelaySeconds),
+        maxDelaySeconds:  Number(cfg.max_delay_s      ?? DEFAULT_RETRY.maxDelaySeconds),
+        multiplier:       Number(cfg.backoff_multiplier ?? DEFAULT_RETRY.multiplier),
+      };
+    }
+  } catch {
+    // fall through to env-var defaults
+  }
+  // Fall back to env-var overrides
+  return {
+    maxAttempts:      Number(process.env[`RETRY_MAX_${channel.toUpperCase()}`] ?? DEFAULT_RETRY.maxAttempts),
+    baseDelaySeconds: Number(process.env[`RETRY_BASE_${channel.toUpperCase()}`] ?? DEFAULT_RETRY.baseDelaySeconds),
+    maxDelaySeconds:  Number(process.env[`RETRY_MAX_DELAY`] ?? DEFAULT_RETRY.maxDelaySeconds),
+    multiplier:       Number(process.env["RETRY_MULTIPLIER"] ?? DEFAULT_RETRY.multiplier),
+  };
+}
+
+function calcBackoff(attempt: number, cfg: RetryConfig): number {
+  const raw = cfg.baseDelaySeconds * Math.pow(cfg.multiplier, attempt - 1);
+  return Math.min(Math.round(raw), cfg.maxDelaySeconds);
+}
+
 function bodyFor(targetChannel: string, payload: Record<string, unknown>): string {
   const title = String(payload.title ?? payload.work_order_id ?? "subscription event");
-  const body = String(payload.body ?? "");
+  const body  = String(payload.body ?? "");
   if (targetChannel === "email") {
     return JSON.stringify({
       subject: `[A9 sub] ${title}`,
@@ -56,6 +112,30 @@ function bodyFor(targetChannel: string, payload: Record<string, unknown>): strin
   });
 }
 
+async function recordDelivery(
+  rpc: ReturnType<typeof makeClient>,
+  row: MatchRow,
+  ok: boolean,
+  status: number,
+  bodyText: string,
+): Promise<void> {
+  try {
+    await rpc.rpc("rpc_subscription_record_delivery", {
+      p_event_id:           row.event_id,
+      p_subscription_id:   row.subscription_id,
+      p_target_channel:    row.target_channel,
+      p_target_id:         row.target_id,
+      p_request_body:      { title: row.payload.title, body: row.payload.body },
+      p_response_status:   status,
+      p_response_body:     bodyText.slice(0, 2_000),
+      p_success:           ok,
+      p_work_order_id:     row.work_order_id ?? "",
+    });
+  } catch (err) {
+    console.error(`[sub] record_delivery failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 async function dispatchOne(
   cfg: Awaited<ReturnType<typeof loadConfig>>,
   rpc: ReturnType<typeof makeClient>,
@@ -69,7 +149,7 @@ async function dispatchOne(
   // corp_dingtalk: 调 RPC（不走 HTTP webhook）
   if (row.target_channel === "corp_dingtalk") {
     const filter = row.filter_json ?? {};
-    const body = bodyFor("dingtalk", row.payload);
+    const body   = bodyFor("dingtalk", row.payload);
     const parsed = JSON.parse(body);
     try {
       const r = await rpc.rpc<{ ok: boolean; task_id?: number; error?: string }>(
@@ -86,18 +166,7 @@ async function dispatchOne(
           p_correlation:  { event_id: row.event_id, subscription_id: row.subscription_id },
         },
       );
-      await rpc.rpc("rpc_subscription_record_delivery", {
-        p_event_id: row.event_id,
-        p_subscription_id: row.subscription_id,
-        p_target_channel: row.target_channel,
-        p_target_id: row.target_id,
-        p_request_body: { title: row.payload.title, body: row.payload.body },
-        p_response_status: r.ok ? 200 : 400,
-        p_response_body: JSON.stringify(r).slice(0, 2_000),
-        p_success: r.ok,
-        p_work_order_id: row.work_order_id ?? "",
-      });
-      return { ok: r.ok, status: r.ok ? 200 : 400, text: JSON.stringify(r) };
+      return { ok: !!r?.ok, status: r?.ok ? 200 : 400, text: JSON.stringify(r) };
     } catch (err) {
       return { ok: false, status: 500, text: String(err) };
     }
@@ -112,31 +181,75 @@ async function dispatchOne(
   }
 
   const body = bodyFor(row.target_channel, row.payload);
-  const { status, text, ok } = await post(targetUrl, body, cfg.httpTimeoutMs);
+  return post(targetUrl, body, cfg.httpTimeoutMs);
+}
 
-  await rpc.rpc("rpc_subscription_record_delivery", {
-    p_event_id: row.event_id,
-    p_subscription_id: row.subscription_id,
-    p_target_channel: row.target_channel,
-    p_target_id: row.target_id,
-    p_request_body: { title: row.payload.title, body: row.payload.body },
-    p_response_status: status,
-    p_response_body: text.slice(0, 2_000),
-    p_success: ok,
-    p_work_order_id: row.work_order_id ?? "",
-  });
+async function handleRow(
+  cfg: Awaited<ReturnType<typeof loadConfig>>,
+  rpc: ReturnType<typeof makeClient>,
+  row: MatchRow,
+  attempt: number,
+): Promise<void> {
+  const r = await dispatchOne(cfg, rpc, row);
+  await recordDelivery(rpc, row, r.ok, r.status, r.text);
 
-  return { ok, status, text };
+  if (!r.ok) {
+    const retryCfg = await fetchRetryConfig(rpc, row.target_channel);
+    const backoffSec = calcBackoff(attempt, retryCfg);
+    const deliveryId = await getDeliveryId(rpc, row);
+
+    if (deliveryId !== null) {
+      if (attempt < retryCfg.maxAttempts) {
+        console.log(`[sub-retry] ${row.event_name} sub=${row.subscription_id} attempt=${attempt} backoff=${backoffSec}s -> rescheduling`);
+        await rpc.rpc("rpc_subscription_delivery_resend", {
+          p_delivery_id: deliveryId,
+        });
+        await sleep(backoffSec * 1_000);
+      } else {
+        console.warn(`[sub-retry] ${row.event_name} sub=${row.subscription_id} attempt=${attempt} MAX — giving up`);
+        await rpc.rpc("rpc_subscription_record_delivery", {
+          p_event_id:         row.event_id,
+          p_subscription_id:  row.subscription_id,
+          p_target_channel:   row.target_channel,
+          p_target_id:        row.target_id,
+          p_request_body:     { title: row.payload.title, body: row.payload.body },
+          p_response_status:  r.status,
+          p_response_body:    r.text.slice(0, 2_000),
+          p_success:          false,
+          p_work_order_id:    row.work_order_id ?? "",
+        });
+      }
+    }
+  }
+}
+
+async function getDeliveryId(
+  rpc: ReturnType<typeof makeClient>,
+  row: MatchRow,
+): Promise<number | null> {
+  try {
+    const r = await rpc.rpc<{ id: number }[] | null>(
+      "rpc_subscription_get_latest_delivery",
+      {
+        p_event_id:         row.event_id,
+        p_subscription_id:   row.subscription_id,
+      },
+    );
+    if (r && Array.isArray(r) && r.length > 0) return r[0].id;
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const rpc = makeClient(cfg);
-  const ws = process.env.SUBSCRIBER_WORKSPACE_ID ?? "default";
+  const ws  = process.env.SUBSCRIBER_WORKSPACE_ID ?? "default";
   console.log(`[subscribe-loop] started ws=${ws} poll=${cfg.pollIntervalMs}ms dryRun=${cfg.dryRun}`);
 
   let running = true;
-  process.on("SIGINT", () => (running = false));
+  process.on("SIGINT",  () => (running = false));
   process.on("SIGTERM", () => (running = false));
 
   while (running) {
@@ -154,20 +267,60 @@ async function main(): Promise<void> {
       continue;
     }
 
-    // 去重：同一 event_id 一次只跑一条（其它 sub 在 record_delivery 时 dedupe 唯一索引保护）
+    // A17 retry loop: for each event, retry failed dispatches up to maxAttempts
+    const pendingRetries: Array<{ row: MatchRow; attempt: number }> = [];
     const seenEventIds = new Set<string>();
+
     for (const row of rows) {
       if (seenEventIds.has(row.event_id)) continue;
       seenEventIds.add(row.event_id);
       try {
-        const r = await dispatchOne(cfg, rpc, row);
-        console.log(`[subscribe-loop] ${r.ok ? "ok" : "fail"} ${row.event_name} sub=${row.subscription_id} http=${r.status}`);
+        await handleRow(cfg, rpc, row, 1);
       } catch (err) {
-        console.error(`[subscribe-loop] dispatch error: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(`[subscribe-loop] handleRow error: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
+
+    // A17: scan for pending retries from fsf_subscription_deliveries (status='pending' and resend_requested_at is set)
+    try {
+      const retryRows = await rpc.rpc<MatchRow[] | null>("rpc_subscription_poll_retries", {
+        p_workspace_id:  ws,
+        p_limit:         cfg.batchSize,
+      });
+      if (retryRows && Array.isArray(retryRows)) {
+        for (const rrow of retryRows) {
+          try {
+            // get attempt count from deliveries
+            const attempt = await getAttemptCount(rpc, rrow.event_id, rrow.subscription_id);
+            await handleRow(cfg, rpc, rrow, attempt + 1);
+          } catch (err) {
+            console.error(`[subscribe-loop] retry handleRow error: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }
+      }
+    } catch {
+      // poll_retries is optional — skip if RPC not yet deployed
+    }
   }
+
   console.log(`[subscribe-loop] bye`);
+}
+
+async function getAttemptCount(
+  rpc: ReturnType<typeof makeClient>,
+  eventId: string,
+  subId: number,
+): Promise<number> {
+  try {
+    const r = await rpc.rpc<{ attempt: number }[] | null>(
+      "rpc_subscription_get_attempt_count",
+      { p_event_id: eventId, p_subscription_id: subId },
+    );
+    if (r && Array.isArray(r) && r.length > 0) return Number(r[0].attempt);
+  } catch {
+    // ignore
+  }
+  return 1;
 }
 
 function sleep(ms: number): Promise<void> {
