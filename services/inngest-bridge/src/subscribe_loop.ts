@@ -1,12 +1,16 @@
 /**
- * subscribe_loop.ts — A9 订阅 worker
+ * subscribe_loop.ts — A9/A10 订阅 worker
  *
  * 与 A8 worker.ts 并行运行（2 个 process 或 1 个 process 2 个 loop 都行）
  * 主循环：
- *   1) rpc_subscription_poll_match 一次拿 1 条 queued 事件 + 全部订阅匹配
+ *   1) rpc_subscription_poll_match(workspace_id) 一次拿 1 条 queued 事件 + 全部订阅匹配
  *      （FOR UPDATE SKIP LOCKED 让多 worker 安全）
  *   2) 对每个 (event_id, subscription_id) 调用 dispatcher 模板
- *   3) 调 rpc_subscription_record_delivery 写结果
+ *   3) 钉钉 dingtalk channel → signDingtalkUrl(target_id, DINGTALK_ROBOT_SECRET)
+ *   4) 调 rpc_subscription_record_delivery 写结果
+ *
+ * Inngest Cloud 签名校验: apps/api/src/webhooks/index.ts 用 inngest-signature.ts
+ * （subscribe_loop 是 poll worker，不接收 webhook 回调）
  */
 import { loadConfig } from "./config.js";
 import { makeClient } from "./supabase-client.js";

@@ -1,14 +1,18 @@
 version: "3.9"
 
 # datafoundry-enhanced/services/docker-compose.yml
-# 启动：docker compose -f services/docker-compose.yml --env-file .env up -d inngest-bridge
+# 启动：
+#   docker compose -f services/docker-compose.yml up -d inngest-bridge
+#   docker compose -f services/docker-compose.yml --profile subscriber up -d
+#     启动 subscriber-default + subscriber-bj 两个 subscribe_loop process
 #
 # .env 需包含：
 #   SUPABASE_URL=https://xxx.supabase.co
 #   SUPABASE_SERVICE_ROLE_KEY=eyJ...
-#   INNGEST_EVENT_API_BASE=http://inngest:8288  （可选；空 = 走 dry-run 风控）
-#   DISPATCHED_TO=worker
+#   INNGEST_EVENT_API_BASE=http://inngest:8288  （可选；空 = 走 dry-run）
 #   DINGTALK_BASE_URL=https://oapi.dingtalk.com
+#   DINGTALK_ROBOT_SECRET=SEC...               （机器人签名密钥）
+#   INNGEST_SIGNING_KEY=sign_...               （Inngest Cloud webhook 回调校验）
 
 services:
   inngest-bridge:
@@ -23,6 +27,8 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       INNGEST_EVENT_API_BASE: ${INNGEST_EVENT_API_BASE:-}
       DINGTALK_BASE_URL: ${DINGTALK_BASE_URL:-https://oapi.dingtalk.com}
+      DINGTALK_ROBOT_SECRET: ${DINGTALK_ROBOT_SECRET:-}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:-}
       DISPATCHED_TO: ${DISPATCHED_TO:-worker}
       POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-800}
       BATCH_SIZE: ${BATCH_SIZE:-5}
@@ -34,7 +40,60 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # 未来挂 Inngest 本体（生产用 Inngest Cloud）
+  # ── subscriber profile: subscribe_loop 独立 process ─────────────────────────
+  # workspace = default，全事件匹配
+  subscriber-default:
+    build:
+      context: ..
+      dockerfile: docker/inngest-bridge/Dockerfile
+    image: datafoundry/inngest-bridge:latest
+    container_name: df-subscriber-default
+    restart: unless-stopped
+    profiles: ["subscriber"]
+    command: ["node", "--enable-source-maps", "dist/subscribe_loop.js"]
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      DINGTALK_ROBOT_SECRET: ${DINGTALK_ROBOT_SECRET:-}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:-}
+      SUBSCRIBER_WORKSPACE_ID: default
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-800}
+      HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-5000}
+      DRY_RUN: ${DRY_RUN:-false}
+      DEBUG_SIGN: ${DEBUG_SIGN:-0}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # workspace = heytea-bj
+  subscriber-bj:
+    build:
+      context: ..
+      dockerfile: docker/inngest-bridge/Dockerfile
+    image: datafoundry/inngest-bridge:latest
+    container_name: df-subscriber-bj
+    restart: unless-stopped
+    profiles: ["subscriber"]
+    command: ["node", "--enable-source-maps", "dist/subscribe_loop.js"]
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      DINGTALK_ROBOT_SECRET: ${DINGTALK_ROBOT_SECRET:-}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:-}
+      SUBSCRIBER_WORKSPACE_ID: heytea-bj
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-800}
+      HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-5000}
+      DRY_RUN: ${DRY_RUN:-false}
+      DEBUG_SIGN: ${DEBUG_SIGN:-0}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── inngest 本体（开发用，生产用 Inngest Cloud）─────────────────────────────
   inngest:
     image: inngest/inngest:latest
     container_name: df-inngest
