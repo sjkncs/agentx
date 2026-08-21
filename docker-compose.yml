@@ -9,10 +9,9 @@
 #
 # 端口：
 #   :5432  Postgres
-#   :6379  Redis (not used in current impl but ready)
-#   :8787  API  (via npm run dev:api)
-#   :3000  Web  (via npm run dev:web)
-#   :9229  Node inspector
+#   :6379  Redis (reserved)
+#   :8787  API  (via npm run dev:api on host)
+#   :3000  Web  (via npm run dev:web on host)
 # ============================================================
 
 services:
@@ -35,7 +34,7 @@ services:
       timeout: 3s
       retries: 5
 
-  # ─── Redis (optional, reserved) ──────────────────────────────
+  # ─── Redis (reserved) ──────────────────────────────────────
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -68,36 +67,34 @@ services:
     networks:
       - backend
 
-  # ─── Inngest Bridge Worker (subscribe_loop) ─────────────────
-  # 启动后持续运行，负责：
-  #   1. poll fsf_inngest_events → 匹配 fsf_event_subscriptions
-  #   2. 投递到 DingTalk / webhook / email
-  #   3. A17 失败指数退避重试
+  # ─── Inngest Bridge Subscriber (subscribe_loop) ────────────
+  # 持续 poll fsf_inngest_events → 匹配订阅 → 投递 DingTalk/webhook
+  # A17: 失败指数退避重试
   inngest-bridge-subscriber:
     build:
-      context: ./services/inngest-bridge
-      dockerfile: ../docker/inngest-bridge/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      SUPABASE_URL:          http://host.docker.internal:5432
+      SUPABASE_URL:           http://host.docker.internal:5432
       SUPABASE_SERVICE_ROLE_KEY: postgres
-      # 注意：local 开发建议改用 anon key + RLS bypass via service role
-      # 但 docker compose 无法直接访问 host 的 Supabase，
-      # 本地直接连 postgres above。
-      # 生产：改 SUPABASE_URL 为真实 Supabase project URL。
-      DISPATCHED_TO:          subscriber
+      DISPATCHED_TO:           subscriber
       SUBSCRIBER_WORKSPACE_ID: heytea-bj
-      POLL_INTERVAL_MS:      1000
-      BATCH_SIZE:             5
-      HTTP_TIMEOUT_MS:        5000
-      DRY_RUN:                "false"
-      DINGTALK_ROBOT_SECRET:  "${DINGTALK_ROBOT_SECRET:-}"
-      DINGTALK_APP_KEY:        "${DINGTALK_APP_KEY:-}"
-      DINGTALK_APP_SECRET:     "${DINGTALK_APP_SECRET:-}"
+      POLL_INTERVAL_MS:        ${POLL_INTERVAL_MS:-1000}
+      BATCH_SIZE:              ${BATCH_SIZE:-5}
+      HTTP_TIMEOUT_MS:         ${HTTP_TIMEOUT_MS:-5000}
+      DRY_RUN:                 ${DRY_RUN:-false}
+      DINGTALK_ROBOT_SECRET:   ${DINGTALK_ROBOT_SECRET:-}
+      DINGTALK_APP_KEY:        ${DINGTALK_APP_KEY:-}
+      DINGTALK_APP_SECRET:     ${DINGTALK_APP_SECRET:-}
+      RETRY_MULTIPLIER:        ${RETRY_MULTIPLIER:-2.0}
+      RETRY_MAX_DELAY:         ${RETRY_MAX_DELAY:-3600}
+      RETRY_MAX_DINGTALK:      ${RETRY_MAX_DINGTALK:-5}
+      RETRY_BASE_DINGTALK:     ${RETRY_BASE_DINGTALK:-30}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -109,27 +106,27 @@ services:
     networks:
       - backend
 
-  # ─── Inngest Bridge Verify Loop ────────────────────────────
-  # 定时查询 fsf_work_orders.sla_deadline，超时则更新 sla_status + 触发事件
+  # ─── Inngest Bridge Verifier (verify-loop) ─────────────────
+  # 每 VERIFY_INTERVAL_MS 查询 fsf_work_orders.sla_deadline，超时更新 sla_status
   inngest-bridge-verify:
     build:
-      context: ./services/inngest-bridge
-      dockerfile: ../docker/inngest-bridge/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      SUPABASE_URL:           http://host.docker.internal:5432
+      SUPABASE_URL:            http://host.docker.internal:5432
       SUPABASE_SERVICE_ROLE_KEY: postgres
-      DISPATCHED_TO:           verifier
-      VERIFY_INTERVAL_MS:      30000
-      HTTP_TIMEOUT_MS:         5000
-      DRY_RUN:                 "false"
-      DINGTALK_ROBOT_SECRET:   "${DINGTALK_ROBOT_SECRET:-}"
-      DINGTALK_APP_KEY:         "${DINGTALK_APP_KEY:-}"
-      DINGTALK_APP_SECRET:      "${DINGTALK_APP_SECRET:-}"
+      DISPATCHED_TO:            verifier
+      VERIFY_INTERVAL_MS:       ${VERIFY_INTERVAL_MS:-30000}
+      HTTP_TIMEOUT_MS:          ${HTTP_TIMEOUT_MS:-5000}
+      DRY_RUN:                  ${DRY_RUN:-false}
+      DINGTALK_ROBOT_SECRET:    ${DINGTALK_ROBOT_SECRET:-}
+      DINGTALK_APP_KEY:         ${DINGTALK_APP_KEY:-}
+      DINGTALK_APP_SECRET:       ${DINGTALK_APP_SECRET:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
