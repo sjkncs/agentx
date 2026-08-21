@@ -1,0 +1,144 @@
+# ============================================================
+# docker-compose.yml — A20.1 Local Development Stack
+#
+# 启动顺序：
+#   docker compose up -d postgres redis
+#   sleep 5
+#   docker compose run --rm db-init
+#   docker compose up -d
+#
+# 端口：
+#   :5432  Postgres
+#   :6379  Redis (not used in current impl but ready)
+#   :8787  API  (via npm run dev:api)
+#   :3000  Web  (via npm run dev:web)
+#   :9229  Node inspector
+# ============================================================
+
+services:
+  # ─── Database ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       datafoundry
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d datafoundry"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── Redis (optional, reserved) ──────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── DB Init (run-once via docker compose run) ──────────────
+  db-init:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./docs/supabase-xicha-bridge:/sql
+    command: >
+      sh -c "
+        for f in 000_install_all_NO_PGRST.sql 001_init.sql 003_food_safety_schema.sql 004_seed_food_safety_demo.sql 005_inngest_gate_rpcs.sql 007_event_subscriptions.sql 008_event_workspace_subscription.sql 010_work_order_rpcs.sql 011_work_order_rpcs.sql 012_workspace_config.sql 013_audit_search.sql; do
+          echo '--- applying: '$$f;
+          psql -h postgres -U postgres -d datafoundry -f /sql/$$f || true;
+        done;
+        echo 'DB init done'
+      "
+    networks:
+      - backend
+
+  # ─── Inngest Bridge Worker (subscribe_loop) ─────────────────
+  # 启动后持续运行，负责：
+  #   1. poll fsf_inngest_events → 匹配 fsf_event_subscriptions
+  #   2. 投递到 DingTalk / webhook / email
+  #   3. A17 失败指数退避重试
+  inngest-bridge-subscriber:
+    build:
+      context: ./services/inngest-bridge
+      dockerfile: ../docker/inngest-bridge/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      SUPABASE_URL:          http://host.docker.internal:5432
+      SUPABASE_SERVICE_ROLE_KEY: postgres
+      # 注意：local 开发建议改用 anon key + RLS bypass via service role
+      # 但 docker compose 无法直接访问 host 的 Supabase，
+      # 本地直接连 postgres above。
+      # 生产：改 SUPABASE_URL 为真实 Supabase project URL。
+      DISPATCHED_TO:          subscriber
+      SUBSCRIBER_WORKSPACE_ID: heytea-bj
+      POLL_INTERVAL_MS:      1000
+      BATCH_SIZE:             5
+      HTTP_TIMEOUT_MS:        5000
+      DRY_RUN:                "false"
+      DINGTALK_ROBOT_SECRET:  "${DINGTALK_ROBOT_SECRET:-}"
+      DINGTALK_APP_KEY:        "${DINGTALK_APP_KEY:-}"
+      DINGTALK_APP_SECRET:     "${DINGTALK_APP_SECRET:-}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9229/health || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - backend
+
+  # ─── Inngest Bridge Verify Loop ────────────────────────────
+  # 定时查询 fsf_work_orders.sla_deadline，超时则更新 sla_status + 触发事件
+  inngest-bridge-verify:
+    build:
+      context: ./services/inngest-bridge
+      dockerfile: ../docker/inngest-bridge/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      SUPABASE_URL:           http://host.docker.internal:5432
+      SUPABASE_SERVICE_ROLE_KEY: postgres
+      DISPATCHED_TO:           verifier
+      VERIFY_INTERVAL_MS:      30000
+      HTTP_TIMEOUT_MS:         5000
+      DRY_RUN:                 "false"
+      DINGTALK_ROBOT_SECRET:   "${DINGTALK_ROBOT_SECRET:-}"
+      DINGTALK_APP_KEY:         "${DINGTALK_APP_KEY:-}"
+      DINGTALK_APP_SECRET:      "${DINGTALK_APP_SECRET:-}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge
