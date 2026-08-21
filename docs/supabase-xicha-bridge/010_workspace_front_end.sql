@@ -51,9 +51,76 @@ grant execute on function datafoundry.rpc_workspace_list() to service_role;
 --    不走 subscribe_loop HTTP dispatch。本步骤标记 channel
 --    注册到 fsf_event_subscriptions target_channel 枚举。
 -- ============================================================
--- corp_dingtalk 订阅的 filter_json 格式示例：
---   { "agent_id": 1000001, "userid_list": "manager001,chef001" }
--- subscribe_loop 暂不支持 corp_dingtalk channel（走 RPC），
--- 留占位 filter 以便后续扩展。
+-- ============================================================
+-- 3. RPC: rpc_work_order_list_events
+--    返回某工单关联的全部事件（从 fsf_inngest_events 按 work_order_id 过滤）
+--    前端 admin-work-orders.tsx 事件时间线用
+-- ============================================================
+create or replace function datafoundry.rpc_work_order_list_events(
+  p_work_order_id text,
+  p_limit         int default 50
+)
+returns table (
+  event_id    text,
+  event_name  text,
+  payload     jsonb,
+  source      text,
+  status      text,
+  created_at  timestamptz
+)
+language plpgsql
+security definer
+set search_path = datafoundry, public, extensions
+as $$
+begin
+  return query
+    select
+      e.event_id,
+      e.event_name,
+      e.payload,
+      e.source,
+      e.status,
+      e.created_at
+    from datafoundry.fsf_inngest_events e
+    where e.payload->>'work_order_id' = p_work_order_id
+       or e.event_id like '%' || p_work_order_id || '%'
+    order by e.created_at desc
+    limit p_limit;
+end $$;
 
-commit;
+revoke all on function datafoundry.rpc_work_order_list_events(text, int) from public;
+grant execute on function datafoundry.rpc_work_order_list_events(text, int) to service_role;
+
+-- ============================================================
+-- 4. RPC: rpc_work_order_update_status
+--    更新工单 status（触发 AFTER UPDATE trigger → 自动 enqueue work_order.status_change 事件）
+-- ============================================================
+create or replace function datafoundry.rpc_work_order_update_status(
+  p_case_no  text,
+  p_status   text,
+  p_stage    text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = datafoundry, public, extensions
+as $$
+declare
+  v_updated int;
+begin
+  update datafoundry.fsf_work_orders
+  set status    = p_status,
+      stage     = coalesce(p_stage, stage),
+      updated_at = now()
+  where case_no = p_case_no;
+
+  get diagnostics v_updated = row_count;
+  if v_updated = 0 then
+    return jsonb_build_object('ok', false, 'error', 'work_order not found: ' || p_case_no);
+  end if;
+
+  return jsonb_build_object('ok', true, 'case_no', p_case_no, 'status', p_status);
+end $$;
+
+revoke all on function datafoundry.rpc_work_order_update_status(text,text,text) from public;
+grant execute on function datafoundry.rpc_work_order_update_status(text,text,text) to service_role;

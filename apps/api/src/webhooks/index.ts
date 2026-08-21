@@ -13,7 +13,6 @@
  */
 import { createHmac, timingSafeEqual, createHash } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export interface WebhookEnv {
   supabaseUrl: string;
@@ -23,12 +22,12 @@ export interface WebhookEnv {
 }
 
 export function loadWebhookEnv(): WebhookEnv {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("SUPABASE_URL/SERVICE_ROLE_KEY required");
+  const url = process.env.SUPABASE_URL ?? "";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
   const tokens = (process.env.DINGTALK_TOKENS ?? "")
     .split(",").map((s) => s.trim()).filter(Boolean);
   const signing = process.env.INNGEST_SIGNING_KEY;
+  if (!url || !key) throw new Error("SUPABASE_URL/SERVICE_ROLE_KEY required");
   return {
     supabaseUrl: url,
     serviceRoleKey: key,
@@ -37,13 +36,36 @@ export function loadWebhookEnv(): WebhookEnv {
   };
 }
 
-let cached: SupabaseClient | null = null;
-function db(env: WebhookEnv): SupabaseClient {
-  if (cached) return cached;
-  cached = createClient(env.supabaseUrl, env.serviceRoleKey, {
-    auth: { persistSession: false },
+/** Minimal REST-only Supabase client (no @supabase/supabase-js dependency) */
+async function dbInsert(env: WebhookEnv, table: string, row: unknown): Promise<void> {
+  const url = `${env.supabaseUrl}/rest/v1/${table}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      apikey: env.serviceRoleKey,
+      authorization: `Bearer ${env.serviceRoleKey}`,
+      prefer: "return=minimal",
+    },
+    body: JSON.stringify(row),
   });
-  return cached;
+  if (!res.ok) throw new Error(`db insert ${table} -> ${res.status} ${await res.text()}`);
+}
+
+async function dbRpc(env: WebhookEnv, fn: string, args: Record<string, unknown>): Promise<unknown> {
+  const url = `${env.supabaseUrl}/rest/v1/rpc/${fn}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      apikey: env.serviceRoleKey,
+      authorization: `Bearer ${env.serviceRoleKey}`,
+    },
+    body: JSON.stringify(args),
+  });
+  if (!res.ok) throw new Error(`db rpc ${fn} -> ${res.status} ${await res.text()}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 export function isWebhookPath(pathname: string): boolean {
@@ -58,7 +80,7 @@ export async function handleWebhook(
   const url = req.url ?? "";
   const m = /^\/api\/webhooks\/([^?]+)/.exec(url);
   if (!m) return false;
-  const route = m[1];
+  const route = m[1]!;
   const body = await readBody(req);
   const headers = pickHeaders(req);
   try {
@@ -99,7 +121,7 @@ async function handleInngest(env: WebhookEnv, body: string, headers: Record<stri
   const eventData = (payload?.data ?? {}) as Record<string, unknown>;
   const workOrderId = typeof eventData.work_order_id === "string" ? eventData.work_order_id : null;
 
-  await db(env).from("fsf_webhook_inbox").insert({
+  await dbInsert(env, "fsf_webhook_inbox", {
     source: "inngest",
     event_id: eventId || null,
     signature: headers["x-inngest-signature"] ?? null,
@@ -110,7 +132,7 @@ async function handleInngest(env: WebhookEnv, body: string, headers: Record<stri
     work_order_id: workOrderId,
     result: { received: true, event_name: eventName },
   });
-  await db(env).rpc("rpc_inngest_ack_webhook", {
+  await dbRpc(env, "rpc_inngest_ack_webhook", {
     p_source: "inngest",
     p_external_event_id: eventId,
     p_work_order_id: workOrderId,
@@ -131,7 +153,7 @@ async function handleDingtalk(env: WebhookEnv, body: string, headers: Record<str
   }
   const payload = parseJson(body);
   const workOrderId = pickWorkOrder(payload);
-  await db(env).from("fsf_webhook_inbox").insert({
+  await dbInsert(env, "fsf_webhook_inbox", {
     source: "dingtalk",
     event_id: String(payload?.eventId ?? ""),
     signature: sign || null,
@@ -142,7 +164,7 @@ async function handleDingtalk(env: WebhookEnv, body: string, headers: Record<str
     work_order_id: workOrderId,
     result: { received: true, text: pickText(payload) },
   });
-  await db(env).rpc("rpc_inngest_ack_webhook", {
+  await dbRpc(env, "rpc_inngest_ack_webhook", {
     p_source: "dingtalk",
     p_external_event_id: String(payload?.eventId ?? ""),
     p_work_order_id: workOrderId,
@@ -155,7 +177,7 @@ async function handleGeneric(env: WebhookEnv, source: string, body: string, head
   const payload = parseJson(body);
   const externalId = String(payload?.id ?? payload?.event_id ?? "");
   const workOrderId = pickWorkOrder(payload);
-  await db(env).from("fsf_webhook_inbox").insert({
+  await dbInsert(env, "fsf_webhook_inbox", {
     source,
     event_id: externalId || null,
     signature: headers["x-signature"] ?? null,
@@ -166,7 +188,7 @@ async function handleGeneric(env: WebhookEnv, source: string, body: string, head
     work_order_id: workOrderId,
     result: { received: true },
   });
-  await db(env).rpc("rpc_inngest_ack_webhook", {
+  await dbRpc(env, "rpc_inngest_ack_webhook", {
     p_source: source,
     p_external_event_id: externalId,
     p_work_order_id: workOrderId,
@@ -177,16 +199,22 @@ async function handleGeneric(env: WebhookEnv, source: string, body: string, head
 
 async function handleInbox(env: WebhookEnv, url: string, res: ServerResponse): Promise<void> {
   const limit = Number(new URL(url, "http://x").searchParams.get("limit") ?? 50);
-  const { data, error } = await db(env)
-    .from("fsf_webhook_inbox")
-    .select("id,source,event_id,work_order_id,processed,received_at")
-    .order("received_at", { ascending: false })
-    .limit(Math.max(1, Math.min(limit, 500)));
-  if (error) {
-    json(res, 500, { ok: false, error: error.message });
+  const rowsUrl = `${env.supabaseUrl}/rest/v1/fsf_webhook_inbox` +
+    `?select=id,source,event_id,work_order_id,processed,received_at` +
+    `&order=received_at.desc` +
+    `&limit=${Math.max(1, Math.min(limit, 500))}`;
+  const res_ = await fetch(rowsUrl, {
+    headers: {
+      apikey: env.serviceRoleKey,
+      authorization: `Bearer ${env.serviceRoleKey}`,
+    },
+  });
+  if (!res_.ok) {
+    json(res, 500, { ok: false, error: `fetch inbox -> ${res_.status}` });
     return;
   }
-  json(res, 200, { ok: true, rows: data ?? [] });
+  const data = await res_.json().catch(() => []);
+  json(res, 200, { ok: true, rows: Array.isArray(data) ? data : [] });
 }
 
 function computeDingtalkSignature(token: string, body: string, ts: string): string {
