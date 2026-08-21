@@ -196,7 +196,25 @@ begin
     and (p_status     is null or wo.status     = p_status)
     and (p_risk_level is null or wo.risk_level = p_risk_level)
   group by wo.id
-  order by wo.created_at desc
+  -- A23.3: SLA priority sort: breached > warning > escalated > open > investigating > resolved/closed
+  -- Within same bucket, earliest deadline first (nulls last)
+  order by
+    case wo.sla_status
+      when 'breached'   then 0
+      when 'warning'    then 1
+      when 'ok'         then 2
+      else 3
+    end,
+    case wo.status
+      when 'escalated'    then 0
+      when 'open'          then 1
+      when 'investigating' then 2
+      when 'resolved'      then 3
+      when 'closed'        then 4
+      else 5
+    end,
+    wo.sla_deadline asc nulls last,
+    wo.created_at desc
   limit p_limit;
 end;
 $$;
