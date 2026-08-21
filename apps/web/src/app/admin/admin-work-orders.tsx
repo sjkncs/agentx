@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useT } from "../../i18n/locale-context";
 import { callRpc } from "./supabase-rpc";
+import { WOCreateDialog } from "./admin-wo-create-dialog";
 
 interface WorkOrderRow {
   id: number;
@@ -142,6 +143,7 @@ export function AdminWorkOrdersPanel() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -180,6 +182,12 @@ export function AdminWorkOrdersPanel() {
     void loadEvents(caseNo);
   };
 
+  const handleCreated = (caseNo: string) => {
+    setShowCreate(false);
+    if (caseNo) { setSelected(caseNo); }
+    void loadOrders();
+  };
+
   const advanceStatus = async (caseNo: string) => {
     const next = NEXT_STATUS[orders.find((o) => o.case_no === caseNo)?.status ?? ""];
     if (!next) return;
@@ -212,12 +220,21 @@ export function AdminWorkOrdersPanel() {
         <div className="lg:col-span-1">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-medium text-foreground">工单列表</h3>
-            <button
-              type="button" onClick={loadOrders} disabled={loading}
-              className="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs text-muted hover:text-foreground disabled:opacity-50"
-            >
-              {loading ? "…" : "Refresh"}
-            </button>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="rounded bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-700"
+              >
+                + 新建
+              </button>
+              <button
+                type="button" onClick={loadOrders} disabled={loading}
+                className="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs text-muted hover:text-foreground disabled:opacity-50"
+              >
+                {loading ? "…" : "Refresh"}
+              </button>
+            </div>
           </div>
           <div className="space-y-1 max-h-[640px] overflow-y-auto">
             {orders.length === 0 ? (
@@ -448,6 +465,13 @@ export function AdminWorkOrdersPanel() {
           )}
         </div>
       </div>
+
+      {showCreate && (
+        <WOCreateDialog
+          onClose={() => setShowCreate(false)}
+          onCreated={handleCreated}
+        />
+      )}
     </div>
   );
 }

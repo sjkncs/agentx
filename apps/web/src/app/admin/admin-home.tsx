@@ -22,8 +22,9 @@ import { AdminApprovalsPanel } from "./admin-approvals-panel";
 import { AdminWebhooksPanel } from "./admin-webhooks-panel";
 import { AdminWorkOrdersPanel } from "./admin-work-orders";
 import { AdminDeliveryStatsPanel } from "./admin-delivery-stats";
+import { AdminRetryConfigPanel } from "./admin-retry-config";
 
-export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery";
+export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery" | "retry";
 
 export function AdminHome({ initialTab }: { initialTab: AdminTab }) {
   return (
@@ -209,6 +210,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         <AdminTabButton active={tab === "webhooks"} onClick={() => setTab("webhooks")} label={t("admin.tabs.webhooks", { defaultValue: "Webhooks" })} />
         <AdminTabButton active={tab === "workorders"} onClick={() => setTab("workorders")} label={t("admin.tabs.workorders", { defaultValue: "工单" })} />
         <AdminTabButton active={tab === "delivery"} onClick={() => setTab("delivery")} label={t("admin.tabs.delivery", { defaultValue: "投递" })} />
+        <AdminTabButton active={tab === "retry"} onClick={() => setTab("retry")} label={t("admin.tabs.retry", { defaultValue: "重试策略" })} />
       </nav>
 
       {globalError ? (
@@ -239,6 +241,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         {tab === "webhooks" ? <AdminWebhooksPanel /> : null}
         {tab === "workorders" ? <AdminWorkOrdersPanel /> : null}
         {tab === "delivery" ? <AdminDeliveryStatsPanel /> : null}
+        {tab === "retry" ? <AdminRetryConfigPanel /> : null}
       </section>
     </main>
   );
