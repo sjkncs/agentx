@@ -13,6 +13,8 @@
  * 调用 RPC：
  *   - rpc_work_order_stage_advance(case_no, stage, notes, resolution, handler_id)
  *   - rpc_work_order_escalate(case_no, reason, escalate_to)
+ *   - rpc_compensation_recommend (A25.2: resolution 阶段自动加载推荐)
+ *   - rpc_compensation_approve  (A25.2: 确认补偿方案)
  */
 import { useState, useCallback } from "react";
 import { callRpc } from "./supabase-rpc";
@@ -21,6 +23,7 @@ interface StageOrder {
   id: number;
   case_no: string;
   category: string;
+  sub_category: string | null;
   risk_level: string;
   status: string;
   stage: string | null;
@@ -143,7 +146,27 @@ interface Props {
   onUpdated: (caseNo: string) => void;
 }
 
-type StepView = "view" | "advance" | "escalate";
+type StepView = "view" | "advance" | "escalate" | "compensate";
+
+interface CompensationRec {
+  ok: boolean;
+  type: string;
+  min_amount: number;
+  max_amount: number;
+  recommended_amount: number;
+  severity_score: number;
+  reason: string;
+  description: string;
+  script: string | null;
+}
+
+const COMP_TYPE_LABELS: Record<string, string> = {
+  voucher:    "代金券",
+  redelivery: "重新配送",
+  refund:     "退款",
+  apology:    "道歉",
+  none:       "无补偿",
+};
 
 export function WOStageDialog({ order, onClose, onUpdated }: Props) {
   const [view, setView] = useState<StepView>("view");
@@ -158,6 +181,60 @@ export function WOStageDialog({ order, onClose, onUpdated }: Props) {
   // Escalate form
   const [escalateReason, setEscalateReason] = useState("");
   const [escalateTo,     setEscalateTo]     = useState<string>("hq");
+
+  // A25.2: Compensation form
+  const [compRec,          setCompRec]          = useState<CompensationRec | null>(null);
+  const [compType,         setCompType]         = useState<string>("voucher");
+  const [compAmount,       setCompAmount]       = useState<string>("");
+  const [compLoading,      setCompLoading]      = useState(false);
+
+  // A25.2: Load recommendation when entering compensation mode
+  const loadCompensation = useCallback(async (cat: string, subCat: string | null, risk: string) => {
+    setCompLoading(true);
+    try {
+      const r = await callRpc<CompensationRec | null>("rpc_compensation_recommend", {
+        p_category:    cat,
+        p_sub_category: subCat,
+        p_risk_level:  risk,
+      });
+      if (r && "ok" in r && r.ok) {
+        setCompRec(r as CompensationRec);
+        setCompType(r.type);
+        if (r.recommended_amount) setCompAmount(String(r.recommended_amount));
+      }
+    } catch {
+      // ignore — recommendation is optional
+    } finally {
+      setCompLoading(false);
+    }
+  }, []);
+
+  const handleApproveCompensation = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const r = await callRpc<{ ok: boolean; error?: string }>(
+        "rpc_compensation_approve",
+        {
+          p_case_no:             order.case_no,
+          p_compensation_type:   compType,
+          p_compensation_amount: compAmount ? Number(compAmount) : null,
+          p_resolution:          resolution || null,
+          p_handler_id:         order.handler_id,
+        }
+      );
+      if (r.error || !r.ok) {
+        setError((r as { error?: string }).error ?? "补偿审批失败");
+        return;
+      }
+      onUpdated(order.case_no);
+      onClose();
+    } catch {
+      setError("网络错误");
+    } finally {
+      setLoading(false);
+    }
+  }, [order.case_no, order.handler_id, compType, compAmount, resolution, onUpdated, onClose]);
 
   const currentIdx = order.stage ? (STAGE_ORDER[order.stage] ?? 0) : 0;
 
@@ -295,6 +372,23 @@ export function WOStageDialog({ order, onClose, onUpdated }: Props) {
                 </div>
               )}
 
+              {/* A25.2: 确认补偿按钮（已调查完毕，进入补偿处理） */}
+              {order.stage !== "resolution" && order.stage !== "closed" && (
+                <div>
+                  <p className="mb-2 text-xs font-medium text-foreground">补偿处理</p>
+                  <button type="button"
+                    onClick={() => {
+                      void loadCompensation(order.category, order.sub_category ?? null, order.risk_level);
+                      setSelectedStage("resolution");
+                      setView("compensate");
+                    }}
+                    className="flex items-center gap-1.5 rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-100">
+                    <span>✅</span>
+                    <span>确认补偿方案</span>
+                  </button>
+                </div>
+              )}
+
               {/* 关闭按钮 */}
               {order.status !== "closed" && order.status !== "resolved" && (
                 <div>
@@ -391,6 +485,84 @@ export function WOStageDialog({ order, onClose, onUpdated }: Props) {
                 <button type="button" onClick={() => void handleEscalate()} disabled={loading}
                   className="rounded bg-rose-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-rose-700 disabled:opacity-50">
                   {loading ? "升级中…" : "确认升级"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── A25.2: COMPENSATE mode: 补偿审批 ───────────── */}
+          {view === "compensate" && (
+            <div className="space-y-4">
+              <div>
+                <p className="mb-1 text-xs font-medium text-foreground">
+                  补偿处理：<span className="text-emerald-600">确认补偿方案</span>
+                </p>
+                <p className="text-xs text-muted-light">基于补偿矩阵推荐的处理方案，请确认后提交</p>
+              </div>
+
+              {/* 推荐方案卡片 */}
+              {compLoading ? (
+                <div className="flex items-center gap-2 text-xs text-muted-light">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600" />
+                  加载推荐方案…
+                </div>
+              ) : compRec ? (
+                <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs">
+                  <div className="mb-1 font-medium text-emerald-700">推荐方案</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted">
+                    <span>补偿方式</span><span className="text-emerald-800">{COMP_TYPE_LABELS[compRec.type] ?? compRec.type}</span>
+                    <span>建议金额</span><span className="text-emerald-800">¥{compRec.min_amount} ~ ¥{compRec.max_amount}</span>
+                    <span>推荐金额</span><span className="font-medium text-emerald-800">¥{compRec.recommended_amount}</span>
+                    <span>严重程度</span><span className="text-emerald-800">{compRec.severity_score}/10</span>
+                  </div>
+                  <div className="mt-2 text-muted-light">{compRec.reason}</div>
+                  {compRec.script && (
+                    <div className="mt-2 italic text-emerald-700">话术：{compRec.script}</div>
+                  )}
+                </div>
+              ) : null}
+
+              {/* 补偿方式 */}
+              <div>
+                <label className="mb-1 block text-xs font-medium text-foreground">补偿方式 *</label>
+                <select value={compType} onChange={(e) => setCompType(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-foreground focus:border-blue-400 focus:outline-none">
+                  {Object.entries(COMP_TYPE_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 补偿金额 */}
+              <div>
+                <label className="mb-1 block text-xs font-medium text-foreground">补偿金额（元）</label>
+                <input type="number" value={compAmount} onChange={(e) => setCompAmount(e.target.value)}
+                  min="0" step="0.01"
+                  placeholder="填入实际补偿金额"
+                  className="w-full rounded border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-light focus:border-blue-400 focus:outline-none" />
+              </div>
+
+              {/* 处理备注 */}
+              <div>
+                <label className="mb-1 block text-xs font-medium text-foreground">处理备注</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="记录补偿过程、联系门店/客户情况"
+                  className="w-full rounded border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-light focus:border-blue-400 focus:outline-none resize-none" />
+              </div>
+
+              {error && (
+                <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{error}</div>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setView("view")}
+                  className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-muted hover:bg-slate-50">
+                  取消
+                </button>
+                <button type="button" onClick={() => void handleApproveCompensation()} disabled={loading}
+                  className="rounded bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                  {loading ? "提交中…" : "确认补偿"}
                 </button>
               </div>
             </div>
