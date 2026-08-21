@@ -78,21 +78,19 @@ export function AdminWorkOrdersPanel() {
   const loadOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
-    // 用 PostgREST 直接查（不通过 RPC，简单列表用直接查询更方便）
-    const { data, error: e } = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/rest/v1/fsf_work_orders?select=*&order=created_at.desc&limit=100`,
-      {
+    try {
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/fsf_work_orders?select=*&order=created_at.desc&limit=100`;
+      const res = await fetch(url, {
         headers: {
           "content-type": "application/json",
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-          authorization: `Bearer ${typeof window !== "undefined" ? localStorage.getItem("sb-access-token") ?? "" : ""}`,
         },
-      } as RequestInit,
-    ).then((r) => r.json()).catch(() => null) as { data: WorkOrderRow[]; error: string } | null;
-    if (e || !data) {
-      setError(String(e ?? "load failed"));
-    } else {
-      setOrders(Array.isArray(data) ? data : []);
+      });
+      if (!res.ok) throw new Error(`fetch ${res.status}`);
+      const rows = await res.json();
+      setOrders(Array.isArray(rows) ? rows : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     }
     setLoading(false);
   }, []);

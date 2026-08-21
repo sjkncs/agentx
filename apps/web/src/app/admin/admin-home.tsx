@@ -20,8 +20,9 @@ import { AdminMetricsPanel } from "./admin-metrics-panel";
 import { AdminAlertsPanel } from "./admin-alerts-panel";
 import { AdminApprovalsPanel } from "./admin-approvals-panel";
 import { AdminWebhooksPanel } from "./admin-webhooks-panel";
+import { AdminWorkOrdersPanel } from "./admin-work-orders";
 
-export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks";
+export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders";
 
 export function AdminHome({ initialTab }: { initialTab: AdminTab }) {
   return (
@@ -205,6 +206,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         <AdminTabButton active={tab === "alerts"} onClick={() => setTab("alerts")} label={t("admin.tabs.alerts")} />
         <AdminTabButton active={tab === "approvals"} onClick={() => setTab("approvals")} label={t("admin.tabs.approvals")} />
         <AdminTabButton active={tab === "webhooks"} onClick={() => setTab("webhooks")} label={t("admin.tabs.webhooks", { defaultValue: "Webhooks" })} />
+        <AdminTabButton active={tab === "workorders"} onClick={() => setTab("workorders")} label={t("admin.tabs.workorders", { defaultValue: "工单" })} />
       </nav>
 
       {globalError ? (
@@ -233,6 +235,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         {tab === "alerts" ? <AdminAlertsPanel /> : null}
         {tab === "approvals" ? <AdminApprovalsPanel /> : null}
         {tab === "webhooks" ? <AdminWebhooksPanel /> : null}
+        {tab === "workorders" ? <AdminWorkOrdersPanel /> : null}
       </section>
     </main>
   );
