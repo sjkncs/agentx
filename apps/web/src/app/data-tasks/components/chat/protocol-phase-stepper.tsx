@@ -28,36 +28,141 @@ function CheckIcon() {
 function StepNode({
   item,
   isActive,
+  isFirst,
+  isLast,
 }: {
   item: ProtocolPhaseProgressItem;
   isActive: boolean;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
-  if (item.status === "completed") {
-    return (
-      <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-step-success/15 text-step-success">
-        <CheckIcon />
-      </span>
-    );
-  }
-  if (item.status === "current") {
-    return (
-      <span className="relative grid h-[18px] w-[18px] shrink-0 place-items-center">
-        {isActive ? (
-          <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
-        ) : null}
-        <span className="relative h-[18px] w-[18px] rounded-full bg-primary shadow-[0_0_0_3px_var(--color-primary-light)] shadow-primary/15" />
-      </span>
-    );
-  }
+  const baseDot =
+    "grid h-4 w-4 shrink-0 place-items-center rounded-full";
   return (
-    <span className="h-[18px] w-[18px] shrink-0 rounded-full border border-border bg-surface" />
+    <div className="relative flex shrink-0 flex-col items-center">
+      {/* vertical connector above */}
+      {isFirst ? null : (
+        <span
+          aria-hidden="true"
+          className={[
+            "absolute -top-2 left-1/2 h-2 w-px -translate-x-1/2",
+            item.status === "completed" || item.status === "current"
+              ? "bg-primary/40"
+              : "bg-border",
+          ].join(" ")}
+        />
+      )}
+      {item.status === "completed" ? (
+        <span className={`${baseDot} bg-step-success/15 text-step-success`}>
+          <CheckIcon />
+        </span>
+      ) : item.status === "current" ? (
+        <span className="relative grid h-4 w-4 shrink-0 place-items-center">
+          {isActive ? (
+            <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
+          ) : null}
+          <span className="relative h-4 w-4 rounded-full bg-primary shadow-[0_0_0_3px_var(--color-primary-light)] shadow-primary/15" />
+        </span>
+      ) : (
+        <span className={`${baseDot} border border-border bg-surface`} />
+      )}
+      {/* vertical connector below */}
+      {isLast ? null : (
+        <span
+          aria-hidden="true"
+          className={[
+            "absolute top-full left-1/2 h-2 w-px -translate-x-1/2",
+            item.status === "completed"
+              ? "bg-primary/40"
+              : "bg-border",
+          ].join(" ")}
+        />
+      )}
+    </div>
+  );
+}
+
+function StepRow({
+  item,
+  isActive,
+  isFirst,
+  isLast,
+  label,
+  isHumanGate,
+  guidanceText,
+}: {
+  item: ProtocolPhaseProgressItem;
+  isActive: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  label: string;
+  isHumanGate: boolean;
+  guidanceText: string;
+}) {
+  const isCurrent = item.status === "current";
+  const isCompleted = item.status === "completed";
+  return (
+    <li
+      role="listitem"
+      aria-current={isCurrent ? "step" : undefined}
+      className={[
+        "flex items-start gap-3 rounded-lg border px-3 py-2 transition-colors",
+        isCurrent
+          ? "border-primary/30 bg-primary-light/10 shadow-[0_4px_16px_-8px_rgba(15,23,42,0.18)]"
+          : isCompleted
+            ? "border-border bg-surface-subtle"
+            : "border-border bg-surface/40",
+      ].join(" ")}
+    >
+      <StepNode
+        item={item}
+        isActive={isActive}
+        isFirst={isFirst}
+        isLast={isLast}
+      />
+      <div className="min-w-0 flex-1 pt-0.5">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={[
+              "truncate text-[12px] leading-4",
+              isCurrent
+                ? "font-semibold text-foreground"
+                : isCompleted
+                  ? "text-muted"
+                  : "text-muted-light",
+            ].join(" ")}
+            title={label}
+          >
+            {label}
+          </span>
+          {isHumanGate ? (
+            <span className="shrink-0 rounded-full border border-amber-300/60 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600">
+              ⌛
+            </span>
+          ) : null}
+        </div>
+        {guidanceText ? (
+          <p
+            title={guidanceText}
+            className={[
+              "mt-1 text-[11px] leading-4",
+              isCurrent ? "text-muted" : "text-muted-light",
+            ].join(" ")}
+          >
+            {guidanceText}
+          </p>
+        ) : null}
+      </div>
+    </li>
   );
 }
 
 /**
- * Cursor-style phase stepper for the governed protocol run. Renders the phase
- * track above the chat input plus the current phase's natural-language guidance
- * (Option B). Hidden when the run has no protocol definition yet.
+ * Cursor-style phase stepper for the governed protocol run — vertical layout
+ * (Option A). Each phase is a row with the status dot on the left, label +
+ * guidance on the right, and a thin vertical connector line tying rows
+ * together. Keeps every phase label visible regardless of phase count and
+ * gives the active phase a soft highlight instead of a one-line clamp.
  */
 export function ProtocolPhaseStepper({
   definition,
@@ -96,44 +201,38 @@ export function ProtocolPhaseStepper({
   return (
     <div
       data-testid="protocol-phase-stepper"
-      className="pointer-events-auto mb-2 rounded-xl border border-border bg-surface/95 px-3 py-2 shadow-[0_4px_16px_-8px_rgba(15,23,42,0.18)] backdrop-blur"
+      data-orientation="vertical"
+      className="pointer-events-auto mb-2 rounded-xl border border-border bg-surface/95 p-2 shadow-[0_4px_16px_-8px_rgba(15,23,42,0.18)] backdrop-blur"
     >
-      <div className="flex items-center gap-2 overflow-x-auto">
-        <span className="shrink-0 rounded-md bg-surface-subtle px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-light">
+      <div className="mb-1.5 flex items-center justify-between px-1">
+        <span className="rounded-md bg-surface-subtle px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-light">
           {protocolLabel}
         </span>
-        {progress.items.map((item, index) => (
-          <div key={item.id} className="flex shrink-0 items-center gap-1.5">
-            {index > 0 ? <span className="h-px w-3 bg-border" /> : null}
-            <StepNode item={item} isActive={isLive && item.status === "current"} />
-            <span
-              className={[
-                "whitespace-nowrap text-[11px] leading-4",
-                item.status === "current"
-                  ? "font-semibold text-foreground"
-                  : item.status === "completed"
-                    ? "text-muted"
-                    : "text-muted-light",
-              ].join(" ")}
-            >
-              {phaseLabel(item.id)}
-            </span>
-          </div>
-        ))}
         {gateBadge ? (
-          <span className="ml-auto shrink-0 rounded-full border border-amber-300/60 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+          <span className="rounded-full border border-amber-300/60 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
             {t("protocolPhase.needsYourInput")}
           </span>
         ) : null}
       </div>
-      {current?.guidance ? (
-        <p
-          title={current.guidance}
-          className="mt-1.5 line-clamp-2 text-[11px] leading-4 text-muted"
-        >
-          {current.guidance}
-        </p>
-      ) : null}
+      <ol role="list" className="grid gap-1.5">
+        {progress.items.map((item, index) => {
+          const isHumanGate = isHumanGatePhase(item.id) && item.status === "current";
+          return (
+            <StepRow
+              key={item.id}
+              item={item}
+              isActive={isLive && item.status === "current"}
+              isFirst={index === 0}
+              isLast={index === progress.items.length - 1}
+              label={phaseLabel(item.id)}
+              isHumanGate={isHumanGate}
+              guidanceText={
+                item.status === "current" && item.guidance ? item.guidance : ""
+              }
+            />
+          );
+        })}
+      </ol>
     </div>
   );
 }

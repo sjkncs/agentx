@@ -115,6 +115,7 @@ import { ToolCallResultBridge } from "./tool-call-result-bridge.js";
 import { handleWebhook, isWebhookPath, loadWebhookEnv } from "./webhooks/index.js";
 import { handleXichaConversationRequest } from "./routes/xicha-conversation.js";
 import { createFoodSafetyClient } from "./supabase-food-safety.js";
+import { handleSkillMarketplaceRequest } from "./routes/skill-marketplace.js";
 
 const COPILOTKIT_PATH = "/api/copilotkit";
 const DEFAULT_WORKSPACE_ID = "default";
@@ -434,6 +435,26 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
             "Content-Type": "application/json",
           });
           response.end(JSON.stringify(xichaResponse.body));
+          return;
+        }
+      }
+
+      if (requestUrl.pathname === "/api/v1/skill-marketplace/catalog"
+          || requestUrl.pathname === "/api/v1/skill-marketplace/install") {
+        const marketplaceBody = request.method === "POST"
+          ? await readJsonBody(request)
+          : undefined;
+        const marketplaceResponse = await handleSkillMarketplaceRequest(
+          request,
+          requestUrl.pathname,
+          marketplaceBody,
+        );
+        if (marketplaceResponse) {
+          response.writeHead(marketplaceResponse.status, {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json",
+          });
+          response.end(JSON.stringify(marketplaceResponse.body));
           return;
         }
       }

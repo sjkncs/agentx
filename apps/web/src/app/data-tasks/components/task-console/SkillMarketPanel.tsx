@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useT } from "../../../../i18n/locale-context";
 import type { WorkspaceConfigItem } from "../../data-task-state";
 import { IconSkill } from "./console-icons-system";
@@ -7,6 +8,10 @@ import { IconSkill } from "./console-icons-system";
 /**
  * Skill Market panel: lists installed / built-in skills with their enabled state
  * and a quick enable/disable toggle. Reuses the workspace config skill store.
+ *
+ * Also surfaces a "Browse marketplace" link to the curated catalog at
+ * /admin/skill-marketplace — that's where new GitHub-hosted skills get
+ * fetched + parsed before they show up here.
  */
 export function SkillMarketPanel({
   skills,
@@ -19,11 +24,20 @@ export function SkillMarketPanel({
 
   return (
     <section data-testid="skill-market-panel" className="grid gap-3">
-      <header className="flex items-center gap-2 text-muted">
-        <IconSkill size={14} />
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em]">
-          {t("market.title")}
-        </h3>
+      <header className="flex items-center justify-between gap-2 text-muted">
+        <span className="flex items-center gap-2">
+          <IconSkill size={14} />
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em]">
+            {t("market.title")}
+          </h3>
+        </span>
+        <Link
+          href="/admin/skill-marketplace"
+          className="rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-semibold text-primary hover:border-primary"
+          data-testid="skill-marketplace-link"
+        >
+          Browse marketplace →
+        </Link>
       </header>
 
       {skills.length === 0 ? (

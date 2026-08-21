@@ -5,6 +5,14 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import yauzl, { type Entry, type ZipFile } from "yauzl";
 
+export {
+  buildSkillRawUrl,
+  findCatalogEntry,
+  findCatalogEntryByRepo,
+  loadCatalog,
+  type SkillCatalogEntry,
+} from "./marketplace.js";
+
 const parseYaml = yaml.load;
 
 const MAX_SKILL_MD_BYTES = 256 * 1024;
