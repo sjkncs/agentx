@@ -6,15 +6,14 @@
 export interface WorkerConfig {
   supabaseUrl: string;
   serviceRoleKey: string;
-  /** 轮询间隔（毫秒），默认 800ms */
   pollIntervalMs: number;
-  /** 单次拿的事件数，控制并发 */
   batchSize: number;
-  /** 投递超时（毫秒） */
   httpTimeoutMs: number;
-  /** 钉钉 webhook 前缀 URL，可选 */
   defaultDingtalkBase: string;
-  /** 模拟模式：true → 不真发 POST，只记日志 */
+  /** 钉钉机器人签名密钥（HMAC-SHA256）；为空则跳过签名 */
+  dingtalkRobotSecret: string;
+  /** Inngest Cloud signing key（用于校验 webhook 回调签名） */
+  inngestSigningKey: string;
   dryRun: boolean;
 }
 
@@ -33,6 +32,8 @@ export function loadConfig(): WorkerConfig {
     httpTimeoutMs: Number(process.env.HTTP_TIMEOUT_MS ?? 5_000),
     defaultDingtalkBase:
       process.env.DINGTALK_BASE_URL ?? "https://oapi.dingtalk.com",
+    dingtalkRobotSecret: process.env.DINGTALK_ROBOT_SECRET ?? "",
+    inngestSigningKey: process.env.INNGEST_SIGNING_KEY ?? "",
     dryRun: (process.env.DRY_RUN ?? "false").toLowerCase() === "true",
   };
 }

@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useT } from "../../i18n/locale-context";
 import { callRpc } from "./supabase-rpc";
+import { EVENT_NAMES, CHANNEL_NAMES, EVENT_LABELS, CHANNEL_LABELS } from "./event-names";
 
 interface SubscriptionRow {
   id: number;
@@ -57,6 +58,14 @@ export function AdminWebhooksPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<number | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [wsId, setWsId] = useState("default");
+  const [formName, setFormName] = useState("");
+  const [formEvent, setFormEvent] = useState<string>(EVENT_NAMES[0]);
+  const [formChannel, setFormChannel] = useState<string>(CHANNEL_NAMES[0]);
+  const [formTarget, setFormTarget] = useState("");
+  const [formFilter, setFormFilter] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -98,6 +107,34 @@ export function AdminWebhooksPanel() {
     void refresh();
   };
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    const filterJson = formFilter
+      ? Object.fromEntries(formFilter.split(",").map((s) => s.split("=").map((x) => x.trim())))
+      : {};
+    const r = await callRpc<{ ok: boolean; subscription_name?: string }>(
+      "rpc_event_subscription_create",
+      {
+        p_workspace_id: wsId,
+        p_subscription_name: formName || null,
+        p_event_name: formEvent,
+        p_target_channel: formChannel,
+        p_target_id: formTarget,
+        p_filter: filterJson,
+        p_cooldown_seconds: 0,
+      },
+    );
+    setCreating(false);
+    if (r.ok) {
+      setShowCreate(false);
+      setFormName(""); setFormTarget(""); setFormFilter("");
+      void refresh();
+    } else {
+      setError(r.error ?? "create failed");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <header>
@@ -116,6 +153,67 @@ export function AdminWebhooksPanel() {
           {error}
         </div>
       ) : null}
+
+      {showCreate ? (
+        <form onSubmit={handleCreate} className="rounded border border-blue-200 bg-blue-50 p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-blue-900">New Subscription</h3>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <label className="flex flex-col gap-1">
+              <span className="text-muted-light">workspace</span>
+              <select value={wsId} onChange={(e) => setWsId(e.target.value)} className="rounded border border-slate-200 bg-white px-2 py-1">
+                <option value="default">default</option>
+                <option value="heytea-bj">heytea-bj</option>
+                <option value="heytea-sh">heytea-sh</option>
+                <option value="heytea-sz">heytea-sz</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-muted-light">name (auto if blank)</span>
+              <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="sub_abc123"
+                className="rounded border border-slate-200 bg-white px-2 py-1 font-mono" />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-muted-light">event</span>
+              <select value={formEvent} onChange={(e) => setFormEvent(e.target.value)} className="rounded border border-slate-200 bg-white px-2 py-1">
+                {EVENT_NAMES.map((n) => <option key={n} value={n}>{EVENT_LABELS[n] ?? n}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-muted-light">channel</span>
+              <select value={formChannel} onChange={(e) => setFormChannel(e.target.value)} className="rounded border border-slate-200 bg-white px-2 py-1">
+                {CHANNEL_NAMES.map((n) => <option key={n} value={n}>{CHANNEL_LABELS[n] ?? n}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 col-span-2">
+              <span className="text-muted-light">target (webhook URL / email / etc.)</span>
+              <input value={formTarget} onChange={(e) => setFormTarget(e.target.value)} required placeholder="https://..."
+                className="rounded border border-slate-200 bg-white px-2 py-1 font-mono" />
+            </label>
+            <label className="flex flex-col gap-1 col-span-2">
+              <span className="text-muted-light">filter (optional, e.g. risk_level=high)</span>
+              <input value={formFilter} onChange={(e) => setFormFilter(e.target.value)} placeholder="key=value,key2=value2"
+                className="rounded border border-slate-200 bg-white px-2 py-1 font-mono" />
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" disabled={creating}
+              className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 disabled:opacity-50">
+              {creating ? "…" : "Create"}
+            </button>
+            <button type="button" onClick={() => setShowCreate(false)}
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-muted">
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="mb-3">
+          <button type="button" onClick={() => setShowCreate(true)}
+            className="rounded border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-100">
+            + New Subscription
+          </button>
+        </div>
+      )}
 
       <section>
         <div className="mb-2 flex items-center justify-between">

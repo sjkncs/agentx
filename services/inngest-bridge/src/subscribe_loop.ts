@@ -11,6 +11,7 @@
 import { loadConfig } from "./config.js";
 import { makeClient } from "./supabase-client.js";
 import { post } from "./http.js";
+import { signDingtalkUrl } from "./dingtalk-signature.js";
 
 interface MatchRow {
   event_id: string;
@@ -27,6 +28,7 @@ interface MatchRow {
 async function pollOnce(rpc: ReturnType<typeof makeClient>): Promise<MatchRow[]> {
   const result = await rpc.rpc<MatchRow[] | null>("rpc_subscription_poll_match", {
     p_dispatched_to: process.env.DISPATCHED_TO ?? "subscriber",
+    p_workspace_id: process.env.SUBSCRIBER_WORKSPACE_ID ?? "default",
   });
   if (!result) return [];
   return Array.isArray(result) ? result : [result];
@@ -62,7 +64,15 @@ async function dispatchOne(
     return { ok: true, status: 200, text: "dry-run" };
   }
 
-  const { status, text, ok } = await post(row.target_id, body, cfg.httpTimeoutMs);
+  let targetUrl = row.target_id;
+  if (row.target_channel === "dingtalk" && cfg.dingtalkRobotSecret) {
+    targetUrl = signDingtalkUrl(row.target_id, cfg.dingtalkRobotSecret);
+    if (process.env.DEBUG_SIGN) {
+      console.log(`[sub] dingtalk signed url = ${targetUrl}`);
+    }
+  }
+
+  const { status, text, ok } = await post(targetUrl, body, cfg.httpTimeoutMs);
 
   await rpc.rpc("rpc_subscription_record_delivery", {
     p_event_id: row.event_id,
@@ -82,7 +92,8 @@ async function dispatchOne(
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const rpc = makeClient(cfg);
-  console.log(`[subscribe-loop] started poll=${cfg.pollIntervalMs}ms dryRun=${cfg.dryRun}`);
+  const ws = process.env.SUBSCRIBER_WORKSPACE_ID ?? "default";
+  console.log(`[subscribe-loop] started ws=${ws} poll=${cfg.pollIntervalMs}ms dryRun=${cfg.dryRun}`);
 
   let running = true;
   process.on("SIGINT", () => (running = false));
