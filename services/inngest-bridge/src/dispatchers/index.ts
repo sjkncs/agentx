@@ -12,6 +12,7 @@ export interface DispatchResult {
 import { handleNotification } from "./notification.js";
 import { handleInngestPassthrough } from "./inngest-passthrough.js";
 import { handleWorkOrderNotify } from "./work-order-notify.js";
+import { handleEmail } from "./email.js";
 
 export async function dispatchEvent(
   cfg: WorkerConfig,
@@ -26,12 +27,19 @@ export async function dispatchEvent(
     case "escalation.dispatch":
     case "script.render":
       return await handleInngestPassthrough(cfg, eventName, payload);
-    // A25.1: work_order.escalated / work_order.created / work_order.stage_changed
+    // A25.1: work_order.* events → DingTalk rich card
     case "work_order.escalated":
     case "work_order.created":
     case "work_order.stage_changed":
     case "work_order.compensation_approved":
-      return await handleWorkOrderNotify(cfg, rpc, payload as Parameters<typeof handleWorkOrderNotify>[2]);
+      return await handleWorkOrderNotify(
+        cfg,
+        rpc,
+        payload as Parameters<typeof handleWorkOrderNotify>[2],
+      );
+    // A26.4: email channel
+    case "work_order.email":
+      return await handleEmail(cfg, rpc, payload as Parameters<typeof handleEmail>[2]);
     default:
       if (cfg.dryRun) {
         console.log(`[dry-run] ${eventName}`, JSON.stringify(payload));
