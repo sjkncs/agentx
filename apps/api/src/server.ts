@@ -17,19 +17,19 @@ import { LocalArtifactService, SessionOutputService } from "@datafoundry/artifac
 import { type MeResponse, createEnvConfig, createErrorResult, createSuccessResult } from "@datafoundry/contracts";
 import { LocalDataGateway } from "@datafoundry/data-gateway";
 import { LocalFileAssetService } from "@datafoundry/files";
-import { LocalKnowledgeService } from "@datafoundry/knowledge";
-import {
-  RunEventWriter,
-  createMetadataStore,
-  type UserRecord,
-  type MetadataStore
-} from "@datafoundry/metadata";
 import {
   buildSkillResourcePayload,
   configResourceToSkillRecord,
   materializeSkillPackages,
-  parseSkillPackage
+  parseSkillPackage,
 } from "@datafoundry/skills";
+import { LocalKnowledgeService } from "@datafoundry/knowledge";
+import {
+  RunEventWriter,
+  createMetadataStore,
+  type MetadataStore,
+  type UserRecord,
+} from "@datafoundry/metadata";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
@@ -43,6 +43,14 @@ import {
   onScheduledTaskDue,
   startScheduledTaskScheduler,
 } from "./scheduled-tasks.js";
+import { handleNotebookDashboardRequest } from "./notebook-dashboard/routes.js";
+import { NotebookDashboardRepository } from "./notebook-dashboard/repository.js";
+import { SemanticCatalogRepository } from "./notebook-dashboard/semantic-catalog.js";
+import { handleSemanticCatalogRequest, type SemanticCatalogDeps } from "./notebook-dashboard/semantic-routes.js";
+import { handleSemanticLayerRequest, type SemanticLayerDeps } from "./notebook-dashboard/semantic-layer-routes.js";
+import { SemanticLayerRepository } from "./notebook-dashboard/semantic-layer.js";
+import { handleMetricsRequest } from "./metrics.js";
+import { alertsSnapshot, evaluateAlerts, prometheusAlerts } from "./alerts.js";
 
 function readJsonBody(request: import("node:http").IncomingMessage): Promise<Record<string, unknown> | undefined> {
   return new Promise((resolve) => {
@@ -67,6 +75,8 @@ import { ensureBuiltinDtcGrowthDatasource } from "./builtin-dtc-growth-datasourc
 import { reclaimOrphanedQueuedAndRunningRuns } from "./stale-active-runs.js";
 import { loadPasswordAuthConfig } from "./auth/config.js";
 import { AuthService, type AuthIdentity } from "./auth/service.js";
+import { publishEvent, registerSink, disposeAllSinks, flushAllSinks } from "./event-bus.js";
+import { registerSupabaseSinks } from "./supabase-sinks.js";
 import { serverDefaultConnectionStatus, isServerLlmEnvConfigured } from "./model-profile-connection-status.js";
 import {
   handleAuthApiRequest,
@@ -97,8 +107,10 @@ import { RunCancelRegistry } from "./run-cancel-registry.js";
 import { RunEventPipeline } from "./run-event-pipeline.js";
 import { RunFinalizer, createRunStatusDelta } from "./run-finalizer.js";
 import { startSessionTitleTask } from "./session-title.js";
+import { handleAdminApiRequest } from "./rbac/routes.js";
 import { TaskPlanProjector } from "./task-plan-projector.js";
 import { ToolCallResultBridge } from "./tool-call-result-bridge.js";
+import { handleWebhook, isWebhookPath, loadWebhookEnv } from "./webhooks/index.js";
 
 const COPILOTKIT_PATH = "/api/copilotkit";
 const DEFAULT_WORKSPACE_ID = "default";
@@ -206,6 +218,9 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     timeoutMs: envConfig.sql.timeout_ms,
     workspaceId: DEFAULT_WORKSPACE_ID
   }, fileAssetService);
+  const notebookDashboardRepository = new NotebookDashboardRepository(metadataStore.db);
+  const semanticCatalogRepository = new SemanticCatalogRepository(metadataStore.db);
+  const semanticLayerRepository = new SemanticLayerRepository(metadataStore.db);
   const artifactService = new LocalArtifactService(metadataStore, fileAssetService);
   const sessionOutputService = new SessionOutputService(metadataStore, fileAssetService);
   const knowledgeService = new LocalKnowledgeService(metadataStore, {
@@ -217,7 +232,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     }
   });
   const ownsTaskStateRuntime = options.taskStateRuntime === undefined;
-  // Mastra init and builtin skill materialization are independent — overlap them.
+  // Mastra init and builtin skill materialization are independent 鈥?overlap them.
   const taskStateRuntimePromise =
     options.taskStateRuntime
     ?? createTaskStateRuntime(
@@ -229,7 +244,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
 
   const taskStateRuntime = await timer.measure("mastra_runtime", () => taskStateRuntimePromise);
 
-  // After restart, cancel-registry is empty — reclaim queued/running rows left by dead workers.
+  // After restart, cancel-registry is empty 鈥?reclaim queued/running rows left by dead workers.
   const reclaimedActiveRuns = await timer.measure("stale_active_run_reclaim", () =>
     reclaimOrphanedQueuedAndRunningRuns({
       metadataStore,
@@ -239,6 +254,9 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
   if (reclaimedActiveRuns > 0) {
     console.log(`[startup] stale active run reclaim: canceled=${reclaimedActiveRuns}`);
   }
+
+  // ── Supabase event sinks (pgvector memory + session event log) ──────────────
+  void registerSupabaseSinks(metadataStore);
 
   startupTimings = timer.timings();
   startupTotalMs = timer.totalMs();
@@ -335,6 +353,20 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         return;
       }
 
+      // ── Webhook 路由（auth 之前，外部系统回调） ─────────────────────────────
+      if (isWebhookPath(requestUrl.pathname)) {
+        try {
+          const env = loadWebhookEnv();
+          await handleWebhook(request, response, env);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(`[webhooks] dispatch error: ${msg}`);
+          response.writeHead(500, { "content-type": "application/json" });
+          response.end(JSON.stringify({ ok: false, error: msg }));
+        }
+        return;
+      }
+
       if (requestUrl.pathname.startsWith("/api/v1/auth/")) {
         let identity: AuthIdentity | undefined;
         try {
@@ -364,10 +396,9 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         authContext.workspaceId,
       );
 
-      const scheduledBody =
-        request.method === "POST" || request.method === "PATCH"
-          ? await readJsonBody(request)
-          : undefined;
+      const scheduledBody = requestUrl.pathname.startsWith("/api/v1/scheduled-tasks") && (request.method === "POST" || request.method === "PATCH")
+        ? await readJsonBody(request)
+        : undefined;
       const scheduledResponse = await handleScheduledTasksRequest({
         method: request.method ?? "GET",
         pathname: requestUrl.pathname,
@@ -403,6 +434,91 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
           sendJson(response, configResponse.status, configResponse.body);
         }
         return;
+      }
+
+      const notebookDashboardHandled = await handleNotebookDashboardRequest(
+        request,
+        response,
+        requestUrl.pathname,
+        authContext.user.id,
+        authContext.workspaceId,
+        {
+          repository: notebookDashboardRepository,
+          gateway: dataGateway,
+          ...(process.env.WORKSPACE_PYTHON_VENV
+            ? { pythonBin: join(process.env.WORKSPACE_PYTHON_VENV, "bin", "python") }
+            : {}),
+        },
+      );
+      if (notebookDashboardHandled) {
+        return;
+      }
+
+      // 鈹€鈹€ Semantic catalog (column descriptions, glossary, contracts, resolve) 鈹€鈹€
+      const semanticCatalogHandled = await handleSemanticCatalogRequest(
+        request,
+        response,
+        requestUrl.pathname,
+        authContext.user.id,
+        authContext.workspaceId,
+        { repository: semanticCatalogRepository } satisfies SemanticCatalogDeps,
+      );
+      if (semanticCatalogHandled) {
+        return;
+      }
+
+      // 鈹€鈹€ Semantic layer MVP (metrics, entities, lineage) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+      const semanticLayerHandled = await handleSemanticLayerRequest(
+        request,
+        response,
+        requestUrl.pathname,
+        authContext.user.id,
+        authContext.workspaceId,
+        { repository: semanticLayerRepository },
+      );
+      if (semanticLayerHandled) {
+        return;
+      }
+
+      // ── Metrics & Alerts (Observability) ─────────────────────────────────
+      // /metrics → Prometheus scrape text; admin routes → ApiResult envelope for web UI
+      if (requestUrl.pathname === "/metrics") {
+        evaluateAlerts();
+        handleMetricsRequest(request, response);
+        return;
+      }
+      if (requestUrl.pathname === "/api/v1/admin/metrics/active" || requestUrl.pathname === "/api/v1/admin/metrics") {
+        evaluateAlerts();
+        const { metricsSnapshot } = await import("./metrics.js");
+        sendJson(response, 200, createSuccessResult(metricsSnapshot()));
+        return;
+      }
+      if (requestUrl.pathname === "/api/v1/admin/alerts" || requestUrl.pathname === "/api/v1/admin/alerts/active") {
+        evaluateAlerts();
+        sendJson(response, 200, createSuccessResult(alertsSnapshot()));
+        return;
+      }
+      if (requestUrl.pathname === "/api/v1/admin/alerts/prometheus") {
+        evaluateAlerts();
+        sendJson(response, 200, createSuccessResult({
+          version: 1,
+          groupKey: "datafoundry",
+          status: "firing",
+          alerts: prometheusAlerts(),
+        }));
+        return;
+      }
+
+      if (requestUrl.pathname.startsWith("/api/v1/admin/")) {
+        const adminResponse = await handleAdminApiRequest(request, requestUrl.pathname, {
+          authService,
+          metadataStore,
+          response,
+        });
+        if (adminResponse) {
+          sendJson(response, adminResponse.status, adminResponse.body);
+          return;
+        }
       }
 
       if (isCopilotKitPath(requestUrl.pathname)) {
@@ -461,6 +577,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
     if (ownsTaskStateRuntime) {
       void taskStateRuntime.close();
     }
+    void disposeAllSinks();
   });
 
   return server;
@@ -740,7 +857,11 @@ class DataFoundryAgUiAgent extends AbstractAgent {
           traceSectionCoordinator,
           toolCallResultBridge,
           userId: this.input.user.id,
-          sink: (event) => subscriber.next(event)
+          sink: (event) => {
+            // Fan out to global EventBus so external sinks (Supabase, etc.) receive the event
+            publishEvent(event as BaseEvent & { _sessionId?: string; _runId?: string });
+            subscriber.next(event);
+          }
         });
         const emit = (event: BaseEvent): void => {
           eventPipeline.emit(event);
@@ -1370,7 +1491,8 @@ const materializeConfiguredSkillCache = async (
     workspace_id: workspaceId,
     user_id: userId,
     kind: "skill"
-  }).map(configResourceToSkillRecord)
+  })
+    .map((r) => configResourceToSkillRecord(r as unknown as Parameters<typeof configResourceToSkillRecord>[0]))
     .filter((skill) => skill.status === "valid" && Boolean(skill.packageFileRefId));
   const signature = skills.map((skill) => `${skill.id}:${skill.revision}:${skill.packageFileRefId}`).sort().join("|");
   const cacheKey = `${userId}:${workspaceId}`;

@@ -1,0 +1,24 @@
+{
+  "name": "@datafoundry/inngest-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Worker that polls datafoundry.fsf_inngest_events and dispatches to real destinations (Inngest / DingTalk / Webhook).",
+  "type": "module",
+  "main": "dist/worker.js",
+  "bin": {
+    "inngest-bridge": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --enable-source-maps dist/worker.js",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "verify:loop": "tsc --noEmit && node dist/verify-loop.js"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
