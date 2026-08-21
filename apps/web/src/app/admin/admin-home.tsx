@@ -25,8 +25,9 @@ import { AdminDeliveryStatsPanel } from "./admin-delivery-stats";
 import { AdminRetryConfigPanel } from "./admin-retry-config";
 import { AdminWorkspaceConfigPanel } from "./admin-workspace-config";
 import { AdminDingtalkTemplatePanel } from "./admin-dingtalk-template";
+import { AdminAuditEnhancedPanel } from "./admin-audit-enhanced";
 
-export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery" | "retry" | "wsconfig" | "templates";
+export type AdminTab = "members" | "audit" | "users" | "metrics" | "alerts" | "approvals" | "webhooks" | "workorders" | "delivery" | "retry" | "wsconfig" | "templates" | "audit2";
 
 export function AdminHome({ initialTab }: { initialTab: AdminTab }) {
   return (
@@ -215,6 +216,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         <AdminTabButton active={tab === "retry"} onClick={() => setTab("retry")} label={t("admin.tabs.retry", { defaultValue: "重试策略" })} />
         <AdminTabButton active={tab === "wsconfig"} onClick={() => setTab("wsconfig")} label={t("admin.tabs.wsconfig", { defaultValue: "工作区" })} />
         <AdminTabButton active={tab === "templates"} onClick={() => setTab("templates")} label={t("admin.tabs.templates", { defaultValue: "模板" })} />
+        <AdminTabButton active={tab === "audit2"} onClick={() => setTab("audit2")} label={t("admin.tabs.audit2", { defaultValue: "审计(增强)" })} />
       </nav>
 
       {globalError ? (
@@ -248,6 +250,7 @@ function AdminShell({ initialTab }: { initialTab: AdminTab }) {
         {tab === "retry" ? <AdminRetryConfigPanel /> : null}
         {tab === "wsconfig" ? <AdminWorkspaceConfigPanel /> : null}
         {tab === "templates" ? <AdminDingtalkTemplatePanel /> : null}
+        {tab === "audit2" ? <AdminAuditEnhancedPanel /> : null}
       </section>
     </main>
   );
