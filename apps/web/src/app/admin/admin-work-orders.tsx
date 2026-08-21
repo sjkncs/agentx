@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useT } from "../../i18n/locale-context";
 import { callRpc } from "./supabase-rpc";
 import { WOCreateDialog } from "./admin-wo-create-dialog";
+import { WOStageDialog } from "./admin-wo-stage-dialog";
 
 interface WorkOrderRow {
   id: number;
@@ -144,6 +145,7 @@ export function AdminWorkOrdersPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [stageOrder, setStageOrder] = useState<WorkOrderRow | null>(null);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -329,6 +331,13 @@ export function AdminWorkOrdersPanel() {
                       推进状态 → {NEXT_STATUS[selectedOrder.status]}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setStageOrder(selectedOrder)}
+                    className="rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-100"
+                  >
+                    分阶段管理
+                  </button>
                   {selectedOrder.status === "open" && (
                     <button
                       type="button"
@@ -470,6 +479,17 @@ export function AdminWorkOrdersPanel() {
         <WOCreateDialog
           onClose={() => setShowCreate(false)}
           onCreated={handleCreated}
+        />
+      )}
+
+      {stageOrder && (
+        <WOStageDialog
+          order={stageOrder as never}
+          onClose={() => setStageOrder(null)}
+          onUpdated={() => {
+            setStageOrder(null);
+            void loadOrders();
+          }}
         />
       )}
     </div>
