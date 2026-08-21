@@ -194,10 +194,12 @@ function computeDingtalkSignature(token: string, body: string, ts: string): stri
 }
 
 function verifyInngestSignature(signingKey: string, body: string, headers: Record<string, string>): boolean {
+  // Inngest ISV spec: HMAC-SHA256(signingKey, "${timestamp}\n${body}") → hex
+  // Header format: X-Inngest-Signature: s=hex (s= prefix), X-Inngest-Signature-Timestamp: timestamp
   const ts = headers["x-inngest-signature-timestamp"] ?? "";
   const sig = headers["x-inngest-signature"] ?? "";
   if (!ts || !sig) return false;
-  const expected = createHmac("sha256", signingKey).update(`${ts}${body}`).digest("hex");
+  const expected = createHmac("sha256", signingKey).update(`${ts}\n${body}`).digest("hex");
   return safeEq(expected, sig);
 }
 

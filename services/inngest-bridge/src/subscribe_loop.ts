@@ -61,11 +61,46 @@ async function dispatchOne(
   rpc: ReturnType<typeof makeClient>,
   row: MatchRow,
 ): Promise<{ ok: boolean; status: number; text: string }> {
-  const body = bodyFor(row.target_channel, row.payload);
-
   if (cfg.dryRun) {
     console.log(`[sub-dry-run] ${row.target_channel} -> ${row.target_id} sub=${row.subscription_id}`);
     return { ok: true, status: 200, text: "dry-run" };
+  }
+
+  // corp_dingtalk: 调 RPC（不走 HTTP webhook）
+  if (row.target_channel === "corp_dingtalk") {
+    const filter = row.filter_json ?? {};
+    const body = bodyFor("dingtalk", row.payload);
+    const parsed = JSON.parse(body);
+    try {
+      const r = await rpc.rpc<{ ok: boolean; task_id?: number; error?: string }>(
+        "rpc_corp_dingtalk_send",
+        {
+          p_agent_id:     Number(filter.agent_id ?? row.target_id),
+          p_userid_list:  String(filter.userid_list ?? ""),
+          p_dept_id_list: Number(filter.dept_id_list ?? 0) || null,
+          p_msg_type:     "markdown",
+          p_content:      parsed.markdown?.text ?? "",
+          p_title:        parsed.markdown?.title ?? "",
+          p_app_key:      process.env.DINGTALK_APP_KEY ?? null,
+          p_app_secret:   process.env.DINGTALK_APP_SECRET ?? null,
+          p_correlation:  { event_id: row.event_id, subscription_id: row.subscription_id },
+        },
+      );
+      await rpc.rpc("rpc_subscription_record_delivery", {
+        p_event_id: row.event_id,
+        p_subscription_id: row.subscription_id,
+        p_target_channel: row.target_channel,
+        p_target_id: row.target_id,
+        p_request_body: { title: row.payload.title, body: row.payload.body },
+        p_response_status: r.ok ? 200 : 400,
+        p_response_body: JSON.stringify(r).slice(0, 2_000),
+        p_success: r.ok,
+        p_work_order_id: row.work_order_id ?? "",
+      });
+      return { ok: r.ok, status: r.ok ? 200 : 400, text: JSON.stringify(r) };
+    } catch (err) {
+      return { ok: false, status: 500, text: String(err) };
+    }
   }
 
   let targetUrl = row.target_id;
@@ -76,6 +111,7 @@ async function dispatchOne(
     }
   }
 
+  const body = bodyFor(row.target_channel, row.payload);
   const { status, text, ok } = await post(targetUrl, body, cfg.httpTimeoutMs);
 
   await rpc.rpc("rpc_subscription_record_delivery", {

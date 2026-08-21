@@ -60,6 +60,7 @@ export function AdminWebhooksPanel() {
   const [resendingId, setResendingId] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [wsId, setWsId] = useState("default");
+  const [wsOptions, setWsOptions] = useState<{workspace_id: string; name: string}[]>([]);
   const [formName, setFormName] = useState("");
   const [formEvent, setFormEvent] = useState<string>(EVENT_NAMES[0]);
   const [formChannel, setFormChannel] = useState<string>(CHANNEL_NAMES[0]);
@@ -72,11 +73,11 @@ export function AdminWebhooksPanel() {
     setError(null);
     const [s, d] = await Promise.all([
       callRpc<SubscriptionRow[]>("rpc_event_subscription_list", {
-        p_workspace_id: "default",
+        p_workspace_id: wsId,
         p_include_disabled: true,
       }),
       callRpc<DeliveryRow[]>("rpc_subscription_list_deliveries", {
-        p_workspace_id: "default",
+        p_workspace_id: wsId,
         p_limit: 100,
         p_status: null,
       }),
@@ -86,6 +87,13 @@ export function AdminWebhooksPanel() {
     if (d.error && !error) setError(d.error);
     setDeliveries(d.data ?? []);
     setLoading(false);
+  }, [wsId]);
+
+  useEffect(() => {
+    void (async () => {
+      const r = await callRpc<{workspace_id: string; name: string}[]>("rpc_workspace_list", {});
+      if (!r.error && r.data) setWsOptions(r.data);
+    })();
   }, []);
 
   useEffect(() => {
@@ -161,10 +169,9 @@ export function AdminWebhooksPanel() {
             <label className="flex flex-col gap-1">
               <span className="text-muted-light">workspace</span>
               <select value={wsId} onChange={(e) => setWsId(e.target.value)} className="rounded border border-slate-200 bg-white px-2 py-1">
-                <option value="default">default</option>
-                <option value="heytea-bj">heytea-bj</option>
-                <option value="heytea-sh">heytea-sh</option>
-                <option value="heytea-sz">heytea-sz</option>
+                {wsOptions.length === 0 && <option value="default">default</option>}
+                {wsOptions.map((w) => <option key={w.workspace_id} value={w.workspace_id}>{w.name} ({w.workspace_id})</option>)}
+                {!wsOptions.find((w) => w.workspace_id === wsId) && <option value={wsId}>{wsId}</option>}
               </select>
             </label>
             <label className="flex flex-col gap-1">
