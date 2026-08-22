@@ -1,0 +1,359 @@
+/**
+ * apps/web/src/app/marketing.module.css
+ *
+ * Shared marketing-site styles. Imported by /, /features, /pricing,
+ * /skills so the look + rhythm stays consistent without bundling a
+ * marketing-only design system.
+ *
+ * Design intent:
+ *  - Restrained neutral palette that inherits the existing Codex-style
+ *    --surface / --border / --text-* tokens from globals.css.
+ *  - Generous whitespace, single accent hue, no decorative gradients.
+ *  - Light + dark theming follows the existing data-theme toggle.
+ *  - Every section has a clear CTA so the page is interactive, not
+ *    decorative (per the user's "no dead buttons" requirement).
+ */
+
+.marketingRoot {
+  min-height: 100vh;
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.brandMark {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--accent) 100%);
+}
+
+.navLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.navLink:hover {
+  color: var(--foreground);
+}
+
+.navActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.buttonPrimary,
+.buttonSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 80ms ease, background 80ms ease, border-color 80ms ease;
+}
+
+.buttonPrimary {
+  background: var(--foreground);
+  color: var(--surface);
+}
+
+.buttonPrimary:hover {
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.buttonSecondary:hover {
+  border-color: var(--foreground);
+}
+
+.hero {
+  position: relative;
+  padding: 96px 28px 80px;
+  text-align: center;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.heroTitle {
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0 auto 40px;
+  max-width: 720px;
+}
+
+.heroCtas {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.heroFootnote {
+  margin-top: 20px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 28px;
+}
+
+.sectionHead {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.sectionEyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: clamp(28px, 3.4vw, 40px);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 14px 0;
+}
+
+.sectionSubtitle {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.featureCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.featureCardIcon {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.featureCardTitle {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px 0;
+}
+
+.featureCardBody {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.featureCardLink {
+  display: inline-flex;
+  margin-top: 14px;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.featureCardLink:hover {
+  text-decoration: underline;
+}
+
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.skillCard {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.skillCard:hover {
+  border-color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.skillCardIcon {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.skillCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px 0;
+}
+
+.skillCardDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillCardMeta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.cta {
+  text-align: center;
+  padding: 80px 28px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: clamp(28px, 3.4vw, 40px);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 14px 0;
+}
+
+.ctaBody {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0 0 28px 0;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 28px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+@media (min-width: 720px) {
+  .footer {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+
+.footerLinks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.footerLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  color: var(--foreground);
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 12px 16px;
+  }
+  .navLinks {
+    display: none;
+  }
+  .hero {
+    padding: 64px 18px 56px;
+  }
+  .section {
+    padding: 48px 18px;
+  }
+}
