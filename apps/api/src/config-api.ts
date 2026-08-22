@@ -67,6 +67,7 @@ import {
   modelProfileTestSuccessReason
 } from "./model-profile-test.js";
 import { handleCapabilitiesRequest } from "./routes/capabilities.js";
+import { handleVlmDescribeRequest } from "./routes/vlm-describe.js";
 import type { ConfigApiContext, ConfigApiResponse } from "./routes/types.js";
 import {
   connectPolicyMcpClient,
@@ -167,9 +168,15 @@ const routeConfigRequest = async (
   request: IncomingMessage,
   pathname: string,
   context: Required<ConfigApiContext>
-): Promise<ConfigApiResponse> => {
+): Promise<ConfigApiResponse | undefined> => {
   const segments = pathname.slice("/api/v1/".length).split("/").filter(Boolean);
   const root = segments[0] ?? "";
+
+  // Admin routes are owned by apps/api/src/rbac/routes.ts. Bypass config-api
+  // dispatch entirely so the upstream handler can decide.
+  if (root === "admin") {
+    return undefined;
+  }
 
   if (root === "me") {
     return handleMeRequest(request, context);
@@ -197,6 +204,9 @@ const routeConfigRequest = async (
   }
   if (root === "capabilities") {
     return handleCapabilitiesRequest(request.method);
+  }
+  if (root === "vlm") {
+    return handleVlmDescribeRequest(request, context);
   }
   if (root === "chat" && segments[1] === "uploads") {
     if (request.method !== "POST") {
@@ -243,9 +253,14 @@ const handleMeRequest = (
     return methodNotAllowed();
   }
   const user = context.metadataStore.users.getById({ user_id: context.userId });
+  const membership = context.metadataStore.workspaceMemberships.tryGet({
+    workspace_id: context.workspaceId,
+    user_id: context.userId,
+  });
   return ok({
     user: authUserDto(user),
-    workspace: defaultWorkspaceDto(context.workspaceId)
+    workspace: defaultWorkspaceDto(context.workspaceId),
+    role: membership?.role ?? null,
   });
 };
 
@@ -818,6 +833,109 @@ const handleDatalinkRequest = async (
       ...(stringValue(body.mode) ? { mode: stringValue(body.mode) } : {})
     });
     return ok({ result: result.text, server: datalinkServerDto(resource) });
+  }
+  if (action === "search" && request.method === "POST") {
+    const body = await readJsonBody(request);
+    const query = stringValue(body.query);
+    if (!query) {
+      throw new Error("DATALINK_SEARCH_QUERY_REQUIRED");
+    }
+    const result = await callDatalinkApi(resource, context, "/search", {
+      query,
+      ...(stringValue(body.nodeType ?? body.node_type) ? { node_type: stringValue(body.nodeType ?? body.node_type) } : {}),
+      limit: clampInteger(Number(body.limit ?? 10), 1, 100, 10),
+    });
+    return ok({ nodes: result.data, server: datalinkServerDto(resource) });
+  }
+  if (action === "get-node" && request.method === "POST") {
+    const body = await readJsonBody(request);
+    const nodeId = stringValue(body.nodeId ?? body.node_id);
+    if (!nodeId) {
+      throw new Error("DATALINK_NODE_ID_REQUIRED");
+    }
+    const result = await callDatalinkApi(resource, context, "/get-node", {
+      node_id: nodeId,
+      include_edges: booleanValue(body.includeEdges ?? body.include_edges, true),
+    });
+    return ok({ node: result.data, server: datalinkServerDto(resource) });
+  }
+  if (action === "path" && request.method === "POST") {
+    const body = await readJsonBody(request);
+    const sourceId = stringValue(body.sourceId ?? body.source_id);
+    const targetId = stringValue(body.targetId ?? body.target_id);
+    if (!sourceId || !targetId) {
+      throw new Error("DATALINK_SOURCE_AND_TARGET_IDS_REQUIRED");
+    }
+    const result = await callDatalinkApi(resource, context, "/path", {
+      source_id: sourceId,
+      target_id: targetId,
+      max_depth: clampInteger(Number(body.maxDepth ?? body.max_depth ?? 3), 1, 10, 3),
+      limit: clampInteger(Number(body.limit ?? 3), 1, 20, 3),
+      ...(stringValue(body.edgeTypes ?? body.edge_types) ? { edge_types: stringValue(body.edgeTypes ?? body.edge_types) } : {}),
+    });
+    return ok({ paths: result.data, server: datalinkServerDto(resource) });
+  }
+  if (action === "extract-subgraph" && request.method === "POST") {
+    const body = await readJsonBody(request);
+    const nodeIds = stringValue(body.nodeIds ?? body.node_ids);
+    if (!nodeIds) {
+      throw new Error("DATALINK_NODE_IDS_REQUIRED");
+    }
+    const result = await callDatalinkApi(resource, context, "/extract-subgraph", {
+      node_ids: nodeIds,
+      max_hops: clampInteger(Number(body.maxHops ?? body.max_hops ?? 2), 1, 5, 2),
+    });
+    return ok({ subgraph: result.data, server: datalinkServerDto(resource) });
+  }
+  // ── Semantic node CRUD ───────────────────────────────────────────────────────
+  if (segments[1] === "nodes" && !segments[2]) {
+    if (request.method === "GET") {
+      // list concept + entity nodes using search with node_type filter
+      const url = new URL(`http://localhost${request.url ?? ""}`);
+      const query = url.searchParams.get("q") ?? "";
+      const nodeType = url.searchParams.get("type") ?? "";
+      const result = await callDatalinkApi(resource, context, "/search", {
+        query: query || ".",
+        ...(nodeType ? { node_type: nodeType } : {}),
+        limit: 100,
+      });
+      const allNodes = Array.isArray(result.data) ? result.data : [];
+      const filtered = nodeType
+        ? allNodes.filter((n: Record<string, unknown>) => n.type === nodeType)
+        : allNodes;
+      return ok({ nodes: filtered, server: datalinkServerDto(resource) });
+    }
+    if (request.method === "POST") {
+      const body = await readJsonBody(request);
+      const result = await callDatalinkApi(resource, context, "/nodes", body);
+      return ok(result.data, 201);
+    }
+    return methodNotAllowed();
+  }
+  if (segments[1] === "nodes" && segments[2]) {
+    const nodeId = decodeURIComponent(segments[2]);
+    if (request.method === "GET") {
+      const result = await callDatalinkApi(resource, context, `/nodes/${encodeURIComponent(nodeId)}`);
+      return ok({ node: result.data, server: datalinkServerDto(resource) });
+    }
+    if (request.method === "PUT") {
+      const body = await readJsonBody(request);
+      const result = await callDatalinkApi(resource, context, `/nodes/${encodeURIComponent(nodeId)}`, body);
+      return ok({ node: result.data, server: datalinkServerDto(resource) });
+    }
+    if (request.method === "DELETE") {
+      const result = await callDatalinkApi(resource, context, `/nodes/${encodeURIComponent(nodeId)}`);
+      return ok(result.data);
+    }
+    return methodNotAllowed();
+  }
+  if (segments[1] === "nodes" && segments[2] === "batch") {
+    if (request.method === "POST") {
+      const body = await readJsonBody(request);
+      const result = await callDatalinkApi(resource, context, "/nodes/batch", body);
+      return ok(result.data, 201);
+    }
+    return methodNotAllowed();
   }
   return methodNotAllowed();
 };
