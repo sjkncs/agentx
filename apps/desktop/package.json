@@ -18,6 +18,7 @@
     "dist:cache": "node ../../scripts/builder-desktop.mjs",
     "dist:cache:init": "node ../../scripts/builder-desktop.mjs --init",
     "dist:cache:force": "node ../../scripts/builder-desktop.mjs --no-cache",
+    "lint:compliance": "node ../../scripts/check-no-bundled-presets.mjs",
     "postinstall": "echo 'DataFoundry Desktop: run npm run dist:dir to build or npm start to launch dev'"
   },
   "build": {
@@ -84,6 +85,7 @@
   },
   "dependencies": {
     "@datafoundry/counterfactual": "*",
+    "@datafoundry/harness-core": "*",
     "better-sqlite3": "^11.3.0"
   },
   "engines": {
