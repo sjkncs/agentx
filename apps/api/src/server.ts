@@ -79,6 +79,7 @@ import { loadPasswordAuthConfig } from "./auth/config.js";
 import { AuthService, type AuthIdentity } from "./auth/service.js";
 import { publishEvent, registerSink, disposeAllSinks, flushAllSinks } from "./event-bus.js";
 import { registerSupabaseSinks } from "./supabase-sinks.js";
+import { registerRunPersistenceSinks } from "./run-persistence-sinks.js";
 import { serverDefaultConnectionStatus, isServerLlmEnvConfigured } from "./model-profile-connection-status.js";
 import {
   handleAuthApiRequest,
@@ -264,6 +265,9 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
 
   // ── Supabase event sinks (pgvector memory + session event log) ──────────────
   void registerSupabaseSinks(metadataStore);
+
+  // ── A31 run persistence sinks — eval pipeline / HITL approvals / memory bank ─
+  registerRunPersistenceSinks();
 
   startupTimings = timer.timings();
   startupTotalMs = timer.totalMs();
