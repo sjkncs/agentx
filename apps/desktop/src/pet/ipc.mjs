@@ -30,6 +30,10 @@ import {
   deletePetProfile,
   ackDisclaimer as storeAckDisclaimer,
 } from "./persona-store.mjs";
+import {
+  buildCompanionRunPayload,
+  COMPANION_DISCLAIMER,
+} from "./persona-to-prompt.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,15 +80,28 @@ const apiIsReachable = async (baseUrl) => {
 /** Builds an SSE / fetch-style streaming POST to /api/v1/runs and pipes
  *  events into an EventEmitter that the renderer subscribes to via
  *  `pet:onEvent`. Returns the handle the renderer uses to cancel. */
-const startChatRun = async ({ baseUrl, petId, mode, message, sessionId }) => {
+const startChatRun = async ({ baseUrl, petId, mode, message, sessionId, allTools }) => {
+  const persona = await getPetProfile(petId);
+  if (!persona) {
+    throw new Error(`pet not found: ${petId}`);
+  }
+  const { systemPromptPrefix, allowedTools } = buildCompanionRunPayload(
+    persona,
+    mode,
+    allTools ?? [],
+  );
   const url = `${baseUrl}/api/v1/runs`;
   const body = {
     threadId: sessionId ?? cryptoRandomId(),
     forwardedProps: {
-      pet: { id: petId, mode },
+      pet: {
+        id: petId,
+        mode,
+        systemPromptPrefix,
+      },
       message,
     },
-    tools: mode === "companion" ? [] : undefined,
+    tools: allowedTools,
   };
   const res = await fetch(url, {
     method: "POST",
