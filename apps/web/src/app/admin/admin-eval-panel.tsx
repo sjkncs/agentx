@@ -42,8 +42,8 @@ export function AdminEvalPanel() {
     setError(null);
     setLoading(true);
     try {
-      const snapshot = await (configApi as Record<string, unknown>).getAdminEval?.() as EvalSnapshot | undefined;
-      if (snapshot) setData(snapshot);
+      const snapshot: AdminEvalSnapshot = await configApi.getAdminEval();
+      setData(snapshot);
     } catch (err) {
       setError(err instanceof ConfigApiError ? err.message : err instanceof Error ? err.message : "Failed to load evals.");
     } finally {

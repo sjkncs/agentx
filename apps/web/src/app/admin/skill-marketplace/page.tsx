@@ -1,21 +1,19 @@
 "use client";
 
 /**
- * /admin/skill-marketplace — A29.5 curated skill installer.
+ * /admin/skill-marketplace — A30 curated skill installer (full persistence).
  *
- * Reads /api/v1/skill-marketplace/catalog and lets the user install
- * any entry by id. On install we:
- *   1) POST /api/v1/skill-marketplace/install { id }
- *   2) confirm the parser accepted the SKILL.md (the API returns the
- *      parsed frontmatter + raw bytes count)
- *   3) the client then POST /api/v1/skills with the same bytes via the
- *      existing multipart upload endpoint, so installation reuses the
- *      same persistence path as manual uploads.
+ * Reads /api/v1/skill-marketplace/catalog and lets the user install, sync,
+ * and uninstall any entry by id. Install now persists into:
+ *   - fileAssetService (source="skill-package")
+ *   - metadataStore.configResources (kind="skill")
+ *   - dfd_audit_events (category="skill-marketplace", action=install|sync|uninstall)
+ *   - fsf_messages (intent="skill_marketplace")
+ * so an admin can see exactly what shipped, when, from which GitHub revision.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LocaleProvider, useT } from "../../../i18n/locale-context";
-import { configApi, ConfigApiError } from "../../../lib/config-api/client";
 
 interface SkillCatalogEntry {
   id: string;
@@ -32,12 +30,22 @@ interface SkillCatalogEntry {
   builtin?: boolean;
 }
 
+interface InstalledSkill {
+  id: string;
+  name: string;
+  version: string;
+  revision: number;
+  status: string;
+  defaultEnabled: boolean;
+  builtin: boolean;
+  packageFileRefId: string | null;
+  updatedAt: string | null;
+}
+
 type InstallState =
   | { kind: "idle" }
-  | { kind: "fetching" }
-  | { kind: "ready"; parsedName: string; bytes: number }
-  | { kind: "uploading" }
-  | { kind: "installed"; skillId: string }
+  | { kind: "busy"; action: "install" | "sync" | "uninstall" }
+  | { kind: "installed"; revision: number; bytes: number }
   | { kind: "error"; message: string };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -50,8 +58,32 @@ const CATEGORY_LABELS: Record<string, string> = {
   science: "Science",
   vertical: "Vertical",
   writing: "Writing",
-  other: "Other",
+  other: "Other"
 };
+
+const CATEGORY_ICONS: Record<string, string> = {
+  automation: "🌐",
+  creative: "📜",
+  design: "✉️",
+  documents: "🎞️",
+  engineering: "✨",
+  research: "🌙",
+  science: "🔬",
+  vertical: "🍵",
+  writing: "👄",
+  other: "🧩"
+};
+
+interface MarketplaceAction {
+  action: string;
+  bytes: number;
+  installedFrom: { repo: string; ref: string; skillPath: string; url: string };
+  parsed: { name: string; version: string; tags: string[] };
+  revision: number;
+  fileAssetRefId: string;
+  resourceId: string;
+  supabase: { audit: { status: number; error: string | null }; fsf_message: { status: number; error: string | null } };
+}
 
 export default function SkillMarketplacePage() {
   return (
@@ -64,31 +96,32 @@ export default function SkillMarketplacePage() {
 function Marketplace() {
   const t = useT();
   const [entries, setEntries] = useState<SkillCatalogEntry[] | null>(null);
+  const [installed, setInstalled] = useState<InstalledSkill[]>([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
-  const [installed, setInstalled] = useState<Set<string>>(new Set());
   const [state, setState] = useState<Record<string, InstallState>>({});
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      const [catalogRes, installedRes] = await Promise.all([
+        fetch("/api/v1/skill-marketplace/catalog"),
+        fetch("/api/v1/skill-marketplace/installed")
+      ]);
+      const catalogJson = await catalogRes.json();
+      const installedJson = await installedRes.json();
+      if (catalogJson?.success) setEntries(catalogJson.data.items as SkillCatalogEntry[]);
+      else setLoadError(catalogJson?.error?.message ?? "catalog fetch failed");
+      if (installedJson?.success) setInstalled(installedJson.data.items as InstalledSkill[]);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : String(err));
+      setEntries([]);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/v1/skill-marketplace/catalog");
-        const json = await res.json();
-        if (!cancelled && json?.success) {
-          setEntries(json.data.items as SkillCatalogEntry[]);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("[skill-marketplace] catalog fetch failed", err);
-          setEntries([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    void refresh();
+  }, [refresh]);
 
   const categories = useMemo(() => {
     const set = new Set<string>(entries?.map((e) => e.category) ?? []);
@@ -105,58 +138,83 @@ function Marketplace() {
         entry.displayName.toLowerCase().includes(q)
         || entry.description.toLowerCase().includes(q)
         || entry.tags.some((tag) => tag.toLowerCase().includes(q))
+        || entry.repo.toLowerCase().includes(q)
       );
     });
   }, [entries, query, category]);
 
-  const onInstall = useCallback(async (entry: SkillCatalogEntry) => {
-    setState((prev) => ({ ...prev, [entry.id]: { kind: "fetching" } }));
-    try {
-      const installRes = await fetch("/api/v1/skill-marketplace/install", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: entry.id }),
-      });
-      const installJson = await installRes.json();
-      if (!installJson.success) {
+  const installedById = useMemo(() => {
+    const map = new Map<string, InstalledSkill>();
+    for (const item of installed) map.set(item.id, item);
+    return map;
+  }, [installed]);
+
+  const runAction = useCallback(
+    async (entry: SkillCatalogEntry, action: "install" | "sync" | "uninstall") => {
+      setState((prev) => ({ ...prev, [entry.id]: { kind: "busy", action } }));
+      try {
+        const res = await fetch(`/api/v1/skill-marketplace/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: entry.id })
+        });
+        const json = await res.json();
+        if (!json.success) {
+          setState((prev) => ({
+            ...prev,
+            [entry.id]: { kind: "error", message: json.error?.message ?? `${action} failed` }
+          }));
+          return;
+        }
+        const data = json.data as MarketplaceAction & { uninstalled?: string };
+        if (action === "uninstall") {
+          setState((prev) => {
+            const next = { ...prev };
+            delete next[entry.id];
+            return next;
+          });
+        } else {
+          setState((prev) => ({
+            ...prev,
+            [entry.id]: {
+              kind: "installed",
+              revision: data.revision,
+              bytes: data.bytes ?? data.parsed.tags.length
+            }
+          }));
+        }
+        await refresh();
+      } catch (err) {
         setState((prev) => ({
           ...prev,
-          [entry.id]: { kind: "error", message: installJson.error?.message ?? "install failed" },
+          [entry.id]: { kind: "error", message: err instanceof Error ? err.message : String(err) }
         }));
-        return;
       }
-      const parsedName: string = installJson.data.parsed.name;
-      setState((prev) => ({
-        ...prev,
-        [entry.id]: { kind: "ready", parsedName, bytes: installJson.data.parsed.bytes },
-      }));
-      // The marketplace endpoint validates + parses; persistence is then
-      // delegated to the existing POST /api/v1/skills multipart path which
-      // already writes to config_resources + file_assets.
-      setInstalled((prev) => new Set([...prev, entry.id]));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        [entry.id]: { kind: "error", message: err instanceof Error ? err.message : String(err) },
-      }));
-    }
-  }, []);
+    },
+    [refresh]
+  );
 
   return (
     <div className="min-h-screen bg-surface-subtle px-6 py-8">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <header className="mb-4">
           <h1 className="text-2xl font-semibold text-foreground">Skill Marketplace</h1>
           <p className="mt-1 text-sm text-muted">
-            Curated GitHub-hosted skills you can install with one click. Each skill installs as a workspace
-            config resource and is governed by the existing skill policy.
+            Curated GitHub-hosted skills installed as workspace resources. Each install writes to
+            {" "}<code>config_resources</code>, <code>file_assets</code> (source=<code>skill-package</code>),
+            {" "}<code>dfd_audit_events</code>, and <code>fsf_messages</code> so you can audit any byte that landed.
           </p>
+          {loadError ? (
+            <p className="mt-2 rounded bg-rose-50 px-3 py-2 text-xs text-rose-700">{loadError}</p>
+          ) : null}
         </header>
+
+        <Summary installed={installed} />
 
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface p-3">
           <input
             type="search"
-            placeholder="Search skills…"
+            placeholder="Search by name, tag, or repo…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="flex-1 min-w-[180px] rounded-md border border-border bg-surface px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
@@ -178,6 +236,13 @@ function Marketplace() {
           <span className="text-xs text-muted-light">
             {entries ? `${filtered.length} / ${entries.length}` : "…"}
           </span>
+          <button
+            type="button"
+            onClick={refresh}
+            className="rounded-md border border-border bg-surface px-2 py-1 text-xs hover:bg-surface-subtle"
+          >
+            Refresh
+          </button>
         </div>
 
         {entries === null ? (
@@ -191,9 +256,10 @@ function Marketplace() {
         ) : (
           <ul className="grid gap-3 md:grid-cols-2">
             {filtered.map((entry) => {
-              const entryState = state[entry.id] ?? (installed.has(entry.id)
-                ? { kind: "installed" as const, skillId: entry.id }
-                : { kind: "idle" as const });
+              const installedEntry = installedById.get(entry.id);
+              const entryState: InstallState = state[entry.id] ?? (installedEntry
+                ? { kind: "installed", revision: installedEntry.revision, bytes: 0 }
+                : { kind: "idle" });
               return (
                 <li
                   key={entry.id}
@@ -205,7 +271,7 @@ function Marketplace() {
                       className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary-light/20 text-xl"
                       aria-hidden="true"
                     >
-                      {entry.icon ?? "🧩"}
+                      {entry.icon ?? CATEGORY_ICONS[entry.category] ?? "🧩"}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -220,6 +286,14 @@ function Marketplace() {
                         <span className="rounded bg-surface-subtle px-1.5 py-0.5 text-[10px] text-muted-light">
                           {CATEGORY_LABELS[entry.category] ?? entry.category}
                         </span>
+                        {installedEntry ? (
+                          <span
+                            className="rounded bg-step-success/15 px-1.5 py-0.5 text-[10px] font-medium text-step-success"
+                            data-testid={`skill-marketplace-installed-${entry.id}`}
+                          >
+                            rev {installedEntry.revision}
+                          </span>
+                        ) : null}
                       </div>
                       <p className="mt-1 text-xs leading-5 text-muted">{entry.description}</p>
                       {entry.tags.length > 0 ? (
@@ -234,7 +308,7 @@ function Marketplace() {
                           ))}
                         </div>
                       ) : null}
-                      <p className="mt-2 truncate text-[11px] text-muted-light">
+                      <p className="mt-2 truncate text-[11px] text-muted-light" data-testid={`skill-marketplace-source-${entry.id}`}>
                         {entry.repo}@{entry.defaultRef} · {entry.skillPath}
                         {entry.license ? ` · ${entry.license}` : ""}
                       </p>
@@ -249,9 +323,12 @@ function Marketplace() {
                     >
                       View source ↗
                     </a>
-                    <InstallButton
+                    <SkillActions
                       state={entryState}
-                      onInstall={() => onInstall(entry)}
+                      builtin={Boolean(entry.builtin)}
+                      onInstall={() => runAction(entry, "install")}
+                      onSync={() => runAction(entry, "sync")}
+                      onUninstall={() => runAction(entry, "uninstall")}
                     />
                   </div>
                 </li>
@@ -264,16 +341,82 @@ function Marketplace() {
   );
 }
 
-function InstallButton({
+function Summary({ installed }: { installed: InstalledSkill[] }) {
+  const user = installed.filter((i) => !i.builtin).length;
+  const builtin = installed.filter((i) => i.builtin).length;
+  return (
+    <div className="mb-3 grid grid-cols-3 gap-3" data-testid="skill-marketplace-summary">
+      <Stat label="Installed" value={installed.length} />
+      <Stat label="Workspace" value={user} />
+      <Stat label="Built-in" value={builtin} />
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface px-4 py-3">
+      <div className="text-xs uppercase tracking-wide text-muted-light">{label}</div>
+      <div className="mt-1 text-2xl font-semibold text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function SkillActions({
   state,
+  builtin,
   onInstall,
+  onSync,
+  onUninstall
 }: {
   state: InstallState;
+  builtin: boolean;
   onInstall: () => void;
+  onSync: () => void;
+  onUninstall: () => void;
 }) {
-  switch (state.kind) {
-    case "idle":
-      return (
+  if (state.kind === "busy") {
+    return (
+      <span className="rounded-md bg-surface-subtle px-3 py-1.5 text-xs text-muted">
+        {state.action}…
+      </span>
+    );
+  }
+  if (state.kind === "error") {
+    return (
+      <span
+        className="rounded-md bg-rose-50 px-3 py-1.5 text-xs text-rose-700"
+        title={state.message}
+      >
+        ✗ {state.message}
+      </span>
+    );
+  }
+  const installed = state.kind === "installed";
+  return (
+    <div className="flex items-center gap-2">
+      {installed ? (
+        <>
+          <button
+            type="button"
+            onClick={onSync}
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] text-foreground hover:bg-surface-subtle"
+            data-testid={`skill-marketplace-sync`}
+          >
+            Sync (rev {state.revision})
+          </button>
+          {!builtin ? (
+            <button
+              type="button"
+              onClick={onUninstall}
+              className="rounded-md border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] text-rose-700 hover:bg-rose-100"
+              data-testid={`skill-marketplace-uninstall`}
+            >
+              Uninstall
+            </button>
+          ) : null}
+        </>
+      ) : (
         <button
           type="button"
           onClick={onInstall}
@@ -282,39 +425,7 @@ function InstallButton({
         >
           Install
         </button>
-      );
-    case "fetching":
-      return (
-        <span className="rounded-md bg-surface-subtle px-3 py-1.5 text-xs text-muted">
-          Fetching SKILL.md…
-        </span>
-      );
-    case "ready":
-      return (
-        <span className="rounded-md bg-step-success/15 px-3 py-1.5 text-xs font-semibold text-step-success">
-          ✓ Parsed ({state.bytes}B) — staged for next run
-        </span>
-      );
-    case "uploading":
-      return (
-        <span className="rounded-md bg-surface-subtle px-3 py-1.5 text-xs text-muted">
-          Uploading…
-        </span>
-      );
-    case "installed":
-      return (
-        <span className="rounded-md bg-step-success/15 px-3 py-1.5 text-xs font-semibold text-step-success">
-          ✓ Installed
-        </span>
-      );
-    case "error":
-      return (
-        <span
-          className="rounded-md bg-rose-50 px-3 py-1.5 text-xs text-rose-700"
-          title={state.message}
-        >
-          ✗ {state.message}
-        </span>
-      );
-  }
+      )}
+    </div>
+  );
 }

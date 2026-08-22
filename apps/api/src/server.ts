@@ -116,6 +116,8 @@ import { handleWebhook, isWebhookPath, loadWebhookEnv } from "./webhooks/index.j
 import { handleXichaConversationRequest } from "./routes/xicha-conversation.js";
 import { createFoodSafetyClient } from "./supabase-food-safety.js";
 import { handleSkillMarketplaceRequest } from "./routes/skill-marketplace.js";
+import type { ConfigApiContext } from "./routes/types.js";
+import { startSkillSyncWorker } from "./skill-sync.js";
 
 const COPILOTKIT_PATH = "/api/copilotkit";
 const DEFAULT_WORKSPACE_ID = "default";
@@ -272,6 +274,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
   );
   startScheduledTaskScheduler();
   onScheduledTaskDue((task) => launchScheduledRun(task));
+  startSkillSyncWorker();
 
   /**
    * Headless executor for scheduled tasks: builds the same DataFoundryAgUiAgent used by
@@ -439,11 +442,26 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         }
       }
 
-      if (requestUrl.pathname === "/api/v1/skill-marketplace/catalog"
-          || requestUrl.pathname === "/api/v1/skill-marketplace/install") {
+      const marketplacePathnames = [
+        "/api/v1/skill-marketplace/catalog",
+        "/api/v1/skill-marketplace/install",
+        "/api/v1/skill-marketplace/sync",
+        "/api/v1/skill-marketplace/installed",
+        "/api/v1/skill-marketplace/uninstall"
+      ];
+      if (marketplacePathnames.includes(requestUrl.pathname)) {
         const marketplaceBody = request.method === "POST"
           ? await readJsonBody(request)
           : undefined;
+        (request as IncomingMessage & { configContext?: ConfigApiContext }).configContext = {
+          dataGateway,
+          fileAssetService,
+          knowledgeService,
+          metadataStore,
+          runCancelRegistry,
+          userId: authContext.user.id,
+          workspaceId: authContext.workspaceId
+        };
         const marketplaceResponse = await handleSkillMarketplaceRequest(
           request,
           requestUrl.pathname,
