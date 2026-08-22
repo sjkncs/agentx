@@ -7,7 +7,8 @@
     "paths": {
       "@datafoundry/agent-runtime": ["./src/index.ts"],
       "@datafoundry/agent-runtime/*": ["./src/*"]
-    }
+    },
+    "ignoreDeprecations": "5.0"
   },
   "references": [
     {
