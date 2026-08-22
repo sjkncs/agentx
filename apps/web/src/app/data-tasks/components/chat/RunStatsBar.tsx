@@ -2,7 +2,13 @@
 
 import { useT } from "../../../../i18n/locale-context";
 import type { LiveRun } from "../../live-run-state";
-import { computeRunStats, formatMs, formatTokens } from "../../run-stats";
+import {
+  computeRunStats,
+  estimateCostUsd,
+  estimateEtaMs,
+  formatMs,
+  formatTokens,
+} from "../../run-stats";
 
 /**
  * DSH-inspired bottom run-stats bar: rounds · steps | LLM time · tool time |
@@ -12,6 +18,8 @@ export function RunStatsBar({ liveRun }: { liveRun: LiveRun }) {
   const t = useT();
   const s = computeRunStats(liveRun);
   if (s.steps === 0 && s.rounds === 0 && s.inputTokens === 0) return null;
+  const cost = estimateCostUsd(s);
+  const etaMs = estimateEtaMs(liveRun, s);
 
   return (
     <div
@@ -32,6 +40,18 @@ export function RunStatsBar({ liveRun }: { liveRun: LiveRun }) {
           out: formatTokens(s.outputTokens),
         })}
       </span>
+      <span aria-hidden="true" className="h-3 w-px bg-border" />
+      <span className="tabular" title={t("runStats.costHint")}>
+        {t("runStats.cost", { usd: cost < 0.01 ? "<$0.01" : `$${cost.toFixed(3)}` })}
+      </span>
+      {etaMs !== null ? (
+        <>
+          <span aria-hidden="true" className="h-3 w-px bg-border" />
+          <span className="tabular" title={t("runStats.etaHint")}>
+            {t("runStats.eta", { time: formatMs(etaMs) })}
+          </span>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -4,7 +4,7 @@ version: "3.9"
 # 启动：
 #   docker compose -f services/docker-compose.yml up -d inngest-bridge
 #   docker compose -f services/docker-compose.yml --profile subscriber up -d
-#     启动 subscriber-default + subscriber-bj 两个 subscribe_loop process
+#     启动 subscriber-default + subscriber-secondary 两个 subscribe_loop process
 #
 # .env 需包含：
 #   SUPABASE_URL=https://xxx.supabase.co
@@ -67,13 +67,13 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # workspace = heytea-bj
-  subscriber-bj:
+  # workspace = secondary
+  subscriber-secondary:
     build:
       context: ..
       dockerfile: docker/inngest-bridge/Dockerfile
     image: datafoundry/inngest-bridge:latest
-    container_name: df-subscriber-bj
+    container_name: df-subscriber-secondary
     restart: unless-stopped
     profiles: ["subscriber"]
     command: ["node", "--enable-source-maps", "dist/subscribe_loop.js"]
@@ -82,7 +82,7 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       DINGTALK_ROBOT_SECRET: ${DINGTALK_ROBOT_SECRET:-}
       INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:-}
-      SUBSCRIBER_WORKSPACE_ID: heytea-bj
+      SUBSCRIBER_WORKSPACE_ID: secondary
       POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-800}
       HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-5000}
       DRY_RUN: ${DRY_RUN:-false}

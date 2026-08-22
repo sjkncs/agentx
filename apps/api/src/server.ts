@@ -114,8 +114,6 @@ import { handleAdminApiRequest } from "./rbac/routes.js";
 import { TaskPlanProjector } from "./task-plan-projector.js";
 import { ToolCallResultBridge } from "./tool-call-result-bridge.js";
 import { handleWebhook, isWebhookPath, loadWebhookEnv } from "./webhooks/index.js";
-import { handleXichaConversationRequest } from "./routes/xicha-conversation.js";
-import { createFoodSafetyClient } from "./supabase-food-safety.js";
 import { handleSkillMarketplaceRequest } from "./routes/skill-marketplace.js";
 import type { ConfigApiContext } from "./routes/types.js";
 import { startSkillSyncWorker } from "./skill-sync.js";
@@ -424,26 +422,6 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         });
         response.end(JSON.stringify(scheduledResponse.body));
         return;
-      }
-
-      if (requestUrl.pathname.startsWith("/api/v1/agent/xicha/")) {
-        const xichaBody = request.method === "POST"
-          ? await readJsonBody(request)
-          : undefined;
-        const xichaResponse = await handleXichaConversationRequest(
-          request,
-          requestUrl.pathname,
-          xichaBody,
-          { foodSafetyClient: createFoodSafetyClient() },
-        );
-        if (xichaResponse) {
-          response.writeHead(xichaResponse.status, {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          });
-          response.end(JSON.stringify(xichaResponse.body));
-          return;
-        }
       }
 
       const marketplacePathnames = [

@@ -1,0 +1,101 @@
+{
+  "hooks": [
+    {
+      "name": "lint-on-write",
+      "description": "Run ESLint after writing files",
+      "events": ["tool.post-execute"],
+      "filter": {
+        "toolName": "write_file"
+      },
+      "action": {
+        "type": "shell",
+        "command": "npx eslint --fix",
+        "args": ["{{filePath}}"],
+        "timeout": 30000
+      },
+      "enabled": true
+    },
+    {
+      "name": "test-after-edit",
+      "description": "Run tests after editing files",
+      "events": ["tool.post-execute"],
+      "filter": {
+        "toolName": "edit_file"
+      },
+      "action": {
+        "type": "shell",
+        "command": "npm test",
+        "args": ["--", "--changed"],
+        "timeout": 60000
+      },
+      "enabled": false
+    },
+    {
+      "name": "security-check",
+      "description": "Security scan before shell commands",
+      "events": ["tool.pre-execute"],
+      "filter": {
+        "toolName": ["execute_command", "shell", "exec"]
+      },
+      "action": {
+        "type": "shell",
+        "command": "python scripts/security_scan.py",
+        "args": ["--input", "{{toolInput}}"],
+        "timeout": 10000
+      },
+      "enabled": false
+    },
+    {
+      "name": "log-turns",
+      "description": "Log turn events to console",
+      "events": ["turn.start", "turn.end"],
+      "action": {
+        "type": "prompt",
+        "template": "[Turn {{turnId}} {{event}}]"
+      },
+      "enabled": false
+    },
+    {
+      "name": "log-tools",
+      "description": "Log tool calls to console",
+      "events": ["tool.pre-execute", "tool.post-execute"],
+      "action": {
+        "type": "prompt",
+        "template": "[Tool {{toolName}} {{event}}]"
+      },
+      "enabled": false
+    },
+    {
+      "name": "notify-on-error",
+      "description": "Send webhook on tool errors",
+      "events": ["tool.error"],
+      "action": {
+        "type": "http",
+        "url": "https://hooks.example.com/notify",
+        "method": "POST",
+        "body": {
+          "event": "tool_error",
+          "tool": "{{toolName}}",
+          "error": "{{error}}",
+          "sessionId": "{{sessionId}}"
+        },
+        "timeout": 5000
+      },
+      "enabled": false
+    },
+    {
+      "name": "context-log",
+      "description": "Log context changes",
+      "events": ["context.inject", "context.compact"],
+      "action": {
+        "type": "prompt",
+        "template": "[Context {{event}}]"
+      },
+      "enabled": false
+    }
+  ],
+  "defaults": {
+    "timeout": 60000,
+    "enabled": true
+  }
+}

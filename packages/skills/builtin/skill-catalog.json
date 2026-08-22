@@ -104,20 +104,6 @@
     "icon": "📜"
   },
   {
-    "id": "food-safety",
-    "displayName": "Food Safety (Heytea)",
-    "description": "Multi-subagent food-safety customer-service skill: intent classification, compliance reply, audit, and work-order generation. Built-in.",
-    "category": "vertical",
-    "tags": ["food-safety", "customer-service", "xicha", "heytea", "compliance"],
-    "repo": "sjkncs/heytea-food-safety-agent",
-    "defaultRef": "master",
-    "skillPath": "README.md",
-    "homepage": "https://github.com/sjkncs/heytea-food-safety-agent",
-    "license": "Apache-2.0",
-    "icon": "🍵",
-    "builtin": true
-  },
-  {
     "id": "scroll-world",
     "displayName": "Scroll World",
     "description": "Build immersive scroll-scrubbed 'fly through the world' landing pages — Apple-style continuous 3D camera flight driven by scroll position, with framework-agnostic portable scrub engine. Source: oso95/scroll-world.",

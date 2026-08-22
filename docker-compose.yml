@@ -55,10 +55,10 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./docs/supabase-xicha-bridge:/sql
+      - ./docs/services/supabase-integration:/sql
     command: >
       sh -c "
-        for f in 000_install_all_NO_PGRST.sql 001_init.sql 003_food_safety_schema.sql 004_seed_food_safety_demo.sql 005_inngest_gate_rpcs.sql 007_event_subscriptions.sql 008_event_workspace_subscription.sql 010_work_order_rpcs.sql 011_work_order_rpcs.sql 012_workspace_config.sql 013_audit_search.sql; do
+        for f in 001_init.sql 002_schema.sql 003_rpcs.sql 004_seeds.sql; do
           echo '--- applying: '$$f;
           psql -h postgres -U postgres -d datafoundry -f /sql/$$f || true;
         done;
@@ -68,8 +68,7 @@ services:
       - backend
 
   # ─── Inngest Bridge Subscriber (subscribe_loop) ────────────
-  # 持续 poll fsf_inngest_events → 匹配订阅 → 投递 DingTalk/webhook
-  # A17: 失败指数退避重试
+  # 持续 poll fsf_inngest_events → 匹配订阅 → 投递 enterprise IM / webhook
   inngest-bridge-subscriber:
     build:
       context: .
@@ -83,7 +82,7 @@ services:
       SUPABASE_URL:           http://host.docker.internal:5432
       SUPABASE_SERVICE_ROLE_KEY: postgres
       DISPATCHED_TO:           subscriber
-      SUBSCRIBER_WORKSPACE_ID: heytea-bj
+      SUBSCRIBER_WORKSPACE_ID: default
       POLL_INTERVAL_MS:        ${POLL_INTERVAL_MS:-1000}
       BATCH_SIZE:              ${BATCH_SIZE:-5}
       HTTP_TIMEOUT_MS:         ${HTTP_TIMEOUT_MS:-5000}

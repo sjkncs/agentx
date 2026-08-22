@@ -130,7 +130,7 @@ const FALLBACK_ENTRIES: ReadonlyArray<CatalogEntry> = [
     displayName: "Food Safety (Heytea)",
     description: "Multi-subagent food-safety customer-service skill: intent classification, compliance reply, audit, and work-order generation. Built-in.",
     category: "vertical",
-    repo: "sjkncs/heytea-food-safety-agent",
+    repo: "sjkncs/data-agent-examples",
     license: "Apache-2.0",
     icon: "🍵",
     builtin: true,

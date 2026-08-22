@@ -2,11 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
+const source = (path: string) => readFileSync(join(process.cwd(), "apps/web/src", path), "utf8");
 
 describe("quick start guide integration", () => {
   it("mounts the quick start guide from the data tasks page", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
 
     expect(page).toContain("QuickStartGuide");
     expect(page).toContain("quickStartGuide=");
@@ -15,11 +15,11 @@ describe("quick start guide integration", () => {
   });
 
   it("places the quick-start launcher in the user bar as a round question button", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
     const guide = source(
-      "src/app/data-tasks/components/guide/QuickStartGuide.tsx",
+      "app/data-tasks/components/guide/QuickStartGuide.tsx",
     );
-    const identity = source("src/app/data-tasks/data-task-identity.tsx");
+    const identity = source("app/data-tasks/data-task-identity.tsx");
 
     expect(page).toContain("quickStartGuide={quickStartGuide}");
     expect(identity).toContain("quickStartGuide?: ReactNode");
@@ -29,12 +29,12 @@ describe("quick start guide integration", () => {
   });
 
   it("provides stable guide anchors for the quick-start path", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
     const chatInput = source(
-      "src/app/data-tasks/components/chat/DataTaskChatInput.tsx",
+      "app/data-tasks/components/chat/DataTaskChatInput.tsx",
     );
     const taskConsole = source(
-      "src/app/data-tasks/components/task-console/TaskConsole.tsx",
+      "app/data-tasks/components/task-console/TaskConsole.tsx",
     );
 
     expect(page).toContain('data-guide-id="workspace-layout"');
@@ -52,13 +52,13 @@ describe("quick start guide integration", () => {
 
   it("fills the chat draft through the chat input binding instead of clipboard-only copy", () => {
     const guide = source(
-      "src/app/data-tasks/components/guide/QuickStartGuide.tsx",
+      "app/data-tasks/components/guide/QuickStartGuide.tsx",
     );
     const bindings = source(
-      "src/app/data-tasks/components/chat/DataTaskChatInputBindingsContext.tsx",
+      "app/data-tasks/components/chat/DataTaskChatInputBindingsContext.tsx",
     );
     const chatInput = source(
-      "src/app/data-tasks/components/chat/DataTaskChatInput.tsx",
+      "app/data-tasks/components/chat/DataTaskChatInput.tsx",
     );
 
     expect(guide).toContain("onUseExampleQuery");
@@ -70,8 +70,8 @@ describe("quick start guide integration", () => {
   });
 
   it("renders an explicit empty chat welcome overlay outside CopilotChat internals", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
-    const welcome = source("src/app/data-tasks/components/chat/DataTaskWelcome.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
+    const welcome = source("app/data-tasks/components/chat/DataTaskWelcome.tsx");
 
     expect(page).toContain("ChatWelcomeOverlay");
     expect(page).toContain("hasVisibleMessages");
@@ -81,7 +81,7 @@ describe("quick start guide integration", () => {
   });
 
   it("clears draft prompt requests when switching or creating sessions", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
 
     expect(page).toContain("clearDraftPromptRequest");
     expect(page).toContain("onCreateSession={createSession}");
@@ -89,9 +89,9 @@ describe("quick start guide integration", () => {
   });
 
   it("shows guide progress and blocks the send step until a task starts", () => {
-    const page = source("src/app/data-tasks/data-tasks-app.tsx");
+    const page = source("app/data-tasks/data-tasks-app.tsx");
     const guide = source(
-      "src/app/data-tasks/components/guide/QuickStartGuide.tsx",
+      "app/data-tasks/components/guide/QuickStartGuide.tsx",
     );
 
     expect(page).toContain("hasSubmittedTask={");

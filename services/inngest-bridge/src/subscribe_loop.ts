@@ -4,7 +4,7 @@
  * 主循环：
  *   1) rpc_subscription_poll_match(workspace_id) 一次拿 1 条 queued 事件 + 全部订阅匹配
  *   2) 对每个 (event_id, subscription_id) 调用 dispatcher
- *   3) 钉钉 dingtalk channel → signDingtalkUrl(target_id, DINGTALK_ROBOT_SECRET)
+ *   3) enterprise IM channel → signDingtalkUrl(target_id, DINGTALK_ROBOT_SECRET)
  *   4) 调 rpc_subscription_record_delivery 写结果
  *   5) A17: 失败时调用 rpc_subscription_delivery_resend + 指数退避重试
  *
@@ -100,16 +100,14 @@ function bodyFor(targetChannel: string, payload: Record<string, unknown>): strin
   if (targetChannel === "email") {
     const body = String(payload.body ?? "");
     return JSON.stringify({
-      subject: `[喜茶食安] ${caseNo}`,
+      subject: `[Work Order] ${caseNo}`,
       text: `${body}\n\n工单: ${caseNo}\n时间: ${new Date().toISOString()}`,
     });
   }
 
-  // Rich markdown for dingtalk / corp_dingtalk
-  // A24: Fall back to rpc_work_order_markdown_card via server-side render.
-  // Client should call rpc_work_order_markdown_card(p_case_no) first and pass
-  // rendered_markdown in payload; here we build a fallback client-side card.
-  const title = String(payload.title ?? `食品安全工单 ${caseNo}`);
+  // Rich markdown for enterprise IM / webhook
+  // Fall back to server-side rendering via RPC if client passes rendered_markdown.
+  const title = String(payload.title ?? `Work Order ${caseNo}`);
   const body  = String(payload.body ?? "");
   const riskLevel  = String(payload.risk_level  ?? "");
   const slaStatus  = String(payload.sla_status  ?? "");
@@ -136,7 +134,7 @@ function bodyFor(targetChannel: string, payload: Record<string, unknown>): strin
     "",
     description,
     "",
-    `> 系统: DataFoundry × 喜茶食安  |  ${new Date().toLocaleString("zh-CN")}`,
+    `> 系统: DataFoundry  |  ${new Date().toLocaleString("en-US")}`,
   ].filter(Boolean).join("\n");
 
   return JSON.stringify({
@@ -182,14 +180,14 @@ async function dispatchOne(
     return { ok: true, status: 200, text: "dry-run" };
   }
 
-  // corp_dingtalk: 调 RPC（不走 HTTP webhook）
-  if (row.target_channel === "corp_dingtalk") {
+  // Enterprise IM via RPC (no HTTP webhook)
+  if (row.target_channel === "enterprise_im") {
     const filter = row.filter_json ?? {};
     const body   = bodyFor("dingtalk", row.payload);
     const parsed = JSON.parse(body);
     try {
       const r = await rpc.rpc<{ ok: boolean; task_id?: number; error?: string }>(
-        "rpc_corp_dingtalk_send",
+        "rpc_enterprise_im_send",
         {
           p_agent_id:     Number(filter.agent_id ?? row.target_id),
           p_userid_list:  String(filter.userid_list ?? ""),

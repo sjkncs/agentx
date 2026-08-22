@@ -168,6 +168,8 @@ const DatasourceTypeGallery = nextDynamic(
 import { DatasourceTypeIcon } from "./components/DatasourceTypeIcon";
 import { DataTaskChatInput } from "./components/chat/DataTaskChatInput";
 import { ThemeSwitcher } from "./components/chat/ThemeSwitcher";
+import { SubagentStatusBadge } from "./components/chat/SubagentStatusBadge";
+import { LinuxDistroHint } from "./components/chat/LinuxDistroHint";
 import { FloatingStatsBall } from "./components/chat/FloatingStatsBall";
 import { ConcurrentTasksPanel } from "./components/task-console/ConcurrentTasksPanel";
 import { buildConcurrentTasks } from "./concurrent-tasks";
@@ -7865,6 +7867,7 @@ function ChatPane({
       data-chat-column
       className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-surface"
     >
+      <LinuxDistroHint />
       <ChatRunStatusContext.Provider value={liveRunStatus}>
       <ChatLiveRunContext.Provider value={liveRun}>
       <ProcessTimelineCollapseContext.Provider value={processTimelineCollapse}>
@@ -7892,6 +7895,7 @@ function ChatPane({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ThemeSwitcher />
+          <SubagentStatusBadge />
           <RunStatusPill status={liveRunStatus} />
           {!rightPanelOpen ? (
             <ChatOpenConsoleButton onOpenRightPanel={onOpenRightPanel} />

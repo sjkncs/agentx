@@ -1,80 +1,109 @@
-import type {
-  CapabilityActionDefinition,
-  CapabilityExposure,
-  CapabilityPlugin,
-  RegisteredCapabilityAction
-} from "./types.js";
+/**
+ * Capability Registry — plugin-based tool capability management.
+ *
+ * Manages CapabilityPlugin registrations for the agent tool governance system.
+ * Each plugin declares the actions it provides and their input/output schemas.
+ *
+ * NOTE: This is the original plugin-based registry. For workspace-level
+ * capability policy evaluation (adminOnly, requiresApproval, valueThresholds),
+ * see capability-guard.ts which operates at a different abstraction level.
+ */
+import type { CapabilityPlugin } from "./types.js";
+import { z } from "zod";
 
 export class CapabilityRegistry {
-  private readonly actions = new Map<string, RegisteredCapabilityAction>();
-  private readonly plugins = new Map<string, CapabilityPlugin>();
-  private initializedPlugins: CapabilityPlugin[] = [];
+  private readonly _plugins = new Map<string, CapabilityPlugin>();
+  private readonly _actionPlugins = new Map<string, string>(); // actionName → pluginId
 
+  /**
+   * Register a capability plugin. Throws if a plugin with the same id is already
+   * registered, or if any of its actions conflict with another plugin.
+   */
   register(plugin: CapabilityPlugin): void {
-    for (const dependency of plugin.manifest.requires ?? []) {
-      const registered = this.plugins.get(dependency.id);
-      if (!registered || (dependency.version && registered.manifest.version !== dependency.version)) {
-        throw new Error(
-          `CAPABILITY_PLUGIN_DEPENDENCY_MISSING:${plugin.manifest.id}:${dependency.id}@`
-          + (dependency.version ?? "any")
-        );
-      }
+    if (this._plugins.has(plugin.manifest.id)) {
+      throw new Error(`CAPABILITY_PLUGIN_ALREADY_REGISTERED:${plugin.manifest.id}`);
     }
     for (const action of plugin.actions) {
-      const existing = this.actions.get(action.name);
+      const existing = this._actionPlugins.get(action.name);
       if (existing) {
         throw new Error(
-          `CAPABILITY_ACTION_ALREADY_REGISTERED:${action.name}:${existing.pluginId}:${plugin.manifest.id}`
+          `CAPABILITY_ACTION_ALREADY_REGISTERED:${action.name}:${existing}:${plugin.manifest.id}`,
         );
       }
+      this._actionPlugins.set(action.name, plugin.manifest.id);
     }
-    this.plugins.set(plugin.manifest.id, plugin);
-    for (const action of plugin.actions) {
-      this.actions.set(action.name, {
-        action,
-        pluginId: plugin.manifest.id,
-        pluginVersion: plugin.manifest.version
-      });
-    }
+    this._plugins.set(plugin.manifest.id, plugin);
   }
 
-  resolve(actionName: string): RegisteredCapabilityAction | undefined {
-    return this.actions.get(actionName);
-  }
-
-  listByExposure(exposure: CapabilityExposure): CapabilityActionDefinition[] {
-    return [...this.actions.values()]
-      .map((entry) => entry.action)
-      .filter((action) => action.exposure === exposure || action.exposure === "both");
-  }
-
+  /**
+   * Initialize all plugins in registration order.
+   */
   async initialize(): Promise<void> {
-    if (this.initializedPlugins.length > 0) {
-      return;
-    }
-    try {
-      for (const plugin of this.plugins.values()) {
-        await plugin.initialize?.();
-        this.initializedPlugins.push(plugin);
+    for (const plugin of this._plugins.values()) {
+      if (plugin.initialize) {
+        await plugin.initialize();
       }
-    } catch (error) {
-      await this.dispose();
-      throw error;
     }
   }
 
+  /**
+   * Dispose all plugins in reverse registration order.
+   */
   async dispose(): Promise<void> {
-    const failures: unknown[] = [];
-    for (const plugin of [...this.initializedPlugins].reverse()) {
-      try {
-        await plugin.dispose?.();
-      } catch (error) {
-        failures.push(error);
+    const reversed = [...this._plugins.values()].reverse();
+    for (const plugin of reversed) {
+      if (plugin.dispose) {
+        await plugin.dispose();
       }
     }
-    this.initializedPlugins = [];
-    if (failures.length > 0) {
-      throw new AggregateError(failures, "CAPABILITY_PLUGIN_DISPOSE_FAILED");
-    }
+  }
+
+  /**
+   * Get a plugin by id.
+   */
+  get(pluginId: string): CapabilityPlugin | undefined {
+    return this._plugins.get(pluginId);
+  }
+
+  /**
+   * Get all registered plugin ids.
+   */
+  list(): string[] {
+    return [...this._plugins.keys()];
+  }
+
+  /**
+   * Check if an action is registered by any plugin.
+   */
+  hasAction(actionName: string): boolean {
+    return this._actionPlugins.has(actionName);
+  }
+
+  /**
+   * Get the plugin that registered a given action.
+   */
+  pluginForAction(actionName: string): string | undefined {
+    return this._actionPlugins.get(actionName);
+  }
+
+  /**
+   * Resolve an action name to its registered definition and plugin metadata.
+   */
+  resolve(actionName: string): {
+    action: CapabilityPlugin["actions"][0];
+    pluginId: string;
+    pluginVersion: string;
+  } | null {
+    const pluginId = this._actionPlugins.get(actionName);
+    if (!pluginId) return null;
+    const plugin = this._plugins.get(pluginId);
+    if (!plugin) return null;
+    const action = plugin.actions.find((a: CapabilityPlugin["actions"][0]) => a.name === actionName);
+    if (!action) return null;
+    return {
+      action,
+      pluginId: plugin.manifest.id,
+      pluginVersion: plugin.manifest.version,
+    };
   }
 }

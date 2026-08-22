@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const source = () =>
-  readFileSync(join(process.cwd(), "src/app/data-tasks/data-task-identity.tsx"), "utf8");
+  readFileSync(join(process.cwd(), "apps/web/src/app/data-tasks/data-task-identity.tsx"), "utf8");
 
 describe("data task identity menu", () => {
   it("keeps the account menu focused on the current user and core actions", () => {
@@ -30,7 +30,7 @@ describe("data task identity menu", () => {
 
   it("expands the collapsed rail before opening settings from the compact avatar", () => {
     const page = readFileSync(
-      join(process.cwd(), "src/app/data-tasks/data-tasks-app.tsx"),
+      join(process.cwd(), "apps/web/src/app/data-tasks/data-tasks-app.tsx"),
       "utf8",
     );
 
@@ -76,7 +76,7 @@ describe("data task identity menu", () => {
 
   it("exposes production password auth screens and account actions", () => {
     const authFlow = readFileSync(
-      join(process.cwd(), "src/components/auth/auth-flow.tsx"),
+      join(process.cwd(), "apps/web/src/components/auth/auth-flow.tsx"),
       "utf8",
     );
 

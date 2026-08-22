@@ -105,6 +105,7 @@ describe("quick start guide state", () => {
 
   it("starts by orienting users to the left, middle, and right work areas", () => {
     expect(QUICK_START_STEP_ORDER).toEqual([
+      "persona",
       "welcome",
       "resources",
       "datasource",

@@ -7,12 +7,16 @@ import type { WorkspaceConfigStore } from "../../data-task-state";
 import type { LiveRun } from "../../live-run-state";
 import {
   QUICK_START_STEP_ORDER,
+  PERSONA_OPTIONS,
   getQuickStartInitialStep,
   hasSeenQuickStartPrompt,
+  loadPersona,
   markQuickStartDismissed,
   markQuickStartPromptSeen,
   resolveQuickStartReadiness,
   resolveQuickStartStep,
+  savePersona,
+  type PersonaId,
   type QuickStartStepId,
 } from "./quick-start-guide-state";
 
@@ -246,6 +250,28 @@ export function QuickStartGuide({
             {stepId === "query" ? (
               <div className="mt-3 rounded-lg border border-border bg-surface-subtle px-3 py-2 font-mono text-xs leading-5 text-foreground">
                 {t("welcome.runSqlPrompt")}
+              </div>
+            ) : null}
+            {stepId === "persona" ? (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {PERSONA_OPTIONS.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      savePersona(browserStorage(), id);
+                      setStepId("welcome");
+                    }}
+                    className="cursor-pointer rounded-lg border border-border bg-surface-subtle px-3 py-2 text-left transition-colors duration-150 hover:border-primary/40 hover:bg-primary/5"
+                  >
+                    <div className="text-xs font-semibold text-foreground">
+                      {t(`guide.persona.${id}.label` as `guide.persona.${PersonaId}.label`)}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-4 text-muted">
+                      {t(`guide.persona.${id}.hint` as `guide.persona.${PersonaId}.hint`)}
+                    </div>
+                  </button>
+                ))}
               </div>
             ) : null}
             <div className="mt-4 flex items-center justify-between gap-3">

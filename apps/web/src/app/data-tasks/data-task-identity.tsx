@@ -65,7 +65,7 @@ function PasswordIdentityProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const response = await configApi.getMe();
-      setCurrentUser(dtoToIdentity(response.user));
+      setCurrentUser({ ...dtoToIdentity(response.user), role: response.role ?? null });
       clearConfigApiIdentity();
     } catch (err) {
       setCurrentUser(null);
@@ -204,6 +204,28 @@ export function DataTaskUserBar({
             </div>
           </div>
           <div className="pt-1.5">
+            <AccountMenuItem
+              label={t("userBar.notebook")}
+              onClick={() => {
+                window.location.href = "/notebook";
+                setOpen(false);
+              }}
+            />
+            <AccountMenuItem
+              label={t("userBar.dashboard")}
+              onClick={() => {
+                window.location.href = "/dashboard";
+                setOpen(false);
+              }}
+            />
+            {currentUser.role === "owner" || currentUser.role === "admin" ? (
+              <AccountMenuItem
+                label={t("userBar.admin")}
+                onClick={() => {
+                  window.location.href = "/admin/members";
+                }}
+              />
+            ) : null}
             <AccountMenuItem
               label={t("userBar.settings")}
               onClick={() => {

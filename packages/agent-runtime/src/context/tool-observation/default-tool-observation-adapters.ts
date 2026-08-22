@@ -34,6 +34,11 @@ import {
   WriteFileToolObservationAdapter
 } from "./adapters/workspace-tool-observation-adapters.js";
 import { McpToolObservationAdapter } from "./adapters/mcp-tool-observation-adapter.js";
+import {
+  AnalysisRequirementsCommitToolObservationAdapter,
+  ProtocolHandoffToolObservationAdapter
+} from "./adapters/protocol-runtime-tool-observation-adapters.js";
+import { WebSearchToolObservationAdapter } from "./adapters/web-search-tool-observation-adapter.js";
 import type { ToolObservationAdapter } from "./tool-observation-adapter.js";
 import type { ToolObservationAdapterRegistry } from "./tool-observation-adapter-registry.js";
 
@@ -78,6 +83,9 @@ const defaultToolObservationAdapters = (
   new TaskCheckToolObservationAdapter(),
   new AskUserToolObservationAdapter(),
   new SubmitPlanToolObservationAdapter(),
+  new WebSearchToolObservationAdapter(),
+  new ProtocolHandoffToolObservationAdapter(),
+  new AnalysisRequirementsCommitToolObservationAdapter(),
   ...(input.mcpToolNames ?? []).map((name) => new McpToolObservationAdapter(name)),
   ...(input.additionalAdapters ?? [])
 ];

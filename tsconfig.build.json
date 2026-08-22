@@ -29,6 +29,9 @@
       "path": "packages/agent-runtime"
     },
     {
+      "path": "packages/supabase-bridge"
+    },
+    {
       "path": "apps/api"
     }
   ]

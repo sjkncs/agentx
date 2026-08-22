@@ -73,10 +73,12 @@ export type WorkspaceRecord = {
   updated_at: string;
 };
 
+export type WorkspaceRole = "owner" | "admin" | "member" | "viewer";
+
 export type WorkspaceMembershipRecord = {
   workspace_id: string;
   user_id: string;
-  role: "owner";
+  role: WorkspaceRole;
   created_at: string;
 };
 
@@ -646,6 +648,8 @@ export class MetadataStore {
   readonly sessions: SessionRepository;
   readonly secrets: EncryptedSecretStore;
   readonly sqlAuditLogs: SqlAuditLogRepository;
+  readonly workspaceInvitations: WorkspaceInvitationRepository;
+  readonly auditEvents: AuditEventRepository;
   readonly traceSections: TraceSectionRepository;
   readonly userPasswordCredentials: UserPasswordCredentialRepository;
   readonly users: UserRepository;
@@ -682,6 +686,8 @@ export class MetadataStore {
     this.protocolStates = new ProtocolStateSnapshotRepository(db);
     this.secrets = new EncryptedSecretStore(db, secretMasterKey);
     this.sqlAuditLogs = new SqlAuditLogRepository(db);
+    this.workspaceInvitations = new WorkspaceInvitationRepository(db);
+    this.auditEvents = new AuditEventRepository(db);
   }
 
   close(): void {
@@ -869,6 +875,27 @@ export class UserRepository {
         }
         return user;
       });
+  }
+
+  update(input: { user_id: string; display_name?: string; disabled_at?: string | null }): UserRecord {
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    if (input.display_name !== undefined) {
+      fields.push("display_name = ?");
+      values.push(input.display_name);
+    }
+    if (input.disabled_at !== undefined) {
+      fields.push("disabled_at = ?");
+      values.push(input.disabled_at);
+    }
+    if (fields.length === 0) return this.getById({ user_id: input.user_id });
+    fields.push("updated_at = ?");
+    values.push(new Date().toISOString());
+    values.push(input.user_id);
+    this.db
+      .prepare(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`)
+      .run(...values);
+    return this.getById({ user_id: input.user_id });
   }
 
   getById(input: { user_id: string }): UserRecord {
@@ -1093,14 +1120,44 @@ export class WorkspaceMembershipRepository {
     return this.get(input);
   }
 
+  setRole(input: { workspace_id: string; user_id: string; role: WorkspaceRole }): WorkspaceMembershipRecord {
+    const now = new Date().toISOString();
+    this.db.prepare(`
+      INSERT INTO workspace_memberships (workspace_id, user_id, role, created_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role
+    `).run(input.workspace_id, input.user_id, input.role, now);
+    return this.get({ workspace_id: input.workspace_id, user_id: input.user_id });
+  }
+
   get(input: { workspace_id: string; user_id: string }): WorkspaceMembershipRecord {
     const membership = mapWorkspaceMembershipRow(this.db.prepare(`
       SELECT * FROM workspace_memberships WHERE workspace_id = ? AND user_id = ?
-    `).get(input.workspace_id, input.user_id));
+    `).get(input.workspace_id, input.user_id) as unknown);
     if (!membership) {
       throw new Error(`WORKSPACE_MEMBERSHIP_NOT_FOUND:${input.workspace_id}:${input.user_id}`);
     }
     return membership;
+  }
+
+  tryGet(input: { workspace_id: string; user_id: string }): WorkspaceMembershipRecord | null {
+    const row = this.db.prepare(`
+      SELECT * FROM workspace_memberships WHERE workspace_id = ? AND user_id = ?
+    `).get(input.workspace_id, input.user_id);
+    return row ? mapWorkspaceMembershipRow(row as unknown) : null;
+  }
+
+  listByWorkspace(input: { workspace_id: string }): WorkspaceMembershipRecord[] {
+    return this.db.prepare(`
+      SELECT * FROM workspace_memberships WHERE workspace_id = ? ORDER BY created_at ASC
+    `).all(input.workspace_id).map((row: unknown) => mapWorkspaceMembershipRow(row));
+  }
+
+  remove(input: { workspace_id: string; user_id: string }): boolean {
+    const result = this.db.prepare(`
+      DELETE FROM workspace_memberships WHERE workspace_id = ? AND user_id = ?
+    `).run(input.workspace_id, input.user_id);
+    return result.changes > 0;
   }
 }
 
@@ -3827,6 +3884,9 @@ const runMigrations = (db: BetterSqlite3.Database): void => {
   runSchemaMigration(db, "0017_protocol_event_journal", "Ensure protocol event journal schema", () => {
     initializeProtocolEventJournalSchema(db);
   });
+  runSchemaMigration(db, "0018_rbac_audit_extension", "Ensure RBAC + audit events extension schema", () => {
+    initializeRbacAuditSchema(db);
+  });
 };
 
 const initializeSchemaMigrationTable = (db: BetterSqlite3.Database): void => {
@@ -4555,9 +4615,9 @@ const mapWorkspaceRow = (row: unknown): Optional<WorkspaceRecord> => {
   };
 };
 
-const mapWorkspaceMembershipRow = (row: unknown): Optional<WorkspaceMembershipRecord> => {
+const mapWorkspaceMembershipRow = (row: unknown): WorkspaceMembershipRecord | null => {
   if (!isRecord(row)) {
-    return undefined;
+    return null;
   }
   return {
     workspace_id: requiredString(row, "workspace_id"),
@@ -5210,3 +5270,321 @@ const mapRequiredArtifactVersionRow = (row: unknown): ArtifactVersionRecord => {
 
   return version;
 };
+
+/* ===================================================================
+ *  RBAC + Audit extension (Phase 1)
+ *  ================================================================ */
+
+export type WorkspaceInvitationRecord = {
+  id: string;
+  workspace_id: string;
+  email: string;
+  role: WorkspaceRole;
+  token_hash: string;
+  invited_by_user_id: string;
+  accepted_at?: string | null;
+  revoked_at?: string | null;
+  expires_at: string;
+  created_at: string;
+};
+
+export type AuditEventCategory =
+  | "auth"
+  | "workspace"
+  | "member"
+  | "datasource"
+  | "model"
+  | "skill"
+  | "mcp"
+  | "knowledge"
+  | "session"
+  | "run"
+  | "artifact"
+  | "export"
+  | "settings";
+
+export type AuditEventSeverity = "info" | "warning" | "critical";
+
+export type AuditEventRecord = {
+  id: string;
+  workspace_id?: string | null;
+  actor_user_id?: string | null;
+  actor_email?: string | null;
+  category: AuditEventCategory;
+  action: string;
+  severity: AuditEventSeverity;
+  target_type?: string | null;
+  target_id?: string | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  metadata_json?: string | null;
+  created_at: string;
+};
+
+const initializeRbacAuditSchema = (db: BetterSqlite3.Database): void => {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS workspace_invitations (
+      id TEXT PRIMARY KEY,
+      workspace_id TEXT NOT NULL,
+      email TEXT NOT NULL,
+      role TEXT NOT NULL,
+      token_hash TEXT NOT NULL,
+      invited_by_user_id TEXT NOT NULL,
+      accepted_at TEXT,
+      revoked_at TEXT,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      UNIQUE (workspace_id, email),
+      FOREIGN KEY (workspace_id) REFERENCES workspaces(id),
+      FOREIGN KEY (invited_by_user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_workspace_invitations_email
+      ON workspace_invitations(email, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace
+      ON workspace_invitations(workspace_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS audit_events (
+      id TEXT PRIMARY KEY,
+      workspace_id TEXT,
+      actor_user_id TEXT,
+      actor_email TEXT,
+      category TEXT NOT NULL,
+      action TEXT NOT NULL,
+      severity TEXT NOT NULL,
+      target_type TEXT,
+      target_id TEXT,
+      ip_address TEXT,
+      user_agent TEXT,
+      metadata_json TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (actor_user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_audit_events_workspace_time
+      ON audit_events(workspace_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_audit_events_actor_time
+      ON audit_events(actor_user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_audit_events_category_time
+      ON audit_events(category, created_at DESC);
+  `);
+};
+
+const mapWorkspaceInvitationRow = (row: unknown): WorkspaceInvitationRecord | null => {
+  if (!row) return null;
+  const r = row as Record<string, unknown>;
+  return {
+    id: String(r.id),
+    workspace_id: String(r.workspace_id),
+    email: String(r.email),
+    role: r.role as WorkspaceRole,
+    token_hash: String(r.token_hash),
+    invited_by_user_id: String(r.invited_by_user_id),
+    accepted_at: r.accepted_at ? String(r.accepted_at) : null,
+    revoked_at: r.revoked_at ? String(r.revoked_at) : null,
+    expires_at: String(r.expires_at),
+    created_at: String(r.created_at),
+  };
+};
+
+const mapAuditEventRow = (row: unknown): AuditEventRecord | null => {
+  if (!row) return null;
+  const r = row as Record<string, unknown>;
+  return {
+    id: String(r.id),
+    workspace_id: r.workspace_id ? String(r.workspace_id) : null,
+    actor_user_id: r.actor_user_id ? String(r.actor_user_id) : null,
+    actor_email: r.actor_email ? String(r.actor_email) : null,
+    category: r.category as AuditEventCategory,
+    action: String(r.action),
+    severity: r.severity as AuditEventSeverity,
+    target_type: r.target_type ? String(r.target_type) : null,
+    target_id: r.target_id ? String(r.target_id) : null,
+    ip_address: r.ip_address ? String(r.ip_address) : null,
+    user_agent: r.user_agent ? String(r.user_agent) : null,
+    metadata_json: r.metadata_json ? String(r.metadata_json) : null,
+    created_at: String(r.created_at),
+  };
+};
+
+export class WorkspaceInvitationRepository {
+  constructor(private readonly db: BetterSqlite3.Database) {}
+
+  create(input: {
+    id: string;
+    workspace_id: string;
+    email: string;
+    role: WorkspaceRole;
+    token_hash: string;
+    invited_by_user_id: string;
+    expires_at: string;
+  }): WorkspaceInvitationRecord {
+    const now = new Date().toISOString();
+    this.db.prepare(`
+      INSERT INTO workspace_invitations
+        (id, workspace_id, email, role, token_hash, invited_by_user_id, expires_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      input.id,
+      input.workspace_id,
+      input.email,
+      input.role,
+      input.token_hash,
+      input.invited_by_user_id,
+      input.expires_at,
+      now,
+    );
+    return this.get({ id: input.id });
+  }
+
+  get(input: { id: string }): WorkspaceInvitationRecord {
+    const row = this.db.prepare(`SELECT * FROM workspace_invitations WHERE id = ?`).get(input.id);
+    const record = mapWorkspaceInvitationRow(row);
+    if (!record) throw new Error(`WORKSPACE_INVITATION_NOT_FOUND:${input.id}`);
+    return record;
+  }
+
+  findByTokenHash(input: { token_hash: string }): WorkspaceInvitationRecord | null {
+    const row = this.db.prepare(
+      `SELECT * FROM workspace_invitations WHERE token_hash = ? AND accepted_at IS NULL AND revoked_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+    ).get(input.token_hash);
+    return mapWorkspaceInvitationRow(row);
+  }
+
+  listByWorkspace(input: { workspace_id: string }): WorkspaceInvitationRecord[] {
+    return this.db.prepare(
+      `SELECT * FROM workspace_invitations WHERE workspace_id = ? ORDER BY created_at DESC`,
+    )
+      .all(input.workspace_id)
+      .map((row: unknown) => mapWorkspaceInvitationRow(row));
+  }
+
+  markAccepted(input: { id: string }): WorkspaceInvitationRecord {
+    const now = new Date().toISOString();
+    this.db.prepare(
+      `UPDATE workspace_invitations SET accepted_at = ? WHERE id = ?`,
+    ).run(now, input.id);
+    return this.get(input);
+  }
+
+  revoke(input: { id: string }): WorkspaceInvitationRecord {
+    const now = new Date().toISOString();
+    this.db.prepare(
+      `UPDATE workspace_invitations SET revoked_at = ? WHERE id = ?`,
+    ).run(now, input.id);
+    return this.get(input);
+  }
+}
+
+export class AuditEventRepository {
+  constructor(private readonly db: BetterSqlite3.Database) {}
+
+  append(input: {
+    id: string;
+    workspace_id?: string | null;
+    actor_user_id?: string | null;
+    actor_email?: string | null;
+    category: AuditEventCategory;
+    action: string;
+    severity?: AuditEventSeverity;
+    target_type?: string | null;
+    target_id?: string | null;
+    ip_address?: string | null;
+    user_agent?: string | null;
+    metadata?: unknown;
+  }): AuditEventRecord {
+    const now = new Date().toISOString();
+    const severity = input.severity ?? "info";
+    this.db.prepare(`
+      INSERT INTO audit_events
+        (id, workspace_id, actor_user_id, actor_email, category, action, severity,
+         target_type, target_id, ip_address, user_agent, metadata_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      input.id,
+      input.workspace_id ?? null,
+      input.actor_user_id ?? null,
+      input.actor_email ?? null,
+      input.category,
+      input.action,
+      severity,
+      input.target_type ?? null,
+      input.target_id ?? null,
+      input.ip_address ?? null,
+      input.user_agent ?? null,
+      input.metadata === undefined ? null : JSON.stringify(input.metadata),
+      now,
+    );
+    return this.get({ id: input.id });
+  }
+
+  get(input: { id: string }): AuditEventRecord {
+    const row = this.db.prepare(`SELECT * FROM audit_events WHERE id = ?`).get(input.id);
+    const record = mapAuditEventRow(row);
+    if (!record) throw new Error(`AUDIT_EVENT_NOT_FOUND:${input.id}`);
+    return record;
+  }
+
+  list(input: {
+    workspace_id?: string | null;
+    actor_user_id?: string | null;
+    category?: AuditEventCategory;
+    severity?: AuditEventSeverity;
+    limit?: number;
+    cursor?: string | null;
+  }): { items: AuditEventRecord[]; nextCursor: string | null } {
+    const limit = Math.min(Math.max(input.limit ?? 50, 1), 200);
+    const where: string[] = [];
+    const params: unknown[] = [];
+    if (input.workspace_id) {
+      where.push("workspace_id = ?");
+      params.push(input.workspace_id);
+    }
+    if (input.actor_user_id) {
+      where.push("actor_user_id = ?");
+      params.push(input.actor_user_id);
+    }
+    if (input.category) {
+      where.push("category = ?");
+      params.push(input.category);
+    }
+    if (input.severity) {
+      where.push("severity = ?");
+      params.push(input.severity);
+    }
+    if (input.cursor) {
+      where.push("created_at < ?");
+      params.push(input.cursor);
+    }
+    const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM audit_events ${whereClause} ORDER BY created_at DESC LIMIT ?`,
+      )
+      .all(...params, limit + 1)
+      .map((row: unknown) => mapAuditEventRow(row))
+      .filter((row: AuditEventRecord | null): row is AuditEventRecord => row !== null);
+    const items = rows.slice(0, limit);
+    const nextCursor = rows.length > limit ? items[items.length - 1].created_at : null;
+    return { items, nextCursor };
+  }
+
+  countBySeverity(input: { workspace_id?: string; since?: string }): Record<AuditEventSeverity, number> {
+    const where: string[] = [];
+    const params: unknown[] = [];
+    if (input.workspace_id) {
+      where.push("workspace_id = ?");
+      params.push(input.workspace_id);
+    }
+    if (input.since) {
+      where.push("created_at >= ?");
+      params.push(input.since);
+    }
+    const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+    type Row = { severity: AuditEventSeverity; count: number };
+    const rows = this.db
+      .prepare(`SELECT severity, COUNT(*) as count FROM audit_events ${whereClause} GROUP BY severity`)
+      .all(...params) as Row[];
+    const out: Record<AuditEventSeverity, number> = { info: 0, warning: 0, critical: 0 };
+    for (const r of rows) out[r.severity] = r.count;
+    return out;
+  }
+}

@@ -1,11 +1,27 @@
 import type {
+  AdminAuditEventDto,
+  AdminAuditListResponseDto,
+  AdminAuditExportResponseDto,
+  AdminInvitationCreateResponseDto,
+  AdminInvitationDto,
+  AdminInvitationListResponseDto,
+  AdminMemberDto,
+  AdminMemberListResponseDto,
+  AdminUserDto,
+  AdminUserListResponseDto,
+  AdminMetricsSnapshot,
+  AdminAlertsSnapshot,
   ApiResult,
   ArtifactExportFormat,
   ArtifactDto,
   ArtifactVersionDto,
   BackendCapabilitiesResponse,
   DatalinkGraphResponseDto,
+  DatalinkNodesResponseDto,
+  DatalinkNodeResponseDto,
+  DatalinkPathsResponseDto,
   DatalinkServersResponseDto,
+  DatalinkSubgraphResponseDto,
   DatalinkToolResponseDto,
   DatasourceDto,
   DatasourceSchemaDto,
@@ -29,6 +45,7 @@ import type {
   SkillDto,
   TraceDagDto,
   WorkspaceConfigDto,
+  WorkspaceRole,
 } from "./types";
 import { ConfigApiError as ConfigApiErrorClass } from "./types";
 
@@ -37,6 +54,7 @@ export type ConfigApiIdentity = {
   userId: string;
   displayName?: string;
   email?: string;
+  role?: WorkspaceRole | null;
 };
 
 let currentIdentity: ConfigApiIdentity | null = null;
@@ -372,6 +390,46 @@ export const configApi = {
     return requestEnvelope<DatalinkToolResponseDto>(
       `/api/v1/datalink/${encodeURIComponent(serverId)}/rebuild`,
       { method: "POST", body: JSON.stringify({}) },
+    );
+  },
+
+  searchDatalinkNodes(
+    serverId: string,
+    body: { query: string; nodeType?: string; limit?: number },
+  ): Promise<DatalinkNodesResponseDto> {
+    return requestEnvelope<DatalinkNodesResponseDto>(
+      `/api/v1/datalink/${encodeURIComponent(serverId)}/search`,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+  },
+
+  getDatalinkNode(
+    serverId: string,
+    body: { nodeId: string; includeEdges?: boolean },
+  ): Promise<DatalinkNodeResponseDto> {
+    return requestEnvelope<DatalinkNodeResponseDto>(
+      `/api/v1/datalink/${encodeURIComponent(serverId)}/get-node`,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+  },
+
+  findDatalinkPaths(
+    serverId: string,
+    body: { sourceId: string; targetId: string; maxDepth?: number; limit?: number; edgeTypes?: string },
+  ): Promise<DatalinkPathsResponseDto> {
+    return requestEnvelope<DatalinkPathsResponseDto>(
+      `/api/v1/datalink/${encodeURIComponent(serverId)}/path`,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+  },
+
+  extractDatalinkSubgraph(
+    serverId: string,
+    body: { nodeIds: string; maxHops?: number },
+  ): Promise<DatalinkSubgraphResponseDto> {
+    return requestEnvelope<DatalinkSubgraphResponseDto>(
+      `/api/v1/datalink/${encodeURIComponent(serverId)}/extract-subgraph`,
+      { method: "POST", body: JSON.stringify(body) },
     );
   },
 
@@ -761,6 +819,102 @@ export const configApi = {
       `/api/v1/query-history/${encodeURIComponent(id)}/${favorite ? "favorite" : "unfavorite"}`,
       { method: "POST" },
     );
+  },
+
+  /* ------------------------------------------------------------------
+   * Admin: members, invitations, users, audit
+   * ----------------------------------------------------------- */
+  listAdminMembers(): Promise<AdminMemberListResponseDto> {
+    return requestEnvelope<AdminMemberListResponseDto>("/api/v1/admin/members");
+  },
+  changeAdminMemberRole(userId: string, role: WorkspaceRole): Promise<{ user_id: string; role: WorkspaceRole }> {
+    return requestEnvelope<{ user_id: string; role: WorkspaceRole }>(
+      `/api/v1/admin/members/${encodeURIComponent(userId)}`,
+      { method: "PATCH", body: JSON.stringify({ role }) },
+    );
+  },
+  removeAdminMember(userId: string): Promise<{ removed: boolean }> {
+    return requestEnvelope<{ removed: boolean }>(
+      `/api/v1/admin/members/${encodeURIComponent(userId)}`,
+      { method: "DELETE" },
+    );
+  },
+  listAdminInvitations(): Promise<AdminInvitationListResponseDto> {
+    return requestEnvelope<AdminInvitationListResponseDto>("/api/v1/admin/invitations");
+  },
+  createAdminInvitation(email: string, role: WorkspaceRole): Promise<AdminInvitationCreateResponseDto> {
+    return requestEnvelope<AdminInvitationCreateResponseDto>(
+      "/api/v1/admin/invitations",
+      { method: "POST", body: JSON.stringify({ email, role }) },
+    );
+  },
+  revokeAdminInvitation(id: string): Promise<{ revoked: boolean }> {
+    return requestEnvelope<{ revoked: boolean }>(
+      `/api/v1/admin/invitations/${encodeURIComponent(id)}`,
+      { method: "DELETE" },
+    );
+  },
+  listAdminUsers(options: { limit?: number } = {}): Promise<AdminUserListResponseDto> {
+    const params = new URLSearchParams();
+    if (options.limit !== undefined) params.set("limit", String(options.limit));
+    return requestEnvelope<AdminUserListResponseDto>(`/api/v1/admin/users${queryString(params)}`);
+  },
+  updateAdminUser(
+    userId: string,
+    body: { display_name?: string; disabled?: boolean },
+  ): Promise<{ user_id: string; display_name: string | null; disabled_at: string | null }> {
+    return requestEnvelope(`/api/v1/admin/users/${encodeURIComponent(userId)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+  listAdminAudit(options: {
+    limit?: number;
+    cursor?: string;
+    category?: string;
+    severity?: "info" | "warning" | "critical";
+  } = {}): Promise<AdminAuditListResponseDto> {
+    const params = new URLSearchParams();
+    if (options.limit !== undefined) params.set("limit", String(options.limit));
+    if (options.cursor) params.set("cursor", options.cursor);
+    if (options.category) params.set("category", options.category);
+    if (options.severity) params.set("severity", options.severity);
+    return requestEnvelope<AdminAuditListResponseDto>(`/api/v1/admin/audit${queryString(params)}`);
+  },
+  exportAdminAudit(options: { limit?: number } = {}): Promise<AdminAuditExportResponseDto> {
+    const params = new URLSearchParams();
+    if (options.limit !== undefined) params.set("limit", String(options.limit));
+    return requestEnvelope<AdminAuditExportResponseDto>(`/api/v1/admin/audit/export${queryString(params)}`);
+  },
+
+  getAdminMetrics(): Promise<AdminMetricsSnapshot> {
+    return requestEnvelope<AdminMetricsSnapshot>("/api/v1/admin/metrics/active");
+  },
+
+  getAdminAlerts(): Promise<AdminAlertsSnapshot> {
+    return requestEnvelope<AdminAlertsSnapshot>("/api/v1/admin/alerts");
+  },
+
+  async getAdminApprovals(): Promise<AdminApprovalSnapshot> {
+    const result = await requestEnvelope<{ data: AdminApprovalSnapshot }>("/api/v1/admin/approvals");
+    return result.data ?? { approvals: [], stats: { pending: 0, approved_today: 0, rejected_today: 0, avg_resolution_time_ms: 0 } };
+  },
+
+  async resolveApproval(params: { id: string; selected_option: string; status?: string }): Promise<void> {
+    await requestEnvelope("/api/v1/admin/approvals/" + params.id + "/resolve", {
+      method: "POST",
+      body: { selected_option: params.selected_option, status: params.status ?? "approved" },
+    });
+  },
+
+  async getAdminEval(): Promise<AdminEvalSnapshot> {
+    const result = await requestEnvelope<{ data: AdminEvalSnapshot }>("/api/v1/admin/eval");
+    return result.data ?? {
+      total_runs: 0, automated_runs: 0, human_required_runs: 0, failed_runs: 0,
+      automation_rate: 0, human_approval_rate: 0, failure_rate: 0,
+      p50_latency_ms: 0, p95_latency_ms: 0, p99_latency_ms: 0, avg_latency_ms: 0,
+      avg_quality_score: 0, window_hours: 24, computed_at: Date.now(),
+    };
   },
 };
 

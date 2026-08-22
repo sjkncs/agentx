@@ -88,7 +88,7 @@ const STEPS: ReadonlyArray<{
       { k: "Skill marketplace", v: "packages/skills + apps/api/src/routes/skill-marketplace.ts + apps/web/src/app/admin/skill-marketplace." },
       { k: "Skill sync worker", v: "apps/api/src/skill-sync.ts (background 6h loop). Audit table dfd_audit_events." },
       { k: "Desktop pet", v: "apps/desktop/src/pet/ — schema (persona.mjs), store (persona-store.mjs), builder, chat window, voice adapter." },
-      { k: "Supabase schema", v: "docs/supabase-xicha-bridge/003_food_safety_schema.sql + 012_run_persistence_schema.sql for memory bank + eval pipeline." },
+      { k: "Supabase schema", v: "docs/services/supabase-integration/003_food_safety_schema.sql + 012_run_persistence_schema.sql for memory bank + eval pipeline." },
     ],
   },
 ];

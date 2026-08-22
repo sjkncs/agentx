@@ -116,6 +116,31 @@
       "canceled": "已取消"
     }
   },
+  "linuxDistro": {
+    "detected": "检测到 {{flavor}} 系统环境",
+    "override": "手动指定系统类型",
+    "dismiss": "知道了"
+  },
+  "workspacePerm": {
+    "title": "工作空间自动授权",
+    "description": "允许 agent 在指定目录下自由编辑与执行命令，不必每次确认。",
+    "on": "已开启",
+    "off": "已关闭",
+    "scopeLabel": "授权范围",
+    "scopePlaceholder": "/你的/工作/路径",
+    "levelLabel": "风险等级",
+    "level": {
+      "low": "低（仅写入）",
+      "medium": "中（写入 + Shell）",
+      "high": "高（写入 + Shell + 外部调用）"
+    },
+    "enable": "启用",
+    "disable": "关闭",
+    "elevate": "一键升到中等",
+    "elevateHint": "启用 + 设范围 + 升等级，三件事一次完成。",
+    "reset": "重置",
+    "deniedCount": "范围内手动禁止了 {{n}} 个路径"
+  },
   "awareness": {
     "title": "意识",
     "memories": "长期记忆",
@@ -175,7 +200,11 @@
     "steps": "{{count}} 步",
     "llm": "LLM {{time}}",
     "tool": "工具 {{time}}",
-    "tokens": "输入 {{in}} tok · 输出 {{out}} tok"
+    "tokens": "输入 {{in}} tok · 输出 {{out}} tok",
+    "cost": "{{usd}}",
+    "costHint": "按综合模型费率估算的消耗；可在模型配置中按模型自定义费率。",
+    "eta": "≈剩余 {{time}}",
+    "etaHint": "基于观察到的吞吐估算，运行若干 LLM 步后会更准。"
   },
   "stepPhase": {
     "search": "搜索",
@@ -186,7 +215,10 @@
     "title": "主题",
     "light": "浅色",
     "dark": "深色",
-    "deepseek": "DeepSeek"
+    "deepseek": "DeepSeek",
+    "soft": "柔和",
+    "accent": "自定义强调色",
+    "resetAccent": "重置"
   },
   "concurrent": {
     "title": "并发任务",
@@ -245,7 +277,10 @@
   "userBar": {
     "currentUser": "当前用户",
     "settings": "设置",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "admin": "管理后台",
+    "notebook": "笔记本",
+    "dashboard": "仪表盘"
   },
   "chat": {
     "openConsole": "控制台",
@@ -671,7 +706,9 @@
     "runSqlPrompt": "查询最近 30 天的订单总量，按日期分组",
     "analyzeTrends": "分析趋势",
     "analyzeTrendsDesc": "探索指标变化与异常",
-    "analyzeTrendsPrompt": "分析月度销售趋势，并找出波动最大的月份"
+    "analyzeTrendsPrompt": "分析月度销售趋势，并找出波动最大的月份",
+    "personaSuggested": "为你的角色推荐",
+    "personaSuggestedDesc": "已根据角色预设调整"
   },
   "schema": {
     "copyTableName": "复制表名",
@@ -698,6 +735,35 @@
     "waitingForSend": "等待发送",
     "openDatasourceConfig": "打开数据源配置",
     "openModelConfig": "打开模型配置",
+    "persona": {
+      "title": "欢迎 — 请选择你的角色",
+      "body": "DataFoundry 会按你的工作方式调整工作台。选一个最贴近你的角色即可；后续可随时在顶栏切换。",
+      "cta": "以此角色开始",
+      "data-scientist": {
+        "label": "数据科学家",
+        "hint": "Notebook、SQL、可复现"
+      },
+      "business": {
+        "label": "业务分析师",
+        "hint": "Dashboard、自然语言查询、零代码"
+      },
+      "developer": {
+        "label": "开发者 / 工程师",
+        "hint": "CLI、SDK、Git 风格工作流"
+      },
+      "ai-engineer": {
+        "label": "AI / Agent 工程师",
+        "hint": "Prompt playground、轨迹、A/B"
+      },
+      "admin": {
+        "label": "管理员 / 合规",
+        "hint": "用户、审计、配额、SSO"
+      },
+      "researcher": {
+        "label": "研究者 / 学术",
+        "hint": "实验快照、引用、可复现"
+      }
+    },
     "welcome": {
       "title": "先看清工作区布局",
       "body": "左侧配置资源，中间提出数据问题，右侧查看任务运行过程与输出结果。"
@@ -1231,5 +1297,217 @@
     "other": "数据操作",
     "stepMeta": "步骤 {{n}} · {{kind}}",
     "stepMetaTools": "步骤 {{n}} · {{kind}} · {{count}} 次工具调用"
+  },
+  "subagent": {
+    "title": "Subagent 收件箱",
+    "role": "角色",
+    "spawnPlaceholder": "新 subagent 的任务提示…",
+    "spawn": "创建",
+    "empty": "还没有 subagent。在上方创建一个。",
+    "statsSummary": "{{running}} 运行中 · 共 {{total}} 个",
+    "messageCount": "{{n}} 条消息",
+    "runningBadge": "活跃 subagent 数",
+    "activeCount": "{{n}} 个活跃",
+    "jumpToInbox": "打开收件箱",
+    "injectReply": "注入示例回复",
+    "userInputPlaceholder": "给这个 subagent 发消息…",
+    "send": "发送",
+    "status": {
+      "running": "运行中",
+      "ready": "就绪",
+      "paused": "暂停",
+      "completed": "完成",
+      "failed": "失败",
+      "cancelled": "取消"
+    }
+  },
+  "diff": {
+    "title": "版本差异",
+    "hint": "输入本地 git 仓库路径（如 /home/you/proj），查看两个引用之间的改动。",
+    "repo": "仓库路径",
+    "repoPlaceholder": "/你的/git/仓库/路径",
+    "base": "基准",
+    "head": "目标",
+    "refresh": "刷新",
+    "loading": "加载中…",
+    "empty": "尚未加载差异",
+    "noChanges": "基准与目标之间没有改动。",
+    "error": "加载 diff 失败"
+  },
+  "admin": {
+    "title": "工作空间管理",
+    "subtitle": "管理成员、邀请、审计日志、用户、指标和告警。",
+    "back": "返回工作台",
+    "roleBadge": "角色：{{role}}",
+    "tabs": {
+      "label": "管理分区",
+      "members": "成员",
+      "audit": "审计日志",
+      "users": "用户",
+      "metrics": "指标",
+      "alerts": "告警",
+      "approvals": "人工审批"
+    },
+    "forbidden": {
+      "title": "需要管理员权限",
+      "body": "需要管理员或所有者角色才能查看此页面。",
+      "cta": "返回工作台"
+    },
+    "roles": {
+      "owner": "所有者",
+      "admin": "管理员",
+      "member": "成员",
+      "viewer": "访客"
+    },
+    "members": {
+      "inviteTitle": "邀请新成员",
+      "inviteHint": "邀请链接将在 7 天后过期，仅可使用一次。",
+      "emailLabel": "邮箱",
+      "roleLabel": "角色",
+      "sendInvite": "发送邀请",
+      "sending": "发送中…",
+      "inviteSuccess": "已为 {{email}} 创建邀请。",
+      "shareLink": "通过此链接让对方立即加入：",
+      "copyLink": "复制链接",
+      "inviteCopied": "邀请链接已复制。",
+      "inviteCopyFailed": "无法复制，请手动复制。",
+      "listTitle": "工作空间成员",
+      "listHint": "当前工作空间共 {{count}} 名成员。",
+      "colEmail": "邮箱",
+      "colName": "显示名",
+      "colRole": "角色",
+      "colStatus": "状态",
+      "colJoined": "加入时间",
+      "remove": "移除",
+      "roleChanged": "已更新 {{email}} 的角色。",
+      "removed": "已从工作空间移除 {{email}}。",
+      "confirmRemove": "确定要从工作空间移除 {{email}} 吗？",
+      "disabled": "已禁用",
+      "active": "正常",
+      "you": "你",
+      "invitationsTitle": "待处理邀请",
+      "invitationsHint": "共有 {{count}} 个邀请。",
+      "invitedAt": "邀请时间",
+      "expiresAt": "过期",
+      "revoke": "撤销",
+      "inviteRevoked": "已撤销 {{email}} 的邀请。"
+    },
+    "invitations": {
+      "status": {
+        "pending": "待处理",
+        "accepted": "已接受",
+        "revoked": "已撤销",
+        "expired": "已过期"
+      }
+    },
+    "audit": {
+      "title": "审计日志",
+      "subtitle": "记录工作空间内每一次特权操作的完整上下文。",
+      "refresh": "刷新",
+      "exportCsv": "导出 CSV",
+      "exporting": "导出中…",
+      "severity": {
+        "info": "普通",
+        "warning": "警告",
+        "critical": "严重"
+      },
+      "severityLabel": "严重程度",
+      "category": "类别",
+      "allCategories": "全部类别",
+      "allSeverities": "全部严重程度",
+      "loading": "加载事件中…",
+      "empty": "暂无符合筛选的事件。",
+      "colTime": "时间",
+      "colCategory": "类别",
+      "colAction": "动作",
+      "colSeverity": "严重程度",
+      "colActor": "操作者",
+      "colTarget": "目标",
+      "colIp": "IP",
+      "colMetadata": "元数据"
+    },
+    "users": {
+      "title": "平台用户",
+      "subtitle": "所有注册账户，仅所有者可禁用账号。",
+      "searchPlaceholder": "按邮箱、姓名或 ID 搜索",
+      "colEmail": "邮箱",
+      "colName": "显示名",
+      "colVerified": "邮箱",
+      "colStatus": "状态",
+      "colJoined": "加入时间",
+      "empty": "无匹配用户。",
+      "verified": "已验证",
+      "unverified": "未验证",
+      "disabled": "已禁用",
+      "active": "正常",
+      "enable": "启用",
+      "disable": "禁用",
+      "disableForbidden": "仅所有者可禁用用户账号。",
+      "disabledOk": "已禁用 {{email}}。",
+      "enabledOk": "已重新启用 {{email}}。"
+    },
+    "metrics": {
+      "title": "系统指标",
+      "subtitle": "来自 DataFoundry 服务的 Prometheus 风格指标。",
+      "uptime": "运行时长",
+      "lastUpdate": "更新于",
+      "gauges": "仪表盘指标",
+      "histograms": "延迟直方图",
+      "counters": "计数器",
+      "colName": "名称",
+      "colValue": "值"
+    },
+    "approvals": {
+      "title": "人工审批",
+      "subtitle": "审核并处理来自 Agent 运行的人工审批请求。",
+      "pending": "待审批",
+      "approvedToday": "今日已批准",
+      "rejectedToday": "今日已拒绝",
+      "avgResolution": "平均处理时间",
+      "noPending": "暂无待审批",
+      "noPendingDesc": "所有审批请求均已处理完毕。",
+      "empty": "暂无审批记录",
+      "emptyDesc": "当 Agent 请求用户确认时，人工审批请求将显示在此处。"
+    },
+    "eval": {
+      "title": "Agent 评估",
+      "subtitle": "过去 24 小时的自动化率与延迟 KPI。",
+      "automationRate": "自动化率",
+      "p50Latency": "P50 延迟",
+      "p95Latency": "P95 延迟",
+      "qualityScore": "质量评分",
+      "automated": "自动化",
+      "humanRequired": "需人工",
+      "failed": "失败",
+      "latencyDetail": "延迟与质量详情"
+    }
+  },
+  "notebook": {
+    "title": "笔记本",
+    "tagline": "AI 辅助的 SQL + Python 单元",
+    "new": "新建笔记本",
+    "openDashboard": "打开仪表盘 →",
+    "recent": "最近笔记本",
+    "cells": "单元",
+    "empty": "暂无匹配的笔记本。",
+    "tips": "使用提示",
+    "tipRunAll": "编辑完成后使用「全部运行」,每个单元的输出都会被缓存。",
+    "tipAi": "AI 单元会将提示发送给默认模型。",
+    "tipPromote": "一键把任意单元输出提升为仪表盘 widget。",
+    "pickOrCreate": "在左侧选择笔记本,或在右上角新建。",
+    "addCell": "添加单元:",
+    "runAll": "全部运行",
+    "promoted": "已为该单元安排仪表盘 widget。请切换到仪表盘页面查看。"
+  },
+  "dashboard": {
+    "title": "仪表盘",
+    "tagline": "模板 + 实时 widget",
+    "new": "新建仪表盘",
+    "openNotebook": "← 打开笔记本",
+    "templates": "模板库",
+    "dashboards": "仪表盘",
+    "widgets": "widget",
+    "addWidget": "添加 widget",
+    "pickOrCreate": "在左侧选择仪表盘,或在右上角新建。"
   }
 }
