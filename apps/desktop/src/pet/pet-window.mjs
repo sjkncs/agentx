@@ -11,7 +11,7 @@
 //   - We never spawn another BrowserWindow from here; the main process
 //     relays events back via the WebSocket-like streaming handled in A32.5.
 
-const petIpc = /** @type {Window['pet']|undefined} */ (window).pet;
+const petIpc = /** @type {Window['dfd']['pet']|undefined} */ (window).dfd?.pet;
 if (!petIpc) {
   document.body.innerHTML =
     "<p style='color:#ff6f7a;padding:24px'>pet IPC bridge missing — preload misconfigured.</p>";

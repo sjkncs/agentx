@@ -25,6 +25,14 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import net from 'node:net';
 
+import {
+  registerPetIpc,
+  registerPetCallbacks,
+  openPetBuilder,
+  openPetWindow,
+} from './pet/ipc.mjs';
+import { getPetProfile } from './pet/persona-store.mjs';
+
 const require = createRequire(import.meta.url);
 
 const __filename = fileURLToPath(import.meta.url);
@@ -342,6 +350,31 @@ function createTray() {
       { label: 'DataFoundry Desktop', enabled: false },
       { type: 'separator' },
       { label: 'Show window', click: () => mainWindow?.show() },
+      { label: 'Add a pet…', click: () => openPetBuilder({ parent: mainWindow ?? undefined }) },
+      {
+        label: 'Open a pet…',
+        click: async () => {
+          const { listPetProfiles } = await import('./pet/persona-store.mjs');
+          const all = await listPetProfiles();
+          const win = new BrowserWindow({
+            width: 360,
+            height: 480,
+            parent: mainWindow ?? undefined,
+            title: 'Pets',
+            backgroundColor: '#16191f',
+            webPreferences: {
+              preload: path.join(__dirname, 'preload.mjs'),
+              contextIsolation: true,
+              nodeIntegration: false,
+              sandbox: true,
+            },
+          });
+          win.removeMenu();
+          const html = renderPetListHtml(all);
+          void win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+        },
+      },
+      { type: 'separator' },
       { label: 'Open logs', click: () => shell.openPath(path.join(RUN_DIR, 'desktop')) },
       { label: 'Open repo', click: () => shell.openPath(ROOT) },
       { type: 'separator' },
@@ -353,6 +386,58 @@ function createTray() {
     console.warn('Tray creation failed:', err);
   }
 }
+
+/** Inline HTML pet list picker rendered into a small data: URL. Kept
+ *  inline so the desktop app does not need an extra built file. */
+const renderPetListHtml = (profiles) => {
+  const rows = profiles.length === 0
+    ? '<li class="empty">No pets yet — click "+ Add a pet" first.</li>'
+    : profiles
+      .map(
+        (p) => `<li><button data-id="${p.id}">${escapeHtml(p.name)} <span class="muted">${escapeHtml(p.archetype || '')}</span></button></li>`,
+      )
+      .join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Pets</title>
+<style>
+  body { background:#16191f; color:#e6e8ec; font-family:-apple-system,"Segoe UI","PingFang SC",sans-serif; margin:0; padding:16px; }
+  h1 { font-size:14px; text-transform:uppercase; letter-spacing:1px; color:#8b94a3; margin:0 0 12px 0; }
+  ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+  li button { width:100%; background:#1d2129; color:#e6e8ec; border:1px solid #2c313b; border-radius:6px; padding:10px 12px; text-align:left; cursor:pointer; }
+  li button:hover { border-color:#5ed3b9; }
+  .muted { color:#8b94a3; font-size:12px; display:block; }
+  .empty { color:#8b94a3; padding:16px 0; }
+</style></head><body>
+  <h1>Pick a pet to chat with</h1>
+  <ul>${rows}</ul>
+  <script>
+    const { ipcRenderer } = require('electron');
+    document.querySelectorAll('button[data-id]').forEach((b) => {
+      b.addEventListener('click', async () => {
+        const id = b.dataset.id;
+        const url = '/__open_pet__/' + encodeURIComponent(id);
+        // The main process intercepts this navigation by listening on
+        // webContents.on('will-navigate') and opening the pet window.
+        window.location.href = url;
+      });
+    });
+  </script>
+</body></html>`;
+};
+
+const escapeHtml = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
+const openPetListDialog = ({ parent } = {}) => {
+  // Same as the tray menu branch — kept as a callable for clarity.
+  // Implementation re-uses the inline HTML; opening via the tray is the
+  // production path; this entry point is provided for future menu entries.
+  new BrowserWindow({
+    width: 360, height: 480, parent: parent ?? undefined, title: 'Pets',
+    backgroundColor: '#16191f',
+  });
+};
 
 // ---------------- App boot ----------------
 fs.mkdirSync(RUN_DIR, { recursive: true });
@@ -371,13 +456,174 @@ if (fs.existsSync(LOCK_FILE)) {
 }
 fs.writeFileSync(LOCK_FILE, JSON.stringify({ pid: process.pid, startedAt: Date.now() }, null, 2));
 
+// ---------------- Harness Core Loader ----------------
+let harnessCorePromise = null;
+async function loadHarnessCore() {
+  if (harnessCorePromise) return harnessCorePromise;
+  harnessCorePromise = (async () => {
+    const candidates = [
+      // 1) node_modules (dev install + packaged app.asar/node_modules)
+      () => {
+        const entry = require.resolve('@datafoundry/harness-core');
+        return { kind: 'node_modules', spec: entry };
+      },
+      // 2) workspace source tree (dev, when symlinks are present)
+      () => {
+        const pkgRoot = path.join(ROOT, 'packages', 'harness-core');
+        const pkg = JSON.parse(
+          fs.readFileSync(path.join(pkgRoot, 'package.json'), 'utf8'),
+        );
+        const rel = pkg.exports?.['.']?.import ?? pkg.main ?? './dist/index.js';
+        const spec = path.join(pkgRoot, rel.replace(/^\.\//, ''));
+        if (!fs.existsSync(spec)) throw new Error('not found');
+        return { kind: 'source', spec };
+      },
+    ];
+    const errors = [];
+    for (const resolve of candidates) {
+      try {
+        const { spec } = resolve();
+        const mod = await import(spec);
+        if (mod?.HookBus || mod?.RuntimeManager) return mod;
+        throw new Error('harness-core exports not found');
+      } catch (err) {
+        errors.push(err.message || String(err));
+      }
+    }
+    throw new Error(
+      `Failed to load @datafoundry/harness-core: ${errors.join(' | ')}`,
+    );
+  })().catch((err) => {
+    harnessCorePromise = null;
+    throw err;
+  });
+  return harnessCorePromise;
+}
+
+// ---------------- Harness IPC API ----------------
+ipcMain.handle('harness:getInfo', async () => {
+  try {
+    const hc = await loadHarnessCore();
+    return {
+      ok: true,
+      result: {
+        hasHookBus: typeof hc.HookBus === 'function',
+        hasEventLog: typeof hc.SessionEventLog === 'function',
+        hasPluginManager: typeof hc.PluginManager === 'function',
+        hasRuntimeManager: typeof hc.RuntimeManager === 'function',
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+});
+
+ipcMain.handle('harness:createEventLog', async (_evt, { sessionId, runId }) => {
+  try {
+    const { SessionEventLog } = await loadHarnessCore();
+    const eventLog = new SessionEventLog({ sessionId, runId });
+    return { ok: true, result: { sessionId: eventLog.getStats().sessionId } };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+});
+
+ipcMain.handle('harness:createRuntimeManager', async (_evt, { defaultType }) => {
+  try {
+    const { RuntimeManager } = await loadHarnessCore();
+    const manager = new RuntimeManager({ defaultType: defaultType || 'local' });
+    return {
+      ok: true,
+      result: {
+        total: manager.getStats().total,
+        byType: manager.getStats().byType,
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+});
+
+ipcMain.handle('harness:createHookBus', async () => {
+  try {
+    const { HookBus } = await loadHarnessCore();
+    const bus = new HookBus({ debug: false });
+    return {
+      ok: true,
+      result: {
+        listenerCount: bus.getStats().listenerCount,
+        eventCount: bus.getStats().eventCount,
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+});
+
+ipcMain.handle('harness:createPluginManager', async () => {
+  try {
+    const { PluginManager, createPluginContext, ServiceRegistryImpl } = await loadHarnessCore();
+    const services = new ServiceRegistryImpl();
+    const manager = new PluginManager(
+      (plugin) => createPluginContext(services, {}),
+      {},
+      { strict: false },
+    );
+    return {
+      ok: true,
+      result: {
+        totalPlugins: manager.getStats().totalPlugins,
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+});
+
 app.whenReady().then(async () => {
   await startApiServer();
+  await registerPetIpc();
+  registerPetCallbacks();
+
+  // pet:getCurrentPet — used by pet-window.mjs to fetch the pet assigned
+  // to its BrowserWindow. We cache the id on the webContents so a single
+  // call resolves once and we never expose other pets to a window.
+  ipcMain.handle('pet:getCurrentPet', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const id = win && win.__petId;
+    if (!id) return null;
+    return getPetProfile(id).then((persona) => {
+      if (!persona) return null;
+      return { id, name: persona.name, persona };
+    });
+  });
+
   await createMainWindow();
   createTray();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+  });
+
+  // Intercept our internal "open pet" navigation sentinel and translate it
+  // into opening the real pet-window. The pet-list data: URL uses the
+  // sentinel because data: URLs cannot invoke preload.js helpers.
+  app.on('browser-window-created', (_e, win) => {
+    win.webContents.on('will-navigate', (event, url) => {
+      if (url.startsWith('file:///__open_pet__/') || url.includes('/__open_pet__/')) {
+        event.preventDefault();
+        try {
+          const u = new URL(url);
+          const id = decodeURIComponent(u.pathname.split('/').pop() || '');
+          if (id) {
+            void openPetWindow({ petId: id, parent: win });
+            win.close();
+          }
+        } catch {
+          /* ignore malformed URL */
+        }
+      }
+    });
   });
 });
 

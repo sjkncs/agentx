@@ -28,7 +28,7 @@ const formState = {
   vlm_suggested: false,
 };
 
-const petIpc = /** @type {Window['pet']|undefined} */ (window).pet;
+const petIpc = /** @type {Window['dfd']['pet']|undefined} */ (window).dfd?.pet;
 if (!petIpc) {
   document.body.innerHTML =
     "<p style='color:#ff6f7a;padding:24px'>pet IPC bridge missing — preload misconfigured.</p>";
@@ -189,7 +189,7 @@ const onSave = async () => {
   const btn = $("save-btn");
   btn.disabled = true;
   try {
-    const persona = await petIpc.savePersona({
+    const persona = await petIpc.save({
       name: formState.name,
       archetype: formState.archetype,
       mood: formState.mood,
@@ -199,8 +199,8 @@ const onSave = async () => {
       vlm_suggested: formState.vlm_suggested,
     });
     $("suggest-status").textContent = `Saved ${persona.name} (${persona.id})`;
-    // Tell the parent window / main to open the pet chat window for this pet.
-    window.pet.onPetSaved?.({ id: persona.id, name: persona.name });
+    // Ask main to open the chat window for the newly saved pet.
+    await petIpc.resolveAfterSave({ id: persona.id, name: persona.name });
   } catch (err) {
     $("suggest-status").textContent =
       `Save failed: ${err instanceof Error ? err.message : String(err)}`;
