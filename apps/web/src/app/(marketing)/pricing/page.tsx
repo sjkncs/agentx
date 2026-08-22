@@ -189,7 +189,7 @@ export default function PricingPage() {
                   marginBottom: 6,
                 }}
               >
-                {tier.label ?? tier.name}
+                {tier.name}
                 {tier.highlighted ? " · Most popular" : ""}
               </div>
               <h3 style={{ fontSize: 24, margin: "0 0 4px 0", letterSpacing: "-0.01em" }}>

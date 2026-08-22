@@ -6,10 +6,10 @@
  * shoved into the workspace.
  *
  *  - Server component — no client JS for the static framing.
- *  - Skills are surfaced by hitting the live /api/v1/skills endpoint
- *    via the server-side fetch so the catalog on the home page is
- *    never out-of-sync with the marketplace UI. Falls back to a
- *    hand-picked four-skill list if the API is unreachable so the
+ *  - Skills are surfaced by hitting the live /api/v1/skill-marketplace/
+ *    catalog endpoint via the server-side fetch so the catalog on the
+ *    home page is never out-of-sync with the marketplace UI. Falls back
+ *    to a hand-picked four-skill list if the API is unreachable so the
  *    marketing page is never blank.
  *  - All CTAs link to real routes: /register, /login, /features,
  *    /skills. No dead buttons.
@@ -34,12 +34,16 @@ const HERO_SPOTLIGHT_IDS = ["scroll-world", "hallmark", "impeccable", "taste-ski
 
 async function fetchSpotlight(apiBase: string): Promise<CatalogEntry[]> {
   try {
-    const res = await fetch(`${apiBase}/api/v1/skills/catalog`, {
+    const res = await fetch(`${apiBase}/api/v1/skill-marketplace/catalog`, {
       cache: "no-store",
     });
     if (!res.ok) return [];
-    const body = (await res.json()) as { data?: CatalogEntry[] } | CatalogEntry[];
-    const list = Array.isArray(body) ? body : body.data ?? [];
+    const body = (await res.json()) as
+      | { items?: CatalogEntry[]; data?: CatalogEntry[] }
+      | CatalogEntry[];
+    const list = Array.isArray(body)
+      ? body
+      : body.items ?? body.data ?? [];
     return list.filter((e) => HERO_SPOTLIGHT_IDS.includes(e.id));
   } catch {
     return [];
