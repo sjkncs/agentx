@@ -116,5 +116,57 @@
     "license": "Apache-2.0",
     "icon": "🍵",
     "builtin": true
+  },
+  {
+    "id": "scroll-world",
+    "displayName": "Scroll World",
+    "description": "Build immersive scroll-scrubbed 'fly through the world' landing pages — Apple-style continuous 3D camera flight driven by scroll position, with framework-agnostic portable scrub engine. Source: oso95/scroll-world.",
+    "category": "creative",
+    "tags": ["scroll", "landing-page", "3d", "cinematic", "marketing", "scroll-driven"],
+    "repo": "oso95/scroll-world",
+    "defaultRef": "main",
+    "skillPath": "skills/scroll-world/SKILL.md",
+    "homepage": "https://github.com/oso95/scroll-world",
+    "license": "MIT",
+    "icon": "🌐"
+  },
+  {
+    "id": "hallmark",
+    "displayName": "Hallmark (Anti-AI-slop Design)",
+    "description": "Anti-AI-slop design skill for Claude Code / Cursor / Codex. Four verbs: build (anti-slop rule-set + slop-test gate), audit (score existing UI), redesign (preserve copy + IA, rebuild structure), study (extract DNA from screenshots/URLs into a portable design.md). Source: Nutlope/hallmark. Third-party skill — included as a pointer; review upstream license before commercial use.",
+    "category": "design",
+    "tags": ["design", "anti-slop", "audit", "redesign", "design-system"],
+    "repo": "Nutlope/hallmark",
+    "defaultRef": "main",
+    "skillPath": "skills/hallmark/SKILL.md",
+    "homepage": "https://github.com/Nutlope/hallmark",
+    "license": "MIT",
+    "icon": "✨"
+  },
+  {
+    "id": "impeccable",
+    "displayName": "Impeccable (Design Vocabulary)",
+    "description": "Design vocabulary plugin for AI coding tools. 23 commands (audit, critique, normalize, polish, distill, animate, bolder, quieter, typeset, ...) reading PRODUCT.md / DESIGN.md / surface briefs to enforce strict aesthetic guardrails. ~59 deterministic detector rules + browser extension. Source: pbakaus/impeccable. Third-party skill — included as a pointer; review upstream license before commercial use.",
+    "category": "design",
+    "tags": ["design", "aesthetic", "vocabulary", "audit", "polish", "frontend"],
+    "repo": "pbakaus/impeccable",
+    "defaultRef": "main",
+    "skillPath": ".agents/skills/impeccable/SKILL.md",
+    "homepage": "https://github.com/pbakaus/impeccable",
+    "license": "MIT",
+    "icon": "🎨"
+  },
+  {
+    "id": "taste-skill",
+    "displayName": "Taste Skill (Anti-slop Frontend)",
+    "description": "Anti-slop frontend skill for landing pages, portfolios, and redesigns. Three dials (DESIGN_VARIANCE / MOTION_INTENSITY / VISUAL_DENSITY) tune layout, motion, and density. Brief inference, design-system map, hard em-dash ban, GSAP code skeletons, redesign-audit protocol, pre-flight check. Source: Leonxlnx/taste-skill. Third-party skill — included as a pointer; review upstream license before commercial use.",
+    "category": "design",
+    "tags": ["design", "frontend", "anti-slop", "motion", "typography", "design-system"],
+    "repo": "Leonxlnx/taste-skill",
+    "defaultRef": "main",
+    "skillPath": "skills/taste-skill/SKILL.md",
+    "homepage": "https://github.com/Leonxlnx/taste-skill",
+    "license": "MIT",
+    "icon": "👁️"
   }
 ]
