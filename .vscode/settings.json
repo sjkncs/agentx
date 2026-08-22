@@ -1,0 +1,21 @@
+{
+  "files": {
+    "exclude": {
+      "**/dist": true,
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/coverage": true
+    }
+  },
+  "typescript": {
+    "tsserver": {
+      "maxTsServerMemory": 8192,
+      "experimental": {
+        "enableProjectDiagnostics": true
+      }
+    },
+    "preferences": {
+      "includePackageJsonAutoImports": "auto"
+    }
+  }
+}
