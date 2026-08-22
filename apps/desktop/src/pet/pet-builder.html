@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; script-src 'self'" />
+    <title>Add a Pet</title>
+    <link rel="stylesheet" href="pet-builder.css" />
+  </head>
+  <body>
+    <main class="builder">
+      <header>
+        <h1>Add a Pet</h1>
+        <p class="muted">
+          Upload 1–4 images of any character or artwork. DataFoundry will
+          describe it and let you confirm the persona. Custom personas only —
+          we never ship preset characters.
+        </p>
+      </header>
+
+      <section class="images" aria-labelledby="images-heading">
+        <h2 id="images-heading">Reference Images</h2>
+        <ul id="thumbnails" class="thumbnails" aria-live="polite"></ul>
+        <div class="image-controls">
+          <label for="file-input" class="button secondary">+ Add image</label>
+          <input id="file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
+          <button id="suggest-btn" class="button" type="button" disabled>
+            Describe with VLM
+          </button>
+          <span id="suggest-status" class="muted small" role="status"></span>
+        </div>
+      </section>
+
+      <section class="form" aria-labelledby="form-heading">
+        <h2 id="form-heading">Persona</h2>
+
+        <label class="field">
+          <span>Name</span>
+          <input id="name" type="text" maxlength="32" placeholder="e.g. 莫莫" />
+        </label>
+
+        <label class="field">
+          <span>Archetype</span>
+          <textarea id="archetype" rows="2" maxlength="200"
+            placeholder="A short description of who this character is."></textarea>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span>Mood</span>
+            <select id="mood">
+              <option value="attentive">attentive</option>
+              <option value="outgoing">outgoing</option>
+              <option value="shy">shy</option>
+              <option value="depressive">depressive</option>
+              <option value="playful">playful</option>
+              <option value="stoic">stoic</option>
+              <option value="curious">curious</option>
+              <option value="warm">warm</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Response length</span>
+            <select id="response_length">
+              <option value="one_sentence">one sentence</option>
+              <option value="short">short paragraph</option>
+              <option value="paragraph" selected>paragraph</option>
+              <option value="long">long</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Voice tone</span>
+          <input id="voice_tone" type="text" maxlength="200"
+            placeholder="e.g. 轻声、清晰、偶尔带一点鼻音" />
+        </label>
+
+        <details class="preview">
+          <summary>Raw persona JSON</summary>
+          <pre id="preview-json"></pre>
+        </details>
+
+        <div class="errors" id="errors" role="alert"></div>
+
+        <div class="actions">
+          <button id="save-btn" class="button" type="button" disabled>Save pet</button>
+          <button id="cancel-btn" class="button secondary" type="button">Cancel</button>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="pet-builder.mjs"></script>
+  </body>
+</html>
