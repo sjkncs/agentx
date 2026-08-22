@@ -1,0 +1,259 @@
+/* apps/desktop/src/pet/pet-window.css
+ *
+ * Slim frameless chat window — 280×520 by default; fully translucent
+ * everywhere except the card. The whole window is opaque so the user
+ * can drag it; only the chat card has rounded corners. */
+
+:root {
+  --bg: rgba(20, 22, 27, 0.92);
+  --bg-card: #1d2129;
+  --fg: #e6e8ec;
+  --muted: #8b94a3;
+  --accent: #5ed3b9;
+  --danger: #ff6f7a;
+  --border: #2c313b;
+  --bubble-user: #2a313c;
+  --bubble-assistant: #1c2530;
+  --bubble-tool: #16191f;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  background: transparent;
+  font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft Yahei", sans-serif;
+  font-size: 13px;
+  color: var(--fg);
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  padding: 8px;
+  border-radius: var(--radius);
+}
+
+.pet-header {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  -webkit-app-region: drag;
+}
+
+.pet-header img#pet-avatar {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--bg-card);
+}
+
+.pet-meta strong { display: block; }
+.pet-meta .muted { display: block; }
+.muted { color: var(--muted); }
+.small { font-size: 11px; }
+
+.mode-switch {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.mode-switch button {
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mode-switch button.active {
+  background: var(--accent);
+  color: #0c0e11;
+  font-weight: 600;
+}
+
+.conversation {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.msg {
+  max-width: 92%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg.user { background: var(--bubble-user); align-self: flex-end; }
+.msg.assistant { background: var(--bubble-assistant); align-self: flex-start; }
+.msg.tool { background: var(--bubble-tool); align-self: stretch; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.msg.system { background: transparent; color: var(--muted); align-self: center; font-style: italic; font-size: 12px; border: 0; padding: 0; }
+
+.composer {
+  display: grid;
+  grid-template-columns: 32px 1fr 60px;
+  gap: 6px;
+  padding: 8px 8px 12px 8px;
+  -webkit-app-region: no-drag;
+}
+
+.composer .icon {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.composer .icon.recording {
+  background: var(--danger);
+  color: #0c0e11;
+}
+
+.composer input {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+}
+
+.composer .send {
+  background: var(--accent);
+  color: #0c0e11;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composer .send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.panel dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 0 0 16px 0;
+}
+
+.panel dt { color: var(--muted); }
+.panel dd { margin: 0; word-break: break-all; }
+
+.panel details { margin-top: 12px; }
+.panel details summary { cursor: pointer; color: var(--muted); }
+.panel pre {
+  margin: 6px 0 0 0;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.button {
+  background: var(--accent);
+  color: #0c0e11;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.secondary {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
+.button.danger {
+  background: var(--danger);
+  color: #0c0e11;
+}
+
+.button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 360px;
+  width: 90%;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.modal-card h2 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+.modal-card ul { padding-left: 18px; margin: 0 0 12px 0; }
+.modal-card li { margin: 4px 0; }
+
+.ack-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.ack-row input { transform: scale(1.2); }
+
+.modal-card .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hidden { display: none !important; }

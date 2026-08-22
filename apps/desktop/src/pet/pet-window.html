@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; script-src 'self'" />
+    <title>Pet Chat</title>
+    <link rel="stylesheet" href="pet-window.css" />
+  </head>
+  <body>
+    <header class="pet-header" aria-label="Pet">
+      <img id="pet-avatar" alt="" />
+      <div class="pet-meta">
+        <strong id="pet-name"></strong>
+        <span id="pet-subtitle" class="muted small"></span>
+      </div>
+      <nav class="mode-switch" role="tablist" aria-label="Mode">
+        <button data-mode="work" role="tab" class="active" aria-selected="true">工作</button>
+        <button data-mode="companion" role="tab" aria-selected="false">陪伴</button>
+        <button data-mode="settings" role="tab" aria-selected="false">设置</button>
+      </nav>
+    </header>
+
+    <main id="conversation" class="conversation" aria-live="polite"></main>
+
+    <section id="settings-panel" class="panel hidden">
+      <h2>设置</h2>
+      <dl>
+        <dt>ID</dt><dd id="settings-id"></dd>
+        <dt>创建时间</dt><dd id="settings-created"></dd>
+        <dt>参考图片</dt><dd id="settings-images"></dd>
+        <dt>当前模式</dt><dd id="settings-current-mode"></dd>
+      </dl>
+      <details>
+        <summary>原始 persona JSON</summary>
+        <pre id="settings-persona-json"></pre>
+      </details>
+      <button id="settings-delete" class="button danger" type="button">删除该桌宠</button>
+    </section>
+
+    <form id="composer" class="composer" autocomplete="off">
+      <button id="mic-btn" type="button" class="icon" aria-label="Mic">🎙</button>
+      <input id="composer-input" type="text" placeholder="说点什么…" maxlength="4000" />
+      <button id="send-btn" type="submit" class="send">发送</button>
+    </form>
+
+    <div id="disclaimer-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
+      <div class="modal-card">
+        <h2 id="disclaimer-title">虚拟陪伴模式提示 / Virtual Companion Disclaimer</h2>
+        <ul>
+          <li>该角色为用户自定义的人格配置，不会替代专业心理咨询、医疗或法律建议。</li>
+          <li>不应将对话视为真实社交关系的替代。长期过度依赖可能影响您的心理健康与现实人际关系。</li>
+          <li>您与角色之间生成的所有内容仅存储于您的本地设备与您授权的云端账户；DataFoundry 不会用于训练第三方模型。</li>
+          <li>不得使用本模式冒充真实人物、传播违法或侵权内容，包括但不限于：未授权使用他人姓名、肖像、声音或受版权保护的角色。</li>
+        </ul>
+        <label class="ack-row">
+          <input type="checkbox" id="disclaimer-ack" />
+          <span>I understand / 我已知晓</span>
+        </label>
+        <div class="actions">
+          <button id="disclaimer-confirm" class="button" type="button" disabled>Continue</button>
+          <button id="disclaimer-cancel" class="button secondary" type="button">Back to work mode</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="pet-window.mjs"></script>
+  </body>
+</html>
