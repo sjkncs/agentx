@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useT } from "../../../../i18n/locale-context";
 import { chipClass } from "../../ui-tokens";
+import { loadPersonaPreset, type PersonaPreset } from "../../persona-preset";
 
 function DatabaseIcon({ className }: { className?: string }) {
   return (
@@ -45,7 +47,11 @@ export function DataTaskWelcomeScreen({
   onUsePrompt?: (prompt: string) => void;
 }) {
   const t = useT();
-  const examplePrompts = [
+  const [persona, setPersona] = useState<PersonaPreset | null>(null);
+  useEffect(() => {
+    setPersona(loadPersonaPreset());
+  }, []);
+  const defaultPrompts = [
     {
       title: t("welcome.inspectSchema"),
       description: t("welcome.inspectSchemaDesc"),
@@ -62,6 +68,17 @@ export function DataTaskWelcomeScreen({
       prompt: t("welcome.analyzeTrendsPrompt"),
     },
   ] as const;
+  const examplePrompts = persona?.exampleQuery
+    ? [
+        {
+          title: t("welcome.personaSuggested"),
+          description: t("welcome.personaSuggestedDesc"),
+          prompt: persona.exampleQuery,
+        },
+        ...defaultPrompts,
+      ]
+    : defaultPrompts;
+  const subtitle = persona?.welcomeMessage ?? t("welcome.subtitle");
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-10">
@@ -72,7 +89,7 @@ export function DataTaskWelcomeScreen({
         {t("welcome.title")}
       </h2>
       <p className="mt-2 max-w-md text-center text-sm leading-6 text-muted">
-        {t("welcome.subtitle")}
+        {subtitle}
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <span className={chipClass}>

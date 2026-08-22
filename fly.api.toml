@@ -1,0 +1,46 @@
+# Fly.io manifest for the DataFoundry API server.
+# 1. Install flyctl: https://fly.io/docs/hands-on/install-flyctl/
+# 2. Sign in: fly auth signup
+# 3. Create app: fly launch --no-deploy --copy-config --name df-api-<your-name>
+# 4. Create a volume: fly volumes create df_data --size 1 --region <region>
+# 5. Set secrets: fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_KEY=... MASTRA_OPENAI_API_KEY=...
+# 6. Deploy: fly deploy
+
+app = "df-api-<your-name>"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile.api"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8787"
+  DATA_DIR = "/data"
+  METADATA_DB_PATH = "/data/metadata/workbench.sqlite"
+  FILE_ASSET_STORAGE_ROOT = "/data/files"
+  MASTRA_STORAGE_PATH = "/data/mastra/agent-state.sqlite"
+
+[mounts]
+  source = "df_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/v1/capabilities"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

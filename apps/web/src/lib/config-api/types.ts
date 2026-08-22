@@ -53,6 +53,7 @@ export type IdentityWorkspace = {
 export type MeResponseDto = {
   user: AuthUserDto;
   workspace: IdentityWorkspace;
+  role?: WorkspaceRole | null;
 };
 
 export type BackendCapabilitiesResponse = {
@@ -246,6 +247,36 @@ export type DatalinkGraphResponseDto = {
 export type DatalinkToolResponseDto = {
   result: string;
   server: DatalinkServerDto;
+};
+
+export type DatalinkNodesResponseDto = {
+  nodes: DatalinkNodeDto[];
+  server: DatalinkServerDto;
+};
+
+export type DatalinkNodeResponseDto = {
+  node: DatalinkNodeDto;
+  server: DatalinkServerDto;
+};
+
+export type DatalinkPathsResponseDto = {
+  paths: DatalinkPathDto[];
+  server: DatalinkServerDto;
+};
+
+export type DatalinkSubgraphResponseDto = {
+  subgraph: DatalinkSubgraphDto;
+  server: DatalinkServerDto;
+};
+
+export type DatalinkPathDto = {
+  nodes: DatalinkNodeDto[];
+  edges: DatalinkEdgeDto[];
+};
+
+export type DatalinkSubgraphDto = {
+  nodes: DatalinkNodeDto[];
+  edges: DatalinkEdgeDto[];
 };
 
 export type ModelProfileDto = {
@@ -721,4 +752,181 @@ export type ArtifactVersionDto = {
   fileId?: string;
   downloadUrl?: string;
   createdAt: string;
+};
+
+export type WorkspaceRole = "owner" | "admin" | "member" | "viewer";
+
+export type AdminMemberDto = {
+  user_id: string;
+  email: string | null;
+  display_name: string | null;
+  role: WorkspaceRole;
+  created_at: string;
+  is_self: boolean;
+  disabled: boolean;
+};
+
+export type AdminMemberListResponseDto = {
+  items: AdminMemberDto[];
+  current_role: WorkspaceRole;
+};
+
+export type AdminInvitationDto = {
+  id: string;
+  email: string;
+  role: WorkspaceRole;
+  invited_by_user_id: string;
+  expires_at: string;
+  accepted_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+};
+
+export type AdminInvitationListResponseDto = {
+  items: AdminInvitationDto[];
+};
+
+export type AdminInvitationCreateResponseDto = {
+  id: string;
+  token: string;
+  expires_at: string;
+};
+
+export type AdminUserDto = {
+  id: string;
+  email: string | null;
+  display_name: string | null;
+  email_verified_at: string | null;
+  disabled_at: string | null;
+  created_at: string;
+};
+
+export type AdminUserListResponseDto = {
+  items: AdminUserDto[];
+};
+
+export type AdminAuditEventDto = {
+  id: string;
+  category: string;
+  action: string;
+  severity: "info" | "warning" | "critical";
+  actor_user_id: string | null;
+  actor_email: string | null;
+  target_type: string | null;
+  target_id: string | null;
+  ip_address: string | null;
+  metadata: unknown;
+  created_at: string;
+};
+
+export type AdminAuditListResponseDto = {
+  items: AdminAuditEventDto[];
+  next_cursor: string | null;
+  severity_counts_7d: {
+    info: number;
+    warning: number;
+    critical: number;
+  };
+};
+
+export type AdminAuditExportResponseDto = {
+  filename: string;
+  mime_type: string;
+  content_base64: string;
+  row_count: number;
+};
+
+// ── Metrics & Alerts ─────────────────────────────────────────────────────────
+
+export type MetricLabel = Record<string, string>;
+
+export type AdminMetricsSnapshot = {
+  timestamp: string;
+  uptime_s: number;
+  counters: Array<{ name: string; value: number; labels: MetricLabel }>;
+  gauges: Array<{ name: string; value: number; labels: MetricLabel }>;
+  histograms: Array<{
+    name: string;
+    count: number;
+    sum: number;
+    avg: number;
+    p50: number;
+    p95: number;
+    p99: number;
+    labels: MetricLabel;
+  }>;
+};
+
+export type AdminAlertDto = {
+  id: string;
+  ruleId: string;
+  name: string;
+  description: string;
+  severity: "warning" | "critical";
+  firedAt: string;
+  value: number;
+  threshold: number;
+  labels: Record<string, string>;
+};
+
+export type AdminAlertRuleDto = {
+  id: string;
+  name: string;
+  description: string;
+  severity: "warning" | "critical";
+};
+
+export type AdminAlertsSnapshot = {
+  timestamp: string;
+  activeCount: number;
+  criticalCount: number;
+  warningCount: number;
+  alerts: AdminAlertDto[];
+  rules: AdminAlertRuleDto[];
+};
+
+export type AdminApprovalRecord = {
+  id: string;
+  run_id: string;
+  session_id: string;
+  user_id: string;
+  user_email: string;
+  tool_name: "submit_plan" | "ask_user";
+  prompt: string;
+  options: string[];
+  selected_option: string | null;
+  status: "pending" | "approved" | "rejected" | "revised";
+  created_at: number;
+  resolved_at: number | null;
+  resolved_by: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export type AdminApprovalStats = {
+  pending: number;
+  approved_today: number;
+  rejected_today: number;
+  avg_resolution_time_ms: number;
+};
+
+export type AdminApprovalSnapshot = {
+  approvals: AdminApprovalRecord[];
+  stats: AdminApprovalStats;
+};
+
+export type AdminEvalSnapshot = {
+  total_runs: number;
+  automated_runs: number;
+  human_required_runs: number;
+  failed_runs: number;
+  automation_rate: number;
+  human_approval_rate: number;
+  failure_rate: number;
+  p50_latency_ms: number;
+  p95_latency_ms: number;
+  p99_latency_ms: number;
+  avg_latency_ms: number;
+  avg_quality_score: number;
+  window_hours: number;
+  computed_at: number;
 };

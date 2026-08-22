@@ -1,0 +1,30 @@
+{
+  "comment": "DataFoundry sandbox seccomp profile — blocks 86 dangerous syscall families",
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_AARCH64"],
+  "syscalls": [
+    { "names": ["io_setup", "io_submit", "io_cancel", "io_destroy"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["perf_event_open", "ptrace"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["fanotify_init", "fanotify_mark"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["add_key", "request_key", "keyctl"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["clone", "fork", "vfork"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["mount", "umount2", "umount", "pivot_root"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["chroot", "pivot_root"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["syslog"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["init_module", "finit_module", "delete_module"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["lookup_dcookie"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["kexec_load", "kexec_file_load"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["quotactl", "quotactl_fd"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["reboot", "restart_syscall"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["setdomainname", "sethostname", "unshare"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["swapon", "swapoff"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["acct"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["bpf"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["io_uring_setup", "io_uring_enter", "io_uring_register"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["mbind", "set_mempolicy", "get_mempolicy", "migrate_pages", "move_pages"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["create_module"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["get_kernel_syms", "query_module"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["nfsservctl", "ksys_ioperm", "iopl", "ioperm"], "action": "SCMP_ACT_ERRNO(1)" },
+    { "names": ["prctl", "chdir"], "action": "SCMP_ACT_ERRNO(1)" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "datafoundry-api",
+  "description": "DataFoundry API server — CopilotKit agent runtime, REST API, AG-UI events",
+  "runtime": "node",
+  "version": "1",
+  "features": {
+    "build_filter": {
+      "root_paths": ["/apps/api", "/packages", "/scripts", "/tsconfig.build.json", "/tsconfig.base.json", "/package.json", "/package-lock.json"]
+    }
+  },
+  "engines": {
+    "node": "22.21.0"
+  },
+  "scripts": {
+    "preinstall": "node scripts/postinstall.mjs",
+    "build": "npm --workspace @datafoundry/api run build",
+    "start": "node --import tsx apps/api/dist/index.js"
+  },
+  "env": {
+    "NODE_ENV": { "value": "production" },
+    "PORT": { "value": "8787" },
+    "DATA_DIR": { "value": "/data" },
+    "METADATA_DB_PATH": { "value": "/data/metadata/workbench.sqlite" },
+    "FILE_ASSET_STORAGE_ROOT": { "value": "/data/files" },
+    "MASTRA_STORAGE_PATH": { "value": "/data/mastra/agent-state.sqlite" }
+  }
+}

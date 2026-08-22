@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { createTranslator } from "../../../i18n/translate";
 import { getWorkspaceResourceNavGroups } from "../session-pane-ui";
 
-const dataTasksRoot = join(process.cwd(), "src/app/data-tasks");
+const dataTasksRoot = join(process.cwd(), "apps/web/src/app/data-tasks");
 
 const shellFiles = [
   "page.tsx",
@@ -20,7 +20,7 @@ const shellFiles = [
 ];
 
 const allowedChinesePaths = [
-  join(process.cwd(), "src/i18n/messages/zh-CN.json"),
+  join(process.cwd(), "apps/web/src/i18n/messages/zh-CN.json"),
 ];
 
 describe("workbench shell i18n", () => {

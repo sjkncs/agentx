@@ -12,6 +12,7 @@ export const QUICK_START_EXAMPLE_PROMPT =
   "Query total orders in the last 30 days, grouped by date";
 
 export type QuickStartStepId =
+  | "persona"
   | "welcome"
   | "resources"
   | "model"
@@ -22,6 +23,7 @@ export type QuickStartStepId =
   | "output";
 
 export const QUICK_START_STEP_ORDER: QuickStartStepId[] = [
+  "persona",
   "welcome",
   "resources",
   "datasource",
@@ -31,6 +33,35 @@ export const QUICK_START_STEP_ORDER: QuickStartStepId[] = [
   "console",
   "output",
 ];
+
+export type PersonaId =
+  | "data-scientist"
+  | "business"
+  | "developer"
+  | "ai-engineer"
+  | "admin"
+  | "researcher";
+
+export const PERSONA_OPTIONS: PersonaId[] = [
+  "data-scientist",
+  "business",
+  "developer",
+  "ai-engineer",
+  "admin",
+  "researcher",
+];
+
+export const PERSONA_STORAGE_KEY = "data-tasks:persona:v1";
+
+export function loadPersona(storage: QuickStartStorage | null): PersonaId | null {
+  const raw = storage?.getItem(PERSONA_STORAGE_KEY);
+  if (raw && PERSONA_OPTIONS.includes(raw as PersonaId)) return raw as PersonaId;
+  return null;
+}
+
+export function savePersona(storage: QuickStartStorage | null, persona: PersonaId): void {
+  storage?.setItem(PERSONA_STORAGE_KEY, persona);
+}
 
 export type QuickStartStorage = Pick<Storage, "getItem" | "setItem">;
 
@@ -115,6 +146,14 @@ export function resolveQuickStartStep(
   },
 ): QuickStartStepPresentation {
   switch (step) {
+    case "persona":
+      return {
+        id: step,
+        targetId: "workspace-layout",
+        title: t("guide.persona.title"),
+        body: t("guide.persona.body"),
+        cta: t("guide.persona.cta"),
+      };
     case "welcome":
       return {
         id: step,

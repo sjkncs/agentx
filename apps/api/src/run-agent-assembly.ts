@@ -160,7 +160,7 @@ export const createRunAgentAssembly = async (
     ...(Object.keys(mcpTools).length > 0 ? { mcpTools } : {}),
     emitter: input.emitter,
     ...(input.effectiveRunConfig.protocol ? { explicitProtocol: input.effectiveRunConfig.protocol } : {}),
-    messages: input.messages,
+    messages: input.messages as Parameters<typeof createDataFoundry>[0]["messages"],
     ...(input.modelContextProfile ? { modelContextProfile: input.modelContextProfile } : {}),
     modelProvider: input.modelProvider,
     ...(isLatsEnabled()

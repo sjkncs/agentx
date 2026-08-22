@@ -67,6 +67,9 @@ import { WebSourcesPanel } from "./WebSourcesPanel";
 import { TaskPoolPanel } from "./TaskPoolPanel";
 import { ScheduledTasksPanel } from "./ScheduledTasksPanel";
 import { SkillMarketPanel } from "./SkillMarketPanel";
+import { SubagentInboxPanel } from "./SubagentInboxPanel";
+import { DiffViewer } from "./DiffViewer";
+import { WorkspaceAutoPermissionPanel } from "./WorkspaceAutoPermissionPanel";
 import { EmbeddedTraceDag } from "./TraceOverlay";
 import { ArtifactMarkdownPreview } from "./ArtifactMarkdownPreview";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
@@ -349,6 +352,9 @@ export function TaskConsole({
             {skills && onToggleSkill ? (
               <SkillMarketPanel skills={skills} onToggle={onToggleSkill} />
             ) : null}
+            <SubagentInboxPanel />
+            <DiffViewer base="main" head="HEAD" />
+            <WorkspaceAutoPermissionPanel />
           </div>
         ) : null}
 

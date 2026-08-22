@@ -218,10 +218,33 @@ See the full list in [Supported Data Sources](docs/en/reference/supported-dataso
 - SQL audit logs, tool-call records, and event streams are fully persisted for after-the-fact review.
 - Production-grade multi-tenant auth, centralized secret management, monitoring, and deployment operations require a dedicated design for your environment — see [Security](docs/en/security.md).
 
+## ✨ What's New in Phase 5 — Notebooks, Dashboards & CLI
+
+Phase 5 turned DataFoundry from "an analyst you ask a question" into "a workbench where you compose, schedule, and audit analysis." Highlights of the shipped capabilities:
+
+- **Notebooks** (`/notebook`) — multi-cell documents with SQL / Python / Markdown / AI-prompt cells. Run individual cells, run all, promote any cell to a dashboard widget, share via signed token, export to Markdown or JSON.
+- **Dashboards** (`/dashboard`) — widget library (KPI, line / area / bar chart, table, markdown, trace-mini). Promote any cell, pin a widget, auto-refresh on schedule, manual refresh button, error badges, export Markdown / JSON, generate / revoke share links.
+- **CLI `df`** — installable via `pipx install -e apps/cli`. `init`, `status`, `doctor`, `notebook list|show|create|run|runs|export`, `dashboard list|show|apply-template|export|refresh`, `run`, `upgrade`. Token stored in OS keyring, config in platformdirs, deterministic rich output.
+- **Audit trail** — every cell run, widget refresh, share / revoke is persisted server-side. View in the Web audit panel (`NotebookAuditPanel`) or via `df notebook runs <id>`.
+- **Server-side persistence** — SQLite-backed notebook / dashboard / cell / run repository. The Web client is now a thin read-through cache; the API is the source of truth.
+- **Resilience** — `df doctor` distinguishes 401 / 502 / network errors, error responses follow a stable `{ error, code }` shape, timeouts and retries are configurable.
+
+Phase-5 implementation status:
+
+- [x] **Notebook & Dashboard Web workbench** — promote cells, refresh widgets, share, export, audit panel.
+- [x] **`df` CLI** — full command set, smoke + argparse integration tests, keyring + platformdirs config.
+- [x] **Audit trail** — server-side run log, web panel, CLI list.
+- [x] **Error-code vocabulary** — `UNAUTHENTICATED`, `NOT_FOUND`, `VALIDATION_FAILED`, `CONFLICT`, `NON_JSON_RESPONSE`, `TIMEOUT`, `UPSTREAM_UNREACHABLE`.
+- [ ] **SQLite persistence** — in-memory today; SQLite upgrade is queued.
+- [ ] **Real notebook SQL / Python sandbox execution** — currently client-side stub; server-side sandbox is queued.
+
 ## 🗺️ Roadmap
 
 - [x] **Governed data-task workbench** — Web and TUI share one TypeScript agent runtime, CopilotKit / AG-UI event stream, replayable run history, SQL audit trail, and unified asset layer.
 - [x] **Safe data access foundation** — Datasource registration, connection testing, schema introspection, table preview, read-only SQL, masking, knowledge imports, MCP resources, skill packages, and model configuration.
+- [x] **Notebooks + Dashboards + CLI (Phase 5)** — multi-cell notebooks, widget-based dashboards, `df` command-line client, server-side audit log.
+- [ ] **SQLite persistence** — durable server-side storage for notebooks / dashboards / cell runs (today the repository is in-memory).
+- [ ] **Notebook SQL / Python sandbox** — run SQL / Python cells against a real executor inside the server (today cells run client-side and the audit log captures the metadata).
 - [ ] **Unified semantic layer** — Durable metrics, entities, relationships, lineage, and policies, moving agents from "guessing fields" to "understanding business definitions" and from one-off SQL to a governable data operating layer.
 - [ ] **Autonomous analyst loops** — Agents that plan investigations, run controlled experiments, critique findings, and converge on evidence-backed conclusions.
 - [ ] **Evaluation and reliability lab** — NL2SQL, retrieval, tool-use, and end-to-end task benchmarks with regression gates and failure forensics.

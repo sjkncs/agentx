@@ -89,17 +89,37 @@ export class AuthService {
     this.metadataStore.users.touchPasswordUpdated({ user_id: user.id });
     const workspace = this.ensurePersonalWorkspace(user);
     const verificationToken = createSecretToken();
+    const verificationTokenId = randomUUID();
     this.metadataStore.authTokens.create({
-      id: randomUUID(),
+      id: verificationTokenId,
       user_id: user.id,
       purpose: "email_verification",
       token_hash: hashToken(verificationToken, this.config.sessionSecret),
       expires_at: new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS).toISOString()
     });
     const mail = await this.mailer.sendVerification({ email, token: verificationToken });
-    this.audit("auth.register", { email, ipAddress: input.ipAddress, userAgent: input.userAgent, userId: user.id });
+    // When AUTH_EMAIL_DELIVERY=test, the mailer returns testToken (no real email is sent).
+    // Auto-verify so the user can sign in immediately. The token is kept in the response so
+    // dev flows that exercise the verify path still work; we also consume it to keep state tidy.
+    let registeredUser = user;
+    if (mail.testToken) {
+      registeredUser = this.metadataStore.users.markEmailVerified({ user_id: user.id });
+      this.metadataStore.authTokens.consume({ id: verificationTokenId });
+      this.audit("auth.email_verified", {
+        email: registeredUser.email,
+        ipAddress: input.ipAddress,
+        userAgent: input.userAgent,
+        userId: registeredUser.id
+      });
+    }
+    this.audit("auth.register", {
+      email,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+      userId: registeredUser.id
+    });
     return {
-      user: userDto(user),
+      user: userDto(registeredUser),
       workspace: workspaceDto(workspace),
       ...(mail.testToken ? { verificationToken: mail.testToken } : {})
     };

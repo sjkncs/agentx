@@ -21,5 +21,14 @@ export const DEFAULT_TOOL_OBSERVATION_SOURCE_LIMIT_PROFILES: Record<string, Reco
     maxCellChars: SQL_MAX_CELL_CHARS,
     maxModelRows: SQL_MAX_MODEL_ROWS,
     maxSqlChars: SQL_MAX_SQL_CHARS
+  },
+  web_search: {
+    maxChars: AGENT_RUNTIME_LIMITS.toolObservationMaxChars
+  },
+  protocol_handoff: {
+    maxChars: AGENT_RUNTIME_LIMITS.toolObservationMaxChars
+  },
+  analysis_requirements_commit: {
+    maxChars: AGENT_RUNTIME_LIMITS.toolObservationMaxChars
   }
 };

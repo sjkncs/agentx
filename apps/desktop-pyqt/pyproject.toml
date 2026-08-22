@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "df-desktop"
+version = "0.1.0"
+description = "PyQt6 desktop client for DataFoundry — 3D trajectory + lineage visualisation"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "DataFoundry Team" }]
+
+dependencies = [
+    # Qt
+    "PyQt6>=6.7,<7",
+    "PyQt6-Charts>=6.7,<7",
+    "pyqtgraph>=0.13,<1",
+    # NumPy for fast 3D math (pyqtgraph + glue)
+    "numpy>=1.26,<3",
+    # API client
+    "httpx>=0.27,<1",
+    "websockets>=12,<14",
+    # Auth + config
+    "pydantic>=2.7,<3",
+    "platformdirs>=4.2,<5",
+    "keyring>=24,<26",
+    "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "pytest-qt>=4.4,<5",
+    "ruff>=0.4,<1",
+    "mypy>=1.10,<2",
+    "types-PyYAML",
+]
+
+[project.scripts]
+df-desktop = "df_desktop.app:main"
+df-vis = "df_desktop.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/df_desktop"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "B008", "RUF012"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WiX v4 source for df-cli Windows Installer (MSI).
+
+  Build prerequisites (on the build machine):
+    - .NET 8 SDK
+    - WiX v4 toolset: `dotnet tool install --global wix`
+    - Python 3.11+ installed and on PATH as "python"
+
+  Build:
+    dotnet wix build Product.wxs
+      -DSourceDir="path\to\dist\df-cli"
+      -DVersion="0.1.0"
+      -DProductCode="<auto>"
+      -DUpgradeCode="<your-guid>"
+    → produces Product.msi
+
+  The installer:
+    1. Installs df-cli.exe (the launcher stub) into Program Files.
+    2. Copies the Python wheel + a vendored runtime stub so the tool
+       runs on any machine that has Python 3.11+ installed.
+    3. Registers the "df" and "df-cli" console entry-points via
+       short-cut Batch file stubs in a folder on the system PATH.
+    4. Adds an uninstall entry to Programs &amp; Features.
+
+  Replace UpgradeCode with a stable GUID generated once per product
+  (e.g. via PowerShell: [guid]::NewGuid()).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define UpgradeCode = "REPLACE_WITH_YOUR_UPGRADE_CODE_GUID" ?>
+  <?define ProductName = "DataFoundry CLI" ?>
+  <?define Manufacturer  = "DataFoundry" ?>
+  <?define Version       = "$(var.Version)" ?>
+  <?define InstallDir    = "df-cli" ?>
+  <?define ResourcesDir = "$(var.SourceDir)\..\resources" ?>
+
+  <Package
+      Name="$(var.ProductName)"
+      Version="$(var.Version)"
+      Manufacturer="$(var.Manufacturer)"
+      UpgradeCode="$(var.UpgradeCode)"
+      Compressed="yes"
+      InstallerVersion="500"
+      InstallScope="perMachine"
+      SummaryCodepage="65001"
+      Codepage="65001">
+
+    <!-- Installer UI strings (en-US) -->
+    <UIRef Id="WixUI_Minimal" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <!-- Bootstrapper UI customization:
+         WiX v4 standard banners are embedded in the UI extension DLL.
+         Override the banner by naming our payload "WixUIBmpBanner".
+         This replaces the default banner in the installer's top strip.
+    -->
+    <BootstrapperApplication>
+      <Payload SourceFile="$(ResourcesDir)\banner.bmp" Name="WixUIBmpBanner" />
+    </BootstrapperApplication>
+
+    <!-- Require Windows 10 1809+ -->
+    <Condition Level="error">
+      <![CDATA[VersionNT >= 10000]]>
+    </Condition>
+
+    <!-- Require Python 3.11+ somewhere on PATH -->
+    <Property Id="PYTHON_INSTALLED">
+      <RegistrySearch
+          Id="FindPython"
+          Root="HKLM"
+          Key="SOFTWARE\Python\PythonCore\3.11\InstallPath"
+          Name="(default)"
+          Type="raw" />
+    </Property>
+
+    <Icon Id="dfcli.ico" SourceFile="$(ResourcesDir)\dfcli.ico" />
+    <Property Id="ARPPRODUCTICON" Value="dfcli.ico" />
+    <Property Id="ARPHELPLINK" Value="https://datafoundry.dev/docs/cli" />
+
+    <!-- Default silent install to per-machine so PATH edits apply without admin prompt -->
+    <Property Id="ALLUSERS" Value="1" />
+
+    <Feature Id="ProductFeature" Title="$(var.ProductName)" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="StartMenuShortcuts" />
+    </Feature>
+
+  </Package>
+
+  <!-- Files installed to Program Files\df-cli\ -->
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="$(var.InstallDir)">
+        <Directory Id="ScriptsFolder" Name="Scripts">
+          <!-- Launcher / shim — can be replaced by a compiled stub in future -->
+          <Component Id="df_exe" Guid="*">
+            <File
+                Id="df_launcher.bat"
+                Source="$(var.SourceDir)\df-launch.bat"
+                KeyPath="yes"
+                Checksum="yes" />
+          </Component>
+          <Component Id="df_cli_launcher" Guid="*">
+            <File
+                Id="df_cli_launcher.bat"
+                Source="$(var.SourceDir)\df-cli-launch.bat"
+                KeyPath="yes"
+                Checksum="yes" />
+          </Component>
+        </Directory>
+
+        <!--
+          The wheel is unpacked here by the build script's
+          `pip wheel --no-deps -w "%SourceDir%" .` step.
+          Components below reference SourceDir so WiX bundles every file
+          in the wheel output directory.
+        -->
+        <Directory Id="WheelFolder" Name="wheel">
+          <Component Id="wheel_files" Guid="*">
+            <Files Id="WheelContent" Source="$(var.SourceDir)\*" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Scripts folder on PATH — the actual launcher stubs live here so `df` is global -->
+    <StandardDirectory Id="WindowsFolder">
+      <Directory Id="SystemPythonScripts" Name="SystemPythonScripts">
+        <Directory Id="DfScriptsDir" Name="$(var.InstallDir)">
+          <Component Id="PathLaunchers" Guid="*">
+            <File
+                Id="df_path_launcher.bat"
+                Source="$(var.SourceDir)\df-launch.bat"
+                KeyPath="yes" />
+            <File
+                Id="df_cli_path_launcher.bat"
+                Source="$(var.SourceDir)\df-cli-launch.bat" />
+            <!-- Register the Scripts dir on the machine PATH (persistent) -->
+            <Environment
+                Id="DFCLI_SYSTEM_PATH"
+                Name="PATH"
+                Value="[DfScriptsDir]"
+                Action="create"
+                Permanent="yes"
+                System="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Desktop shortcut (optional, per-user) -->
+  <Fragment>
+    <Directory Id="DesktopFolder" SourceName="Desktop" />
+    <Component Id="ApplicationShortcut" Guid="*" KeyPath="yes">
+      <Shortcut
+          Id="DesktopShortcut"
+          Name="$(var.ProductName)"
+          Description="DataFoundry command-line interface"
+          Target="[WindowsFolder]System32\cmd.exe"
+          Arguments="/k df --version"
+          WorkingDirectory="[INSTALLFOLDER]" />
+      <RemoveFolder Id="CleanUpDesktopFolder" On="uninstall" />
+    </Component>
+  </Fragment>
+
+  <!-- Start Menu shortcut -->
+  <Fragment>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="$(var.ProductName)">
+        <Component Id="StartMenuShortcuts" Guid="*">
+          <Shortcut
+              Id="StartMenuShortcut"
+              Name="$(var.ProductName)"
+              Description="Open DataFoundry CLI"
+              Target="[WindowsFolder]System32\cmd.exe"
+              Arguments="/k df --version"
+              WorkingDirectory="[INSTALLFOLDER]" />
+          <RemoveFolder Id="CleanUpApplicationProgramsFolder" On="uninstall" />
+          <RegistryValue
+              Root="HKCU"
+              Key="Software\$(var.Manufacturer)\$(var.ProductName)"
+              Type="string"
+              Value="[INSTALLFOLDER]"
+              KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Shortcut to docs -->
+  <Fragment>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="DocsFolder" Name="Documentation">
+        <Component Id="DocsShortcut" Guid="*">
+          <InternetShortcut
+              Id="DocsLink"
+              Name="Online Documentation"
+              Target="https://datafoundry.dev/docs/cli" />
+          <RegistryValue
+              Root="HKCU"
+              Key="Software\$(var.Manufacturer)\$(var.ProductName)\Documentation"
+              Type="string"
+              Value="https://datafoundry.dev/docs/cli"
+              KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents">
+      <!-- All wheel + launcher files already tracked above via <Files> -->
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

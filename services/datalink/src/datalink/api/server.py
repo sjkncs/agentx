@@ -398,6 +398,191 @@ async def update_config(req: ConfigUpdateRequest) -> JSONResponse:
     return JSONResponse(safe_config)
 
 
+# ── Semantic node CRUD ─────────────────────────────────────────────────
+
+
+class CreateNodeRequest(BaseModel):
+    id: str | None = Field(None, description="Node ID (auto-generated if omitted)")
+    name: str = Field(..., description="Human-readable node name")
+    type: str = Field(..., description="Node type: concept or entity")
+    description: str | None = Field(None, description="Description of the concept/entity")
+    unit: str | None = Field(None, description="Unit of measurement (e.g. USD, %, count) — concept only")
+    dimension: str | None = Field(None, description="Dimension/category (e.g. monetary, temporal) — concept only")
+    properties: dict[str, Any] | None = Field(None, description="Additional properties")
+
+
+class UpdateNodeRequest(BaseModel):
+    name: str | None = Field(None, description="New human-readable name")
+    description: str | None = Field(None)
+    unit: str | None = Field(None)
+    dimension: str | None = Field(None)
+    properties: dict[str, Any] | None = Field(None)
+
+
+@app.post("/nodes", summary="Create a Concept or Entity node", status_code=201)
+async def create_node(req: CreateNodeRequest) -> JSONResponse:
+    """Create a semantic node (Concept or Entity)."""
+    config = get_config()
+    storage = get_storage(config.graph_db_path)
+
+    try:
+        node_type = NodeType(req.type)
+    except ValueError:
+        return JSONResponse(
+            {"error": f"Invalid type '{req.type}'. Valid: concept, entity."}, status_code=400
+        )
+
+    if node_type not in (NodeType.CONCEPT, NodeType.ENTITY):
+        return JSONResponse(
+            {"error": f"Only 'concept' and 'entity' nodes can be created via this endpoint. Got '{req.type}'."},
+            status_code=400,
+        )
+
+    from datalink.models.node import ConceptNode, EntityNode
+
+    node_id = req.id or f"{req.type}.{req.name.lower().replace(' ', '_')}"
+    props = req.properties or {}
+    if req.description:
+        props["description"] = req.description
+    if req.unit:
+        props["unit"] = req.unit
+    if req.dimension:
+        props["dimension"] = req.dimension
+
+    if node_type == NodeType.CONCEPT:
+        node = ConceptNode(id=node_id, name=req.name, properties=props)
+    else:
+        node = EntityNode(id=node_id, name=req.name, properties=props)
+
+    try:
+        storage.add_node(node)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=409)
+
+    return JSONResponse({"id": node_id, "name": req.name, "type": req.type, "properties": props})
+
+
+@app.get("/nodes/{node_id}", summary="Get a node by ID")
+async def get_node_by_id(node_id: str) -> JSONResponse:
+    """Get a single node (any type)."""
+    config = get_config()
+    storage = get_storage(config.graph_db_path)
+
+    result = storage.get_node(node_id)
+    if result is None:
+        return JSONResponse({"error": f"Node '{node_id}' not found"}, status_code=404)
+    return JSONResponse(result)
+
+
+@app.put("/nodes/{node_id}", summary="Update a Concept or Entity node")
+async def update_node(node_id: str, req: UpdateNodeRequest) -> JSONResponse:
+    """Update a Concept or Entity node's name, description, unit, dimension, or properties."""
+    config = get_config()
+    storage = get_storage(config.graph_db_path)
+
+    existing = storage.get_node(node_id)
+    if existing is None:
+        return JSONResponse({"error": f"Node '{node_id}' not found"}, status_code=404)
+
+    # Only allow updating concept/entity nodes
+    if existing.get("type") not in ("concept", "entity"):
+        return JSONResponse(
+            {"error": "Only concept/entity nodes can be updated via this endpoint."}, status_code=400
+        )
+
+    # Merge properties
+    merged = dict(existing.get("properties") or {})
+    if req.properties:
+        merged.update(req.properties)
+    if req.description is not None:
+        merged["description"] = req.description
+    if req.unit is not None:
+        merged["unit"] = req.unit
+    if req.dimension is not None:
+        merged["dimension"] = req.dimension
+
+    updated_name = req.name if req.name is not None else existing.get("name", node_id)
+
+    # Rebuild the correct typed node
+    from datalink.models.node import ConceptNode, EntityNode
+
+    node_type = existing.get("type")
+    if node_type == "concept":
+        node = ConceptNode(id=node_id, name=updated_name, properties=merged)
+    else:
+        node = EntityNode(id=node_id, name=updated_name, properties=merged)
+
+    # Storage layer doesn't have update_node — remove and re-add
+    storage.remove_node(node_id)
+    storage.add_node(node)
+
+    return JSONResponse({"id": node_id, "name": updated_name, "type": node_type, "properties": merged})
+
+
+@app.delete("/nodes/{node_id}", summary="Delete a Concept or Entity node")
+async def delete_node(node_id: str) -> JSONResponse:
+    """Delete a Concept or Entity node and all its edges."""
+    config = get_config()
+    storage = get_storage(config.graph_db_path)
+
+    existing = storage.get_node(node_id)
+    if existing is None:
+        return JSONResponse({"error": f"Node '{node_id}' not found"}, status_code=404)
+
+    if existing.get("type") not in ("concept", "entity"):
+        return JSONResponse(
+            {"error": "Only concept/entity nodes can be deleted via this endpoint."}, status_code=400
+        )
+
+    storage.remove_node(node_id)
+    return JSONResponse({"deleted": True, "id": node_id})
+
+
+@app.post("/nodes/batch", summary="Batch-create Concept or Entity nodes", status_code=201)
+async def batch_create_nodes(req: list[CreateNodeRequest]) -> JSONResponse:
+    """Batch-create multiple concept/entity nodes in one transaction."""
+    config = get_config()
+    storage = get_storage(config.graph_db_path)
+
+    from datalink.models.node import ConceptNode, EntityNode
+
+    created = []
+    errors = []
+
+    for i, node_req in enumerate(req):
+        try:
+            node_type = NodeType(node_req.type)
+        except ValueError:
+            errors.append({"index": i, "error": f"Invalid type '{node_req.type}'"})
+            continue
+
+        if node_type not in (NodeType.CONCEPT, NodeType.ENTITY):
+            errors.append({"index": i, "error": f"Only concept/entity nodes allowed. Got '{node_req.type}'."})
+            continue
+
+        node_id = node_req.id or f"{node_req.type}.{node_req.name.lower().replace(' ', '_')}"
+        props = node_req.properties or {}
+        if node_req.description:
+            props["description"] = node_req.description
+        if node_req.unit:
+            props["unit"] = node_req.unit
+        if node_req.dimension:
+            props["dimension"] = node_req.dimension
+
+        if node_type == NodeType.CONCEPT:
+            node = ConceptNode(id=node_id, name=node_req.name, properties=props)
+        else:
+            node = EntityNode(id=node_id, name=node_req.name, properties=props)
+
+        try:
+            storage.add_node(node)
+            created.append({"id": node_id, "name": node_req.name, "type": node_req.type})
+        except Exception as e:
+            errors.append({"index": i, "id": node_id, "error": str(e)})
+
+    return JSONResponse({"created": created, "errors": errors, "total": len(req)})
+
+
 # ── Server startup ────────────────────────────────────────────────────
 
 

@@ -19,7 +19,7 @@ export async function handleEmail(
   payload: EmailPayload,
 ): Promise<DispatchResult> {
   const caseNo = String(payload.case_no ?? payload.work_order_id ?? "unknown");
-  const subject = String(payload.subject ?? `喜茶食安工单通知 ${caseNo}`);
+  const subject = String(payload.subject ?? `Work Order Notification ${caseNo}`);
   const body    = String(payload.body ?? "");
 
   // A26.4: Render email body from payload
@@ -32,7 +32,7 @@ export async function handleEmail(
       `优先级: ${payload.priority ?? "normal"}`,
       `发送时间: ${new Date().toLocaleString("zh-CN")}`,
       "",
-      "— DataFoundry × 喜茶食安系统",
+      "— DataFoundry",
     ].join("\n"),
   };
 

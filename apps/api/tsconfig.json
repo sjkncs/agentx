@@ -22,6 +22,9 @@
     },
     {
       "path": "../../packages/skills"
+    },
+    {
+      "path": "../../packages/supabase-bridge"
     }
   ],
   "include": [

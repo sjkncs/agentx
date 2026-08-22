@@ -386,8 +386,8 @@ const createRegistry = (execute: (input: unknown) => Promise<unknown>): Capabili
       inputSchema: z.object({ value: z.number() }),
       outputSchema: z.object({ value: z.number() }),
       idempotency: "supported",
-      execute: async (_context, input) => execute(input),
-      reduce: (domain, result) => ({
+      execute: async (_context: unknown, input: unknown) => execute(input),
+      reduce: (domain: unknown, result: unknown) => ({
         total: (domain as { total: number }).total + (result as { value: number }).value
       })
     }, {
@@ -396,7 +396,7 @@ const createRegistry = (execute: (input: unknown) => Promise<unknown>): Capabili
       inputSchema: z.object({ valid: z.boolean() }),
       outputSchema: z.object({ valid: z.boolean() }),
       idempotency: "supported",
-      execute: async (_context, input) => input
+      execute: async (_context: unknown, input: unknown) => input
     }]
   });
   return registry;

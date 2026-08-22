@@ -92,6 +92,33 @@
   --scrollbar-thumb-hover: rgb(124 108 240 / 0.35);
 }
 
+/* Soft theme — lower-contrast, warmer light palette aimed at reducing eye strain
+ * for users who find the default light theme too bright. */
+:root[data-theme="soft"] {
+  --primary: #8a6a3a;
+  --primary-light: #b39063;
+  --accent: #a07a4a;
+  --surface: #f4ecdc;
+  --surface-subtle: #ebe1cf;
+  --border: #d8cdb6;
+  --foreground: #3a322a;
+  --text-secondary: #5a5042;
+  --text-tertiary: #8a7e6c;
+  --code-bg: #ece2cd;
+  --step-inspect: #6f8fc9;
+  --step-query: #b39063;
+  --step-transform: #5fb3ae;
+  --step-fetch: #5f9bc9;
+  --step-visualize: #a07a4a;
+  --step-knowledge: #5fa3b3;
+  --step-success: #6f9b5a;
+  --step-warning: #c99a5f;
+  --step-error: #b86a55;
+  --step-glow: rgb(160 122 74 / 0.12);
+  --scrollbar-thumb: rgb(58 50 42 / 0.16);
+  --scrollbar-thumb-hover: rgb(58 50 42 / 0.28);
+}
+
 @theme inline {
   --color-background: var(--surface-subtle);
   --color-foreground: var(--foreground);

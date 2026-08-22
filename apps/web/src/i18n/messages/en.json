@@ -116,6 +116,31 @@
       "canceled": "Canceled"
     }
   },
+  "linuxDistro": {
+    "detected": "Detected {{flavor}} environment",
+    "override": "Override detected distribution",
+    "dismiss": "Got it"
+  },
+  "workspacePerm": {
+    "title": "Workspace auto-permission",
+    "description": "Let the agent freely edit and run commands inside a single folder without per-action confirmations.",
+    "on": "ON",
+    "off": "OFF",
+    "scopeLabel": "Workspace scope",
+    "scopePlaceholder": "/absolute/path/to/workspace",
+    "levelLabel": "Level",
+    "level": {
+      "low": "low (writes only)",
+      "medium": "medium (writes + shell)",
+      "high": "high (writes + shell + external)"
+    },
+    "enable": "Enable",
+    "disable": "Disable",
+    "elevate": "Auto-elevate to medium",
+    "elevateHint": "Enable + scope to current value + elevate to medium in one click.",
+    "reset": "Reset",
+    "deniedCount": "{{n}} path(s) manually denied inside the scope"
+  },
   "awareness": {
     "title": "Awareness",
     "memories": "Long-term memories",
@@ -175,7 +200,11 @@
     "steps": "{{count}} steps",
     "llm": "LLM {{time}}",
     "tool": "tools {{time}}",
-    "tokens": "in {{in}} tok · out {{out}} tok"
+    "tokens": "in {{in}} tok · out {{out}} tok",
+    "cost": "{{usd}}",
+    "costHint": "Estimated cost using blended model rates; configure per-model pricing in the model profile to override.",
+    "eta": "≈{{time}} left",
+    "etaHint": "Rough ETA based on observed throughput. Becomes more accurate after a few LLM steps."
   },
   "stepPhase": {
     "search": "Search",
@@ -186,7 +215,10 @@
     "title": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "deepseek": "DeepSeek"
+    "deepseek": "DeepSeek",
+    "soft": "Soft",
+    "accent": "Custom accent color",
+    "resetAccent": "Reset"
   },
   "concurrent": {
     "title": "Concurrent Tasks",
@@ -245,7 +277,10 @@
   "userBar": {
     "currentUser": "Current user",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "admin": "Administration",
+    "notebook": "Notebook",
+    "dashboard": "Dashboard"
   },
   "chat": {
     "openConsole": "Console",
@@ -671,7 +706,9 @@
     "runSqlPrompt": "Query total orders in the last 30 days, grouped by date",
     "analyzeTrends": "Analyze Trends",
     "analyzeTrendsDesc": "Explore metric changes and anomalies",
-    "analyzeTrendsPrompt": "Analyze monthly sales trends and identify the months with the largest swings"
+    "analyzeTrendsPrompt": "Analyze monthly sales trends and identify the months with the largest swings",
+    "personaSuggested": "Suggested for your role",
+    "personaSuggestedDesc": "Tuned to your persona preset"
   },
   "schema": {
     "copyTableName": "Copy table name",
@@ -698,6 +735,35 @@
     "waitingForSend": "Waiting for send",
     "openDatasourceConfig": "Open datasource config",
     "openModelConfig": "Open model config",
+    "persona": {
+      "title": "Welcome — pick your role",
+      "body": "DataFoundry tailors the workspace to how you actually work. Choose the role that fits you best; you can switch anytime from the top bar.",
+      "cta": "Start as this role",
+      "data-scientist": {
+        "label": "Data scientist",
+        "hint": "Notebooks, SQL, reproducibility"
+      },
+      "business": {
+        "label": "Business analyst",
+        "hint": "Dashboards, NL queries, no code"
+      },
+      "developer": {
+        "label": "Developer / Engineer",
+        "hint": "CLI, SDK, git-style workflows"
+      },
+      "ai-engineer": {
+        "label": "AI / Agent engineer",
+        "hint": "Prompt playground, traces, A/B"
+      },
+      "admin": {
+        "label": "Admin / Compliance",
+        "hint": "Users, audit, quotas, SSO"
+      },
+      "researcher": {
+        "label": "Researcher / Academic",
+        "hint": "Snapshots, citation, reproducibility"
+      }
+    },
     "welcome": {
       "title": "Start with the workspace map",
       "body": "Left is where you configure resources, middle is where you ask the data question, and right is where you watch the task run and review outputs."
@@ -1231,5 +1297,230 @@
     "other": "Data operation",
     "stepMeta": "Step {{n}} · {{kind}}",
     "stepMetaTools": "Step {{n}} · {{kind}} · {{count}} tool calls"
+  },
+  "subagent": {
+    "title": "Subagent Inbox",
+    "role": "Role",
+    "spawnPlaceholder": "Task prompt for the new subagent…",
+    "spawn": "Spawn",
+    "empty": "No subagents yet. Spawn one above.",
+    "statsSummary": "{{running}} running · {{total}} total",
+    "messageCount": "{{n}} messages",
+    "runningBadge": "Active subagents",
+    "activeCount": "{{n}} active",
+    "jumpToInbox": "Open inbox",
+    "injectReply": "Inject demo reply",
+    "userInputPlaceholder": "Send a message to this subagent…",
+    "send": "Send",
+    "status": {
+      "running": "running",
+      "ready": "ready",
+      "paused": "paused",
+      "completed": "completed",
+      "failed": "failed",
+      "cancelled": "cancelled"
+    }
+  },
+  "diff": {
+    "title": "Version diff",
+    "hint": "Type a local git repo path (e.g. /home/you/proj) to see changes between two refs.",
+    "repo": "Repository path",
+    "repoPlaceholder": "/path/to/your/git/repo",
+    "base": "Base",
+    "head": "Head",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "empty": "No diff loaded",
+    "noChanges": "No changes between base and head.",
+    "error": "Failed to load diff"
+  },
+  "admin": {
+    "title": "Workspace administration",
+    "subtitle": "Manage members, invitations, audit log, users, metrics, and alerts.",
+    "back": "Back to workbench",
+    "roleBadge": "Role: {{role}}",
+    "tabs": {
+      "label": "Administration sections",
+      "members": "Members",
+      "audit": "Audit log",
+      "users": "Users",
+      "metrics": "Metrics",
+      "alerts": "Alerts",
+      "approvals": "Human Approvals"
+    },
+    "forbidden": {
+      "title": "Admin role required",
+      "body": "You need admin or owner permission to view this page.",
+      "cta": "Back to workbench"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "viewer": "Viewer"
+    },
+    "members": {
+      "inviteTitle": "Invite a new member",
+      "inviteHint": "They'll receive a one-time link that expires in 7 days.",
+      "emailLabel": "Email",
+      "roleLabel": "Role",
+      "sendInvite": "Send invite",
+      "sending": "Sending…",
+      "inviteSuccess": "Invitation created for {{email}}.",
+      "shareLink": "Share this link to onboard them instantly:",
+      "copyLink": "Copy link",
+      "inviteCopied": "Invitation link copied.",
+      "inviteCopyFailed": "Could not copy — please copy manually.",
+      "listTitle": "Workspace members",
+      "listHint": "{{count}} member(s) in this workspace.",
+      "colEmail": "Email",
+      "colName": "Display name",
+      "colRole": "Role",
+      "colStatus": "Status",
+      "colJoined": "Joined",
+      "remove": "Remove",
+      "roleChanged": "Role updated for {{email}}.",
+      "removed": "Removed {{email}} from the workspace.",
+      "confirmRemove": "Remove {{email}} from this workspace?",
+      "disabled": "Disabled",
+      "active": "Active",
+      "you": "You",
+      "invitationsTitle": "Pending invitations",
+      "invitationsHint": "{{count}} invitation(s) outstanding.",
+      "invitedAt": "Invited",
+      "expiresAt": "expires",
+      "revoke": "Revoke",
+      "inviteRevoked": "Invitation for {{email}} revoked."
+    },
+    "invitations": {
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      }
+    },
+    "audit": {
+      "title": "Audit log",
+      "subtitle": "Every privileged action taken in this workspace, with full context.",
+      "refresh": "Refresh",
+      "exportCsv": "Export CSV",
+      "exporting": "Exporting…",
+      "severity": {
+        "info": "Info",
+        "warning": "Warning",
+        "critical": "Critical"
+      },
+      "severityLabel": "Severity",
+      "category": "Category",
+      "allCategories": "All categories",
+      "allSeverities": "All severities",
+      "loading": "Loading events…",
+      "empty": "No events match this filter.",
+      "colTime": "Time",
+      "colCategory": "Category",
+      "colAction": "Action",
+      "colSeverity": "Severity",
+      "colActor": "Actor",
+      "colTarget": "Target",
+      "colIp": "IP",
+      "colMetadata": "Metadata"
+    },
+    "users": {
+      "title": "Platform users",
+      "subtitle": "All registered accounts. Owners can disable accounts.",
+      "searchPlaceholder": "Search by email, name, or ID",
+      "colEmail": "Email",
+      "colName": "Display name",
+      "colVerified": "Email",
+      "colStatus": "Status",
+      "colJoined": "Joined",
+      "empty": "No users match this search.",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "disabled": "Disabled",
+      "active": "Active",
+      "enable": "Enable",
+      "disable": "Disable",
+      "disableForbidden": "Only owners can disable user accounts.",
+      "disabledOk": "Disabled {{email}}.",
+      "enabledOk": "Re-enabled {{email}}."
+    },
+    "metrics": {
+      "title": "System metrics",
+      "subtitle": "Prometheus-style metrics from DataFoundry services.",
+      "uptime": "Uptime",
+      "lastUpdate": "Updated",
+      "gauges": "Gauges",
+      "histograms": "Latency histograms",
+      "counters": "Counters",
+      "colName": "Name",
+      "colValue": "Value"
+    },
+    "alerts": {
+      "title": "Alerting",
+      "subtitle": "Active alerts and monitoring rules.",
+      "lastUpdate": "Updated",
+      "total": "Active",
+      "critical": "Critical",
+      "warning": "Warning",
+      "showRules": "All rules",
+      "allClear": "All systems healthy",
+      "allClearDesc": "No active alerts at this time.",
+      "firedAt": "Fired",
+      "allRules": "All alert rules"
+    },
+    "approvals": {
+      "title": "Human Approvals",
+      "subtitle": "Review and resolve pending approval requests from agent runs.",
+      "pending": "Pending",
+      "approvedToday": "Approved today",
+      "rejectedToday": "Rejected today",
+      "avgResolution": "Avg resolution time",
+      "noPending": "No pending approvals",
+      "noPendingDesc": "All approval requests have been resolved.",
+      "empty": "No approvals yet",
+      "emptyDesc": "Human approval requests appear here when agents request user confirmation."
+    },
+    "eval": {
+      "title": "Agent Evaluation",
+      "subtitle": "Automation rate and latency KPIs for the last 24 hours.",
+      "automationRate": "Automation rate",
+      "p50Latency": "P50 Latency",
+      "p95Latency": "P95 Latency",
+      "qualityScore": "Quality score",
+      "automated": "Automated",
+      "humanRequired": "Human required",
+      "failed": "Failed",
+      "latencyDetail": "Latency & Quality Detail"
+    }
+  },
+  "notebook": {
+    "title": "Notebook",
+    "tagline": "AI-assisted SQL + Python cells",
+    "new": "New notebook",
+    "openDashboard": "Open dashboard →",
+    "recent": "Recent notebooks",
+    "cells": "cells",
+    "empty": "No matching notebooks.",
+    "tips": "Tips",
+    "tipRunAll": "Use Run-all after you finish editing — outputs are cached per cell.",
+    "tipAi": "AI prompt cells send the prompt to your server-default model.",
+    "tipPromote": "Promote any cell output to a dashboard widget in one click.",
+    "pickOrCreate": "Pick a notebook from the sidebar or create a new one.",
+    "addCell": "Add cell:",
+    "runAll": "Run all",
+    "promoted": "Cell queued for the dashboard. Switch to the Dashboard tab to see it."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "tagline": "Templates + live widgets",
+    "new": "New dashboard",
+    "openNotebook": "← Open notebook",
+    "templates": "Templates",
+    "dashboards": "Dashboards",
+    "widgets": "widgets",
+    "addWidget": "Add widget",
+    "pickOrCreate": "Pick a dashboard from the sidebar or create a new one."
   }
 }
