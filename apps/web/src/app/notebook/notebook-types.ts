@@ -229,6 +229,7 @@ export interface Dashboard {
   widgets: DashboardWidget[];
   updatedAt: string;
   workspaceId?: string;
+  shareToken?: string | null;
 }
 
 export const NOTEBOOK_STORAGE_KEY = "dfd:notebook:v1";
