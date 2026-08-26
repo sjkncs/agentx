@@ -904,7 +904,10 @@ export const configApi = {
   async resolveApproval(params: { id: string; selected_option: string; status?: string }): Promise<void> {
     await requestEnvelope("/api/v1/admin/approvals/" + params.id + "/resolve", {
       method: "POST",
-      body: { selected_option: params.selected_option, status: params.status ?? "approved" },
+      body: JSON.stringify({
+        selected_option: params.selected_option,
+        status: params.status ?? "approved",
+      }),
     });
   },
 
