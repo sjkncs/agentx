@@ -207,9 +207,8 @@ export const notebookDashboardApi = {
   },
 
   async listNotebookRuns(notebookId: string, limit = 50): Promise<CellRunRecord[]> {
-    return request<CellRunRecord[]>(`/api/v1/notebooks/${notebookId}/runs`, {
-      params: { limit: String(limit) },
-    });
+    const qs = new URLSearchParams({ limit: String(limit) }).toString();
+    return request<CellRunRecord[]>(`/api/v1/notebooks/${notebookId}/runs?${qs}`);
   },
 
   async refreshDashboard(
