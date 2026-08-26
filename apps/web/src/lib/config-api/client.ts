@@ -12,6 +12,7 @@ import type {
   AdminUserListResponseDto,
   AdminMetricsSnapshot,
   AdminAlertsSnapshot,
+  AdminEvalSnapshot,
   ApiResult,
   ArtifactExportFormat,
   ArtifactDto,
