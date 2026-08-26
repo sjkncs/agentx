@@ -197,10 +197,14 @@ export function WOStageDialog({ order, onClose, onUpdated }: Props) {
         p_sub_category: subCat,
         p_risk_level:  risk,
       });
-      if (r && "ok" in r && r.ok) {
-        setCompRec(r as CompensationRec);
-        setCompType(r.type);
-        if (r.recommended_amount) setCompAmount(String(r.recommended_amount));
+      if (r && "ok" in r && r.ok && r.data) {
+        setCompRec(r.data);
+        if ("type" in r.data && typeof r.data.type === "string") {
+          setCompType(r.data.type);
+        }
+        if ("recommended_amount" in r.data && r.data.recommended_amount != null) {
+          setCompAmount(String(r.data.recommended_amount));
+        }
       }
     } catch {
       // ignore — recommendation is optional

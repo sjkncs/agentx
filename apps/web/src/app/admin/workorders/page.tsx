@@ -129,15 +129,14 @@ export default function WorkOrdersPage() {
     setLoading(true);
     setError(null);
     try {
-      const r = await callRpc<WorkOrderRow[] | null>("rpc_work_order_list", {
+      const r = await callRpc<WorkOrderRow[]>("rpc_work_order_list", {
         p_category:   fCategory || null,
         p_status:    fStatus || null,
         p_limit:     200,
       });
       let rows: WorkOrderRow[] = [];
-      if (r && Array.isArray(r)) rows = r;
-      else if (r && typeof r === "object" && "rows" in r) {
-        rows = (r as { rows: WorkOrderRow[] }).rows;
+      if (r && r.ok && Array.isArray(r.data)) {
+        rows = r.data;
       }
       // Client-side SLA filter
       if (fSla) rows = rows.filter((o) => o.sla_status === fSla);

@@ -73,18 +73,18 @@ export function AdminAuditEnhancedPanel() {
     setError(null);
     try {
       const [ev, sum] = await Promise.all([
-        callRpc<AuditRow[] | null>("rpc_audit_event_list", {
+        callRpc<AuditRow[]>("rpc_audit_event_list", {
           p_category: fCategory || null,
           p_severity: fSeverity || null,
           p_days: fDays,
           p_limit: 100,
         }),
-        callRpc<AuditSummary[] | null>("rpc_audit_summary", {
+        callRpc<AuditSummary[]>("rpc_audit_summary", {
           p_days: fDays,
         }),
       ]);
-      setEvents(Array.isArray(ev) ? ev : []);
-      setSummary(Array.isArray(sum) ? sum : []);
+      setEvents(ev?.ok && Array.isArray(ev.data) ? ev.data : []);
+      setSummary(sum?.ok && Array.isArray(sum.data) ? sum.data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }

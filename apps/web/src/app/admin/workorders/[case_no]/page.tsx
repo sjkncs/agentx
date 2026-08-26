@@ -195,11 +195,11 @@ export default function WorkOrderDetailPage() {
   const loadMarkdownCard = useCallback(async () => {
     if (!caseNo) return;
     try {
-      const r = await callRpc<MarkdownCardRow | null>("rpc_work_order_markdown_card", {
+      const r = await callRpc<MarkdownCardRow>("rpc_work_order_markdown_card", {
         p_case_no: caseNo,
       });
-      if (r && "markdown" in r && typeof r.markdown === "string") {
-        setMarkdownCard(r.markdown);
+      if (r && r.ok && r.data && typeof r.data.markdown === "string") {
+        setMarkdownCard(r.data.markdown);
       }
     } catch {
       // ignore
