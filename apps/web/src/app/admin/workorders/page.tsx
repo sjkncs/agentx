@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  */
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useT } from "../../../i18n/locale-context";
+import { useT, LocaleProvider } from "../../../i18n/locale-context";
 import { callRpc } from "../supabase-rpc";
 import { WOStageDialog } from "../admin-wo-stage-dialog";
 
@@ -109,6 +109,14 @@ const FILTERS_SLA = [
 ];
 
 export default function WorkOrdersPage() {
+  return (
+    <LocaleProvider>
+      <WorkOrdersPageInner />
+    </LocaleProvider>
+  );
+}
+
+function WorkOrdersPageInner() {
   const t = useT();
   const router = useRouter();
 

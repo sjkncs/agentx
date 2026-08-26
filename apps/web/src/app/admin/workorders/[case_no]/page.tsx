@@ -18,7 +18,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useT } from "../../../../i18n/locale-context";
+import { useT, LocaleProvider } from "../../../../i18n/locale-context";
 import { callRpc } from "../../supabase-rpc";
 import { WOStageDialog } from "../../admin-wo-stage-dialog";
 
@@ -145,6 +145,14 @@ function SlaBar({ sla_start, sla_deadline, sla_status }: {
 }
 
 export default function WorkOrderDetailPage() {
+  return (
+    <LocaleProvider>
+      <WorkOrderDetailPageInner />
+    </LocaleProvider>
+  );
+}
+
+function WorkOrderDetailPageInner() {
   const t = useT();
   const params = useParams();
   const router = useRouter();
