@@ -12,6 +12,13 @@ const pagesBasePath = "/agentx";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: workspaceRoot,
+  // Monorepo workspace packages (@datafoundry/*) are not pre-built during
+  // Vercel CI (we skip postinstall's monorepo tsc -b to avoid pulling in
+  // apps/api's harness-core chain). Next.js needs to transpile the TS
+  // sources directly from packages/*/src.
+  transpilePackages: [
+    "@datafoundry/contracts",
+  ],
   // Next's default `compress: true` applies gzip to `text/*`, including
   // `text/event-stream`. Even with flush hooks, compression is the wrong layer
   // for AG-UI SSE. Disable here; terminate TLS/gzip at the reverse proxy for
