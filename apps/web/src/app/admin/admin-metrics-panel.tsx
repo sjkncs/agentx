@@ -71,11 +71,11 @@ export function AdminMetricsPanel() {
     setError(null);
     try {
       const [s, st] = await Promise.all([
-        callRpc<SlaSummary | null>("rpc_sla_summary"),
-        callRpc<SlaStatRow[] | null>("rpc_sla_stats", { p_days: days }),
+        callRpc<SlaSummary>("rpc_sla_summary"),
+        callRpc<SlaStatRow[]>("rpc_sla_stats", { p_days: days }),
       ]);
-      setSummary(s as SlaSummary | null);
-      setStats(Array.isArray(st) ? st : []);
+      setSummary(s.ok ? (s.data ?? null) : null);
+      setStats(st.ok && Array.isArray(st.data) ? st.data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
