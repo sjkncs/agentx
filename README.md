@@ -38,13 +38,13 @@ AgentX is a **DeepSeek-native AI coding agent harness** built on the DataFoundry
 - 🔧 **Multi-Model Support** — Works with any OpenAI-compatible provider (Qwen, GPT, Claude, etc.)
 - 🎯 **Plugin System** — Everything is a plugin: hooks, skills, MCP servers, tools
 - 🛡️ **Enterprise Security** — Read-only boundaries, credential isolation, audit trails
-- 📊 **Food Safety Agent** — Specialized customer service agent for Heytea with 6-layer architecture
+- 📊 **Food Safety Agent** — Specialized customer service agent for HXX with 6-layer architecture
 
 ## ✨ Core Capabilities
 
 ### Food Safety Customer Service Agent
 
-Based on the [heytea-food-safety-agent](https://github.com/sjkncs/heytea-food-safety-agent) project:
+Based on the [HXX-food-safety-agent](https://github.com/sjkncs/HXX-food-safety-agent) project:
 
 - **6-Layer Architecture**: L1 intent classification (14 types) → L2 scenario routing (28 scenarios) → L3 dialogue state machine → L4 script library (38K templates × 10 stages) → L5 generation pipeline
 - **Multi-turn Conversation**: Supports 10-stage response templates for food safety complaints
@@ -195,7 +195,7 @@ AgentX is built on the shoulders of giants:
 - [AG-UI](https://github.com/ag-ui-protocol/ag-ui) — Event stream protocol
 - [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) — Plugin architecture
 - [DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) — Prefix-cache optimization
-- [heytea-food-safety-agent](https://github.com/sjkncs/heytea-food-safety-agent) — Food safety agent patterns
+- [HXX-food-safety-agent](https://github.com/sjkncs/HXX-food-safety-agent) — Food safety agent patterns
 
 ---
 
