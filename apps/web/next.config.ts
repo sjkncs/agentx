@@ -11,7 +11,6 @@ const isGitHubPages = process.env.AGENTX_PAGES === "1";
 const pagesBasePath = "/agentx";
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: workspaceRoot,
   // Monorepo workspace packages (@datafoundry/*) are not pre-built during
   // Vercel CI (we skip postinstall's monorepo tsc -b to avoid pulling in
   // apps/api's harness-core chain). Next.js needs to transpile the TS
