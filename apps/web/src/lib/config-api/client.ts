@@ -1,4 +1,5 @@
 import type {
+  AdminApprovalSnapshot,
   AdminAuditEventDto,
   AdminAuditListResponseDto,
   AdminAuditExportResponseDto,
