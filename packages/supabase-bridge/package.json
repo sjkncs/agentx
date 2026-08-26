@@ -10,7 +10,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@agentx/harness-core": "*"
+    "@datafoundry/harness-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
