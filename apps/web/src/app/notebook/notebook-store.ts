@@ -19,6 +19,7 @@ import {
 import {
   NotebookDashboardApiError,
   notebookDashboardApi,
+  type CellRunRecord,
   type NotebookRunResult,
 } from "./api-client";
 
