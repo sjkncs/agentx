@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useT } from "../../../../i18n/locale-context";
-import { callRpc } from "../../../supabase-rpc";
+import { callRpc } from "../../supabase-rpc";
 import { WOStageDialog } from "../../admin-wo-stage-dialog";
 
 interface WorkOrderRow {

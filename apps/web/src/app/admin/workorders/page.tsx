@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 /**
  * admin/workorders/page.tsx — A25.3 工单管理完整页面
  *

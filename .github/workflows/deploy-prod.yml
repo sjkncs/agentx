@@ -1,0 +1,85 @@
+# Deploy DataFoundry to production.
+#
+# Two artifacts are produced:
+#   1. apps/web       → Vercel (Next.js, serverless). Marketing pages, app routes,
+#                       /api/* BFF. Uses NEXT_PUBLIC_CONFIG_API_URL pointing at
+#                       the Fly.io API host.
+#   2. apps/api       → Fly.io (Node.js, long-lived server). Agent runtime,
+#                       CopilotKit upstream, REST BFF.
+#
+# Trigger: every push to `main`, plus manual dispatch.
+#
+# Why not GitHub Pages? This project intentionally uses `use client` dynamic
+# routes (e.g. /admin/workorders/[case_no]). Next.js 15.5 forbids the
+# `"use client"` + `generateStaticParams` combo, so `output: "export"` is
+# incompatible with the current routing tree. See deploy/README.md for the
+# trade-off matrix (Vercel / Cloudflare Pages / self-host).
+
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/web/**"
+      - "apps/api/**"
+      - ".github/workflows/deploy-prod.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: "deploy-prod"
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # apps/web → Vercel
+  # ---------------------------------------------------------------------------
+  deploy-web:
+    name: Deploy web (Vercel)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel env (preview build)
+        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+        working-directory: apps/web
+
+      - name: Build (Vercel production)
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          # Force the same-origin BFF prefix that the local `deploy.sh` uses.
+          # Vercel sets these per-project; the explicit values here document
+          # what each runtime expects.
+          NEXT_PUBLIC_CONFIG_API_URL: ""
+          NEXT_PUBLIC_AGENT_RUNTIME_URL: ""
+        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+        working-directory: apps/web
+
+      - name: Deploy (Vercel production)
+        run: vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes
+        working-directory: apps/web
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ---------------------------------------------------------------------------
+  # apps/api → Fly.io
+  # ---------------------------------------------------------------------------
+  deploy-api:
+    name: Deploy API (Fly.io)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        working-directory: apps/api
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --strategy=bluegreen --wait-timeout=600

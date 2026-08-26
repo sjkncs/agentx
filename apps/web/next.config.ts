@@ -3,6 +3,13 @@ import type { NextConfig } from "next";
 
 const workspaceRoot = path.join(__dirname, "../..");
 
+// GitHub Pages lives at https://<owner>.github.io/<repo>/. When deploying
+// to a project Pages site (NOT the user-site / <owner>.github.io root),
+// every Next.js link, asset, and Image src must be prefixed with the
+// repo name. Set AGENTX_PAGES=1 at build time to opt in.
+const isGitHubPages = process.env.AGENTX_PAGES === "1";
+const pagesBasePath = "/agentx";
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: workspaceRoot,
   // Next's default `compress: true` applies gzip to `text/*`, including
@@ -11,6 +18,25 @@ const nextConfig: NextConfig = {
   // HTML/assets (see deploy/nginx.datafoundry.conf.example), and leave
   // `/api/copilotkit` uncompressed.
   compress: false,
+  // GitHub Pages is a CDN with no runtime. basePath rewrites every internal
+  // URL so /agentx/skills resolves to the right asset on Pages; assetPrefix
+  // tells Next to also rewrite _next/* URLs (CSS/JS chunks) to the same prefix
+  // so they are served from the Pages origin, not the dev origin.
+  //
+  // Note: this project intentionally uses `output: "standalone"` for the
+  // Node API deploy path (see Dockerfile / deploy.sh). Pure static
+  // `output: "export"` is NOT supported because /admin/workorders/[case_no]
+  // is a "use client" dynamic route — Next.js 15.5 still forbids the
+  // "use client" + generateStaticParams combo. If you ever need a pure
+  // GitHub Pages marketing-only deploy, fork the marketing pages into a
+  // separate repo and build that with `output: "export"`.
+  ...(isGitHubPages
+    ? {
+        basePath: pagesBasePath,
+        assetPrefix: pagesBasePath,
+        images: { unoptimized: true },
+      }
+    : {}),
   // Production / test builds: tree-shake heavy package entrypoints.
   experimental: {
     optimizePackageImports: ["zod"],
