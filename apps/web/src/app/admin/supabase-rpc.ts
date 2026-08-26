@@ -29,7 +29,7 @@ function envValue(keys: readonly string[]): string | undefined {
 
 export async function callRpc<T = unknown>(
   fn: string,
-  args: Record<string, unknown>,
+  args?: Record<string, unknown>,
 ): Promise<RpcResult<T>> {
   const url = envValue(URL_ENV_KEYS);
   const key = envValue(ANON_ENV_KEYS);
@@ -44,7 +44,7 @@ export async function callRpc<T = unknown>(
         apikey: key,
         authorization: `Bearer ${key}`,
       },
-      body: JSON.stringify(args),
+      body: JSON.stringify(args ?? {}),
     });
     const text = await res.text();
     if (!res.ok) return { ok: false, error: text.slice(0, 200) };
