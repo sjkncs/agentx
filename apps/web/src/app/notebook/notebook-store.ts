@@ -509,6 +509,7 @@ interface DashboardStore {
   setTitle: (title: string) => Promise<void>;
   saveCurrent: () => Promise<void>;
   shareCurrent: () => Promise<string | null>;
+  revokeShare: () => Promise<void>;
   deleteCurrent: () => Promise<void>;
   refreshWidgets: (widgetIds?: string[], options?: { force?: boolean }) => Promise<void>;
 }
@@ -708,6 +709,16 @@ export function useDashboardStore(initialId?: string): DashboardStore {
     }
   }, [dashboard]);
 
+  const revokeShare = useCallback(async () => {
+    const current = dashboard;
+    if (!current) return;
+    try {
+      await notebookDashboardApi.revokeShareNotebook(current.id);
+    } catch (err) {
+      setLastError(messageOf(err));
+    }
+  }, [dashboard]);
+
   const deleteCurrent = useCallback(async () => {
     const current = dashboard;
     if (!current) return;
@@ -791,6 +802,7 @@ export function useDashboardStore(initialId?: string): DashboardStore {
     setTitle,
     saveCurrent,
     shareCurrent,
+    revokeShare,
     deleteCurrent,
     refreshWidgets,
   };
