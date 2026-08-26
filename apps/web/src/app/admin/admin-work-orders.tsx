@@ -40,6 +40,7 @@ interface WorkOrderRow {
   sla_deadline: string | null;
   sla_start: string | null;
   sla_status: string | null;
+  sla_target_hours: number | null;
   store_info: Record<string, unknown> | null;
   order_info: Record<string, unknown> | null;
   agent_notes: string | null;
