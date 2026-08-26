@@ -38,6 +38,8 @@ jobs:
   deploy-web:
     name: Deploy web (Vercel)
     runs-on: ubuntu-latest
+    env:
+      SKIP_POSTINSTALL_BUILD: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,6 +54,11 @@ jobs:
       - name: Build (Vercel production)
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+          # Skip the monorepo root tsc -b (postinstall hook).  Next.js's own
+          # TypeScript checking is sufficient for the web app; building
+          # apps/api here would pull in harness-core which has circular
+          # dependency issues.  API deploys separately via Fly.io.
+          SKIP_POSTINSTALL_BUILD: "1"
           # Force the same-origin BFF prefix that the local `deploy.sh` uses.
           # Vercel sets these per-project; the explicit values here document
           # what each runtime expects.
