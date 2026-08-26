@@ -50,7 +50,11 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--foreground) 0%, var(--accent) 100%);
+  background-image: url("/brand/ax-favicon.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
 }
 
 .navLinks {
@@ -116,11 +120,26 @@
   text-align: center;
   max-width: 980px;
   margin: 0 auto;
+  overflow: hidden;
+}
+
+.heroBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero > *:not(.heroBg) {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow {
-  display: inline-block;
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
   border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 12px;
@@ -128,6 +147,19 @@
   text-transform: uppercase;
   color: var(--text-secondary);
   margin-bottom: 24px;
+}
+
+.heroLogo {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background-image: url("/brand/ax-favicon.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: var(--surface-1);
+  flex-shrink: 0;
 }
 
 .heroTitle {
@@ -207,8 +239,9 @@
 }
 
 .featureCardIcon {
-  font-size: 22px;
   margin-bottom: 12px;
+  color: var(--foreground);
+  opacity: 0.75;
 }
 
 .featureCardTitle {

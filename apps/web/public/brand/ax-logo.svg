@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  apps/web/public/brand/ax-logo.svg
+
+  AgentX brand mark - Prism Refraction, Lunar Edition.
+
+  Palette (locked):
+    #16151C  deep-space gray   (canvas, with subtle top-down lift)
+    #E8EAF0  moon-silver        (prism body, beam, specular)
+    #C8D6FF  cool-moonlight     (rim-light on lower-right faces, hint of brand DNA)
+
+  Composition:
+    - Rounded-square canvas, 22% corner radius.
+    - One faceted hexagonal glass prism tilted 8 degrees toward camera.
+      Six faces painted individually with grayscale gradients, so the
+      icon reads as a real 3D object. Lower-right faces catch a faint
+      cool-moonlight rim to preserve brand identity without reverting
+      to the blue/violet theme.
+    - A vertical white beam enters from the top, narrows inside the
+      prism, and exits as a soft silver trail toward the lower-right.
+    - Two crisp specular hot-spots on the upper-left faces imply a
+      single off-camera light source.
+    - The prism is the unambiguous subject. Beam and trail are quiet
+      supporting details. No halos, no neon glow.
+
+  This file is the single source of truth. The 180 and 16 variants
+  are simplified derivatives that keep the prism silhouette but drop
+  the beam and the trail at small pixel sizes.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1024 1024"
+     width="1024" height="1024"
+     role="img"
+     aria-label="AgentX">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%"  stop-color="#23232C"/>
+      <stop offset="100%" stop-color="#16151C"/>
+    </radialGradient>
+
+    <linearGradient id="beam" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"  stop-color="#E8EAF0" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#E8EAF0" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#E8EAF0" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <linearGradient id="trail" x1="20%" y1="80%" x2="95%" y2="100%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="35%"  stop-color="#D4DAE5" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#C8D6FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Six grayscale + cool-moonlight face fills -->
+    <linearGradient id="faceTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#F5F6FA"/>
+      <stop offset="100%" stop-color="#B8BCC8"/>
+    </linearGradient>
+    <linearGradient id="faceUR" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#A6ACBC"/>
+      <stop offset="100%" stop-color="#6E7383"/>
+    </linearGradient>
+    <linearGradient id="faceLR" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#7A8090"/>
+      <stop offset="100%" stop-color="#C8D6FF"/>
+    </linearGradient>
+    <linearGradient id="faceBot" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#9097A6"/>
+      <stop offset="100%" stop-color="#5E6373"/>
+    </linearGradient>
+    <linearGradient id="faceLL" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#4A4E5A"/>
+      <stop offset="100%" stop-color="#2E3038"/>
+    </linearGradient>
+    <linearGradient id="faceUL" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#8389A0"/>
+      <stop offset="100%" stop-color="#52576A"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="225" ry="225" fill="url(#bg)"/>
+
+  <!-- Vertical beam entering from the top -->
+  <path d="M498 0 L526 0 L520 540 L504 540 Z" fill="url(#beam)"/>
+
+  <!-- Spectrum trail exiting toward lower-right -->
+  <path d="M512 540 L524 540 L1024 980 L1024 1010 Z" fill="url(#trail)"/>
+
+  <!--
+    Prism body, tilted 8 degrees. Center (512, 540), radius 220.
+    Vertices for an upright pointy-top hexagon:
+      top          (512, 320)
+      upper-right  (702, 430)
+      lower-right  (702, 650)
+      bottom       (512, 760)
+      lower-left   (322, 650)
+      upper-left   (322, 430)
+  -->
+  <g transform="rotate(8 512 540)">
+    <polygon points="512,540 512,320 702,430" fill="url(#faceTop)"
+             stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="2"/>
+    <polygon points="512,540 702,430 702,650" fill="url(#faceUR)"
+             stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
+    <polygon points="512,540 702,650 512,760" fill="url(#faceLR)"
+             stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="2"/>
+    <polygon points="512,540 512,760 322,650" fill="url(#faceBot)"
+             stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="2"/>
+    <polygon points="512,540 322,650 322,430" fill="url(#faceLL)"
+             stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="2"/>
+    <polygon points="512,540 322,430 512,320" fill="url(#faceUL)"
+             stroke="#FFFFFF" stroke-opacity="0.20" stroke-width="2"/>
+
+    <!-- Two specular hot-spots, the cheapest "this is glass" signal -->
+    <circle cx="560" cy="370" r="11" fill="#FFFFFF" opacity="0.95"/>
+    <circle cx="468" cy="370" r="6"  fill="#FFFFFF" opacity="0.80"/>
+  </g>
+</svg>

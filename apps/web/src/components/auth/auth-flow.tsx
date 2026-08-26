@@ -7,8 +7,8 @@ import { configApi } from "../../lib/config-api/client";
 export type AuthMode = "login" | "register" | "forgot" | "verify" | "reset";
 
 const AUTH_MODE_META: Record<AuthMode, { title: string; subtitle: string; submit: string }> = {
-  login: { title: "Sign in", subtitle: "Welcome back to DataFoundry", submit: "Sign in" },
-  register: { title: "Create account", subtitle: "Get started with DataFoundry", submit: "Create account" },
+  login: { title: "Sign in", subtitle: "Welcome back to AgentX", submit: "Sign in" },
+  register: { title: "Create account", subtitle: "Get started with AgentX", submit: "Create account" },
   forgot: { title: "Forgot password", subtitle: "We'll send you a reset link", submit: "Send reset link" },
   verify: { title: "Verify email", subtitle: "Enter the code we sent you", submit: "Verify email" },
   reset: { title: "Reset password", subtitle: "Choose a new password", submit: "Reset password" },
@@ -231,7 +231,7 @@ function AuthModeSwitch({
     <div className="mt-5 border-t border-border pt-4 text-center text-xs text-muted">
       {mode === "login" ? (
         registrationEnabled ? (
-          <p>New to DataFoundry? {link("Create an account", onGoRegister)}</p>
+          <p>New to AgentX? {link("Create an account", onGoRegister)}</p>
         ) : (
           <p>Registration is closed. Contact your deployment administrator.</p>
         )
@@ -300,10 +300,15 @@ export function PasswordAuthShell({
     <main className="flex min-h-screen items-center justify-center bg-surface-subtle p-6 text-foreground">
       <section className="auth-card-in w-full max-w-sm">
         <div className="mb-6 flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold tracking-tight text-white">
-            DF
-          </span>
-          <span className="text-sm font-semibold text-foreground">DataFoundry</span>
+          <img
+            src="/brand/ax-logo.svg"
+            alt=""
+            aria-hidden
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-lg"
+          />
+          <span className="text-sm font-semibold text-foreground">AgentX</span>
         </div>
         <div className="rounded-xl border border-border bg-surface p-6 shadow-[var(--shadow-card)]">
           <div className="mb-5">

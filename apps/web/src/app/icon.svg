@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  apps/web/src/app/icon.svg
+
+  AgentX favicon — mirrors /brand/ax-logo.svg.
+  Next.js App Router 自动将 app/icon.svg 挂载为站点 favicon。
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 16 16"
+     width="16" height="16"
+     role="img"
+     aria-label="AgentX">
+  <rect x="0" y="0" width="16" height="16" rx="3" ry="3" fill="#0f121c"/>
+  <text x="8" y="8"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Inter','Geist','SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-weight="800"
+        font-size="9"
+        letter-spacing="-0.4"
+        fill="#ffffff">AX</text>
+</svg>

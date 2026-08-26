@@ -26,3 +26,8 @@ storage/
 docs/public/assets/
 *.log
 .run/
+# AgentX brand: dev-server auto-generated previews — do not commit
+apps/web/public/brand/apple-touch-icon.svg
+apps/web/public/brand/ax-favicon.svg
+apps/web/public/brand/icon-light.svg
+apps/web/src/app/apple-icon.png
