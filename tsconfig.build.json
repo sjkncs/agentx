@@ -32,6 +32,9 @@
       "path": "packages/supabase-bridge"
     },
     {
+      "path": "packages/harness-core"
+    },
+    {
       "path": "apps/api"
     }
   ]
