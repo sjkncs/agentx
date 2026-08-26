@@ -55,6 +55,12 @@ const nextConfig: NextConfig = {
     if (isServer && config.output) {
       config.output.chunkFilename = "chunks/[name].js";
     }
+    // Fix @/ alias resolution in monorepo root. Next.js infers this from
+    // tsconfig.json's baseUrl, but the monorepo root is not the web package.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "src"),
+    };
     return config;
   },
 };
