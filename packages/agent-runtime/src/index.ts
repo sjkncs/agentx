@@ -511,9 +511,6 @@ export const createDataFoundry = async (
     ...workspaceTools,
     ...skillTools,
     web_search: createWebSearchTool({ emitter: input.emitter }),
-    
-        : {}
-    )
   };
   // Platform tools for enabled KB / datasources must survive skill allowed-tools
   // unions: maxSkills truncation often leaves import-oriented skills that never

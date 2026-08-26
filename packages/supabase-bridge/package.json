@@ -1,0 +1,24 @@
+{
+  "name": "@agentx/supabase-bridge",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Supabase client + persistence sinks. Stub package: source was lost during repo migration; package metadata preserved in package-lock.json so workspace builds resolve.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentx/harness-core": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
