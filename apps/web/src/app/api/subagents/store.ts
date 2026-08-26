@@ -1,5 +1,8 @@
 import { EventEmitter } from "events";
 
+// Force module context — required for `declare global` to be valid.
+export {};
+
 /**
  * Server-side Subagent inbox (in-memory singleton).
  *
