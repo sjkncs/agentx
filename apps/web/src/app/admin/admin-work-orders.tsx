@@ -28,7 +28,6 @@ interface WorkOrderRow {
   user_id: number;
   category: string;
   sub_category: string | null;
-  sub_category: string | null;
   description: string;
   evidence_urls: unknown[];
   risk_level: string;
