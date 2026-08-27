@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && npm install --no-audit --no-fund --legacy-peer-deps --workspaces --include-workspace-root && cp -rL node_modules apps/web/ 2>/dev/null; [ -d apps/web/node_modules ] || ln -sf ../node_modules apps/web/node_modules",
+  "installCommand": "cd ../.. && npm install --no-audit --no-fund --legacy-peer-deps --workspaces --include-workspace-root",
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "ignoreCommand": "node ../../scripts/vercel-ignore.mjs",

@@ -47,16 +47,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["zod"],
   },
-  // Vercel's prebuilt deploy re-validates file trace references and fails
-  // if a traced file path can't be resolved at the deploy step's working
-  // directory. The trace picks up @opentelemetry/api/build/src/api/*.js
-  // from the Next.js runtime; in this monorepo install layout the path
-  // resolves to a different node_modules than Vercel expects. Exclude
-  // the trace entries so deploy accepts the runtime-shim copy that the
-  // build already includes.
-  outputFileTracingExcludes: {
-    "*": ["./node_modules/@opentelemetry/api/build/**/*"],
-  },
   // Dev uses Turbopack (see `dev` script). Declaring this key pins the
   // monorepo root and silences the "Webpack is configured while Turbopack is
   // not" warning; the webpack() hook below still applies to `next build`.
