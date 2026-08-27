@@ -199,6 +199,24 @@ AgentX is built on the shoulders of giants:
 
 ---
 
+## 🌐 Marketing Site (GitHub Pages)
+
+The `apps/web` marketing site is built and published to GitHub Pages on every push to `main`.
+
+- Live URL: **<https://sjkncs.github.io/agentx/>** *(requires Pages to be enabled in repo settings — see below)*
+- Build workflow: `.github/workflows/pages.yml`
+- Triggered by changes under `apps/web/**`, `packages/**`, root `package.json` / `package-lock.json`, or the workflow file itself
+
+### One-time setup (repo owner)
+
+1. Go to **<https://github.com/sjkncs/agentx/settings/pages>**
+2. Under **Source**, choose **GitHub Actions**
+3. Save — the next successful `pages.yml` run will deploy the bundle automatically
+
+The workflow runs are visible at <https://github.com/sjkncs/agentx/actions/workflows/pages.yml>.
+
+---
+
 ## 📄 License
 
 Apache License 2.0. See [LICENSE](LICENSE).
