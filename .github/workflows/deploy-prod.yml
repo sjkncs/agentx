@@ -25,6 +25,7 @@ on:
       - "apps/web/**"
       - "apps/api/**"
       - ".github/workflows/deploy-prod.yml"
+      - "vercel.json"
   workflow_dispatch:
 
 concurrency:
@@ -44,12 +45,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          npm install --no-audit --no-fund --legacy-peer-deps --include-workspace-root
-          mkdir -p apps/web/node_modules
-          cp -rs node_modules/* apps/web/node_modules/
-
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
@@ -60,14 +55,9 @@ jobs:
       - name: Build (Vercel production)
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-          # Skip the monorepo root tsc -b (postinstall hook).  Next.js's own
-          # TypeScript checking is sufficient for the web app; building
-          # apps/api here would pull in harness-core which has circular
-          # dependency issues.  API deploys separately via Fly.io.
+          # Skip the monorepo root tsc -b (postinstall hook).
           SKIP_POSTINSTALL_BUILD: "1"
           # Force the same-origin BFF prefix that the local `deploy.sh` uses.
-          # Vercel sets these per-project; the explicit values here document
-          # what each runtime expects.
           NEXT_PUBLIC_CONFIG_API_URL: ""
           NEXT_PUBLIC_AGENT_RUNTIME_URL: ""
         run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
