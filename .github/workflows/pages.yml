@@ -64,7 +64,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        # Use `npm install` (not `npm ci`) — package-lock.json is out of
+        # sync with package.json in this monorepo (new workspaces and
+        # dependencies have been added since the lockfile was last
+        # regenerated). `npm install` reconciles both on each run.
+        run: npm install
 
       - name: Build marketing site
         working-directory: apps/web
