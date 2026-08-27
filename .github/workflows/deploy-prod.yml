@@ -46,7 +46,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd .. && npm install --no-audit --no-fund --legacy-peer-deps --include-workspace-root
+          npm install --no-audit --no-fund --legacy-peer-deps --include-workspace-root
           cp -rs node_modules apps/web/node_modules
         working-directory: apps/web
 
