@@ -11,8 +11,14 @@ import {
   EncryptedSecretStore,
   initializeConfigSchema
 } from "./config-store.js";
+import {
+  EvalDatasetRepository,
+  EvalRunRepository,
+  initializeEvalSchema
+} from "./eval-store.js";
 
 export * from "./config-store.js";
+export * from "./eval-store.js";
 
 export type UserRecord = {
   id: string;
@@ -636,6 +642,8 @@ export class MetadataStore {
   readonly conversationSummaries: ConversationSummaryRepository;
   readonly contextPackageSnapshots: ContextPackageSnapshotRepository;
   readonly dataSources: DataSourceRepository;
+  readonly evalDatasets: EvalDatasetRepository;
+  readonly evalRuns: EvalRunRepository;
   readonly fileAssetRefs: FileAssetRefRepository;
   readonly fileAssets: FileAssetRepository;
   readonly interactions: InteractionRepository;
@@ -678,6 +686,8 @@ export class MetadataStore {
     this.traceSections = new TraceSectionRepository(db);
     this.contextPackageSnapshots = new ContextPackageSnapshotRepository(db);
     this.dataSources = new DataSourceRepository(db);
+    this.evalDatasets = new EvalDatasetRepository(db);
+    this.evalRuns = new EvalRunRepository(db);
     this.fileAssets = new FileAssetRepository(db);
     this.fileAssetRefs = new FileAssetRefRepository(db);
     this.interactions = new InteractionRepository(db);
@@ -3001,7 +3011,7 @@ export class FileAssetRepository {
   }
 
   /**
-   * List assets with zero non-deleted refs — orphaned content that can be GC'd.
+   * List assets with zero non-deleted refs 鈥?orphaned content that can be GC'd.
    * A reassignAsset leaves the previous asset orphaned; this surfaces them so the
    * file asset service can delete their on-disk content and records.
    */
