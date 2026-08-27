@@ -25,7 +25,6 @@ on:
       - "apps/web/**"
       - "apps/api/**"
       - ".github/workflows/deploy-prod.yml"
-      - "vercel.json"
   workflow_dispatch:
 
 concurrency:
@@ -55,9 +54,7 @@ jobs:
       - name: Build (Vercel production)
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-          # Skip the monorepo root tsc -b (postinstall hook).
           SKIP_POSTINSTALL_BUILD: "1"
-          # Force the same-origin BFF prefix that the local `deploy.sh` uses.
           NEXT_PUBLIC_CONFIG_API_URL: ""
           NEXT_PUBLIC_AGENT_RUNTIME_URL: ""
         run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
