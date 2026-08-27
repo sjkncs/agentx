@@ -3,7 +3,7 @@
 # Trigger: push to main, OR manual dispatch from the Actions tab.
 #
 # What it does:
-#   1. pnpm install (monorepo workspace)
+#   1. npm ci (workspace via npm workspaces)
 #   2. Build apps/web with AGENTX_PAGES=1 → /agentx basePath + static export
 #   3. Upload apps/web/out as the GitHub Pages artifact
 #   4. Deploy via actions/deploy-pages@v4 to the GitHub Pages environment
@@ -18,6 +18,10 @@
 #   GitHub Pages URLs are https://<owner>.github.io/<repo>/ so the static
 #   bundle needs /agentx prefix on every internal link and _next asset.
 #   Local dev and prod (nginx / Vercel) keep the un-prefixed paths.
+#
+# Note: upstream uses package-lock.json (npm), not pnpm — this monorepo
+# historically installed via npm workspaces, so we use npm ci instead of
+# pnpm install --frozen-lockfile.
 
 name: Deploy marketing site to GitHub Pages
 
@@ -28,8 +32,7 @@ on:
       - "apps/web/**"
       - "packages/**"
       - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
+      - "package-lock.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -54,25 +57,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build marketing site
         working-directory: apps/web
         env:
           AGENTX_PAGES: "1"
-        run: pnpm build
+        run: npm run build
 
       - name: Setup Pages artifact
         uses: actions/configure-pages@v5
