@@ -1,0 +1,95 @@
+# GitHub Pages deploy for apps/web marketing site.
+#
+# Trigger: push to main, OR manual dispatch from the Actions tab.
+#
+# What it does:
+#   1. pnpm install (monorepo workspace)
+#   2. Build apps/web with AGENTX_PAGES=1 → /agentx basePath + static export
+#   3. Upload apps/web/out as the GitHub Pages artifact
+#   4. Deploy via actions/deploy-pages@v4 to the GitHub Pages environment
+#
+# Required repo setup:
+#   - GitHub repo: <owner>/agentx (project Pages site)
+#   - Settings → Pages → Source: "GitHub Actions"
+#   - The first successful run auto-creates the Pages environment;
+#     no extra secrets needed beyond the default GITHUB_TOKEN.
+#
+# Why AGENTX_PAGES=1 + /agentx basePath:
+#   GitHub Pages URLs are https://<owner>.github.io/<repo>/ so the static
+#   bundle needs /agentx prefix on every internal link and _next asset.
+#   Local dev and prod (nginx / Vercel) keep the un-prefixed paths.
+
+name: Deploy marketing site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+# Allow only one concurrent deployment, queueing newer runs and
+# cancelling in-progress ones from the same ref. Avoids racing the
+# Pages deploy lock when multiple commits land in quick succession.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+# Restrict default token to minimum required permissions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build static bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build marketing site
+        working-directory: apps/web
+        env:
+          AGENTX_PAGES: "1"
+        run: pnpm build
+
+      - name: Setup Pages artifact
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/out
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

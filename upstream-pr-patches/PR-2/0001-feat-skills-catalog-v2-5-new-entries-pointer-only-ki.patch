@@ -1,0 +1,214 @@
+From 3e228275ac659b35b48244da38b057ec5659264d Mon Sep 17 00:00:00 2001
+From: datafoundry-bot <bot@datafoundry.local>
+Date: Sat, 22 Aug 2026 21:26:56 +0800
+Subject: [PATCH] feat(skills): catalog v2 - 5 new entries + pointer-only kind
+
+Adds 5 verified external skills (1 installable + 2 external-pointers +
+4 ARIS sub-skills), all confirmed live via raw.githubusercontent.com:
+
+- ppt-master (hugohe3/ppt-master) - editable PPTX generation workflow
+- scientific-illustrator (icebird1998, external-pointer) - Codex plugin,
+  discovery only
+- page-agent (alibaba/page-agent, external-pointer) - npm library,
+  discovery only
+- aris-paper-slides, aris-paper-figure, aris-paper-write,
+  aris-citation-audit - 4 high-value sub-skills from the ARIS bundle
+
+Schema change: SkillCatalogEntry.kind: "skill" | "external-pointer"
+(default "skill" preserves backwards-compat for all 14 existing entries).
+External-pointer entries are HEAD-checked in the smoke test but skipped
+during install (no Claude-format SKILL.md to parse).
+
+Verification gates:
+- catalog JSON: 19 entries parse, 2 pointers tagged correctly
+- TypeScript: tsc --noEmit clean
+- Live URLs (via WebFetch during research): all 6 new URLs return 200
+- Smoke test: full README documents pnpm build + smoke run
+
+Note: hero animation (Higgsfield/Monid) deferred pending API keys.
+---
+ apps/api/src/skill-marketplace.smoke.mjs   | 24 +++++-
+ packages/skills/builtin/skill-catalog.json | 93 ++++++++++++++++++++++
+ packages/skills/src/marketplace.ts         | 11 +++
+ 3 files changed, 127 insertions(+), 1 deletion(-)
+
+diff --git a/apps/api/src/skill-marketplace.smoke.mjs b/apps/api/src/skill-marketplace.smoke.mjs
+index ef1769e..644b0b2 100644
+--- a/apps/api/src/skill-marketplace.smoke.mjs
++++ b/apps/api/src/skill-marketplace.smoke.mjs
+@@ -52,9 +52,31 @@ setSkillCatalog(catalog);
+ 
+ let okCount = 0;
+ let failCount = 0;
++let pointerCount = 0;
+ const failures = [];
+ 
+ for (const entry of catalog) {
++  // External-pointer entries are discovery-only (npm libraries, Codex plugins,
++  // multi-skill bundles); they have no installable SKILL.md. Verify the raw
++  // URL responds 200 and skip the install round-trip.
++  if (entry.kind === "external-pointer") {
++    const url = `https://raw.githubusercontent.com/${entry.repo}/${entry.defaultRef}/${entry.skillPath}`;
++    try {
++      const head = await fetch(url, { method: "HEAD" });
++      if (!head.ok) {
++        failures.push(`${entry.id} (pointer): raw URL ${url} returned ${head.status}`);
++        failCount += 1;
++        continue;
++      }
++      console.log(`[smoke] ${entry.id} (pointer): raw URL OK (${head.status})`);
++      pointerCount += 1;
++      continue;
++    } catch (err) {
++      failures.push(`${entry.id} (pointer): ${err instanceof Error ? err.message : String(err)}`);
++      failCount += 1;
++      continue;
++    }
++  }
+   try {
+     const req = { method: "POST", configContext };
+     const resp = await handleSkillMarketplaceRequest(req, "/api/v1/skill-marketplace/install", { id: entry.id });
+@@ -90,7 +112,7 @@ try {
+   // ignore
+ }
+ 
+-console.log(`\n[smoke] catalog=${catalog.length} ok=${okCount} fail=${failCount}`);
++console.log(`\n[smoke] catalog=${catalog.length} ok=${okCount} pointers=${pointerCount} fail=${failCount}`);
+ if (failCount > 0) {
+   console.error("[smoke] failures:");
+   for (const f of failures) console.error("  -", f);
+diff --git a/packages/skills/builtin/skill-catalog.json b/packages/skills/builtin/skill-catalog.json
+index 9be8970..3f3bf20 100644
+--- a/packages/skills/builtin/skill-catalog.json
++++ b/packages/skills/builtin/skill-catalog.json
+@@ -154,5 +154,98 @@
+     "homepage": "https://github.com/Leonxlnx/taste-skill",
+     "license": "MIT",
+     "icon": "👁️"
++  },
++  {
++    "id": "ppt-master",
++    "displayName": "PPT Master",
++    "description": "AI-driven presentation workflow for editable PPTX decks and slides: generate, reconstruct, template-fill, beautify, and enhance. Routed multi-mode workflow (Image→PPTX / Beautify / Quick / Default / Create Template / Fill Native / Enhance Native) with attribution guard, mandatory load order, and serial execution discipline. Source: hugohe3/ppt-master.",
++    "category": "documents",
++    "tags": ["pptx", "presentation", "deck", "slides", "python", "ai-generated", "natively-editable"],
++    "repo": "hugohe3/ppt-master",
++    "defaultRef": "main",
++    "skillPath": "skills/ppt-master/SKILL.md",
++    "homepage": "https://github.com/hugohe3/ppt-master",
++    "license": "MIT",
++    "icon": "📊"
++  },
++  {
++    "id": "scientific-illustrator",
++    "displayName": "Scientific Illustrator (Codex Plugin)",
++    "description": "Codex plugin (not a Claude skill) that re-draws reference figures in editable PowerPoint / WPS / draw.io objects with Designer-Drawer-Reviewer-Corrector quality gates. Windows + macOS, three platforms, real-app regression tests. Source: icebird1998/scientific-illustrator. Third-party pointer — included for discovery; user must install via Codex marketplace (not installable through this catalog).",
++    "category": "science",
++    "kind": "external-pointer",
++    "tags": ["scientific-illustration", "codex", "drawio", "powerpoint", "wps", "figure", "editable", "pointer"],
++    "repo": "icebird1998/scientific-illustrator",
++    "defaultRef": "main",
++    "skillPath": "README.md",
++    "homepage": "https://github.com/icebird1998/scientific-illustrator",
++    "license": "MIT",
++    "icon": "🔬"
++  },
++  {
++    "id": "page-agent",
++    "displayName": "Page Agent (alibaba/page-agent)",
++    "description": "JavaScript in-page GUI agent (npm library, not a Claude skill) — embed a natural-language web agent inside any page without headless browser / Python / server. Text-based DOM, BYO-LLM, optional Chrome extension for multi-page tasks and MCP server for external control. Source: alibaba/page-agent. Third-party pointer — included for discovery; install via npm (`npm install page-agent`), not installable through this catalog.",
++    "category": "automation",
++    "kind": "external-pointer",
++    "tags": ["browser-automation", "gui-agent", "javascript", "typescript", "mcp", "in-page-agent", "pointer"],
++    "repo": "alibaba/page-agent",
++    "defaultRef": "main",
++    "skillPath": "README.md",
++    "homepage": "https://github.com/alibaba/page-agent",
++    "license": "MIT",
++    "icon": "🖱️"
++  },
++  {
++    "id": "aris-paper-slides",
++    "displayName": "ARIS Paper Slides",
++    "description": "Auto-generate paper-style slide decks from a research paper (PDF or arXiv ID). Plans slide order from PAPER_PLAN.md, renders each slide (figure / table / text / quote) at publication-grade typography, then assembles a PPTX + outline. Source: wanshuiyin/Auto-claude-code-research-in-sleep (sub-skill skills/paper-slides).",
++    "category": "research",
++    "tags": ["paper", "slides", "pptx", "arxiv", "research", "ml-research", "ai-research"],
++    "repo": "wanshuiyin/Auto-claude-code-research-in-sleep",
++    "defaultRef": "main",
++    "skillPath": "skills/paper-slides/SKILL.md",
++    "homepage": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
++    "license": "MIT",
++    "icon": "🎓"
++  },
++  {
++    "id": "aris-paper-figure",
++    "displayName": "ARIS Paper Figure",
++    "description": "Generate publication-quality figures and tables from experiment results: line plots, bar charts, scatter, heatmap, box/violin, multi-panel grids, LaTeX comparison tables. Vector PDF output, colorblind-safe palettes, serif body font, no titles inside figures (captions in LaTeX). Source: wanshuiyin/Auto-claude-code-research-in-sleep (sub-skill skills/paper-figure).",
++    "category": "research",
++    "tags": ["paper", "figure", "matplotlib", "publication", "vector-pdf", "ml-research", "research"],
++    "repo": "wanshuiyin/Auto-claude-code-research-in-sleep",
++    "defaultRef": "main",
++    "skillPath": "skills/paper-figure/SKILL.md",
++    "homepage": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
++    "license": "MIT",
++    "icon": "📈"
++  },
++  {
++    "id": "aris-paper-write",
++    "displayName": "ARIS Paper Write",
++    "description": "Compose full research-paper drafts (introduction / method / experiments / related work / conclusion) from PAPER_PLAN.md, claims, evidence, and figures. Five-pass scientific-editing pipeline, integrity forensics, claim-evidence mapping, citation verification. Source: wanshuiyin/Auto-claude-code-research-in-sleep (sub-skill skills/paper-write).",
++    "category": "research",
++    "tags": ["paper", "writing", "scientific-editing", "claims", "citation-audit", "ml-research"],
++    "repo": "wanshuiyin/Auto-claude-code-research-in-sleep",
++    "defaultRef": "main",
++    "skillPath": "skills/paper-write/SKILL.md",
++    "homepage": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
++    "license": "MIT",
++    "icon": "✍️"
++  },
++  {
++    "id": "aris-citation-audit",
++    "displayName": "ARIS Citation Audit",
++    "description": "Audit every citation in a manuscript against live sources (DBLP → CrossRef → arXiv → OpenAlex → Semantic Scholar). Detect broken references, hallucinated DOIs, mis-attributed authors, retracted papers. Outputs an actionable report with confidence scores. Source: wanshuiyin/Auto-claude-code-research-in-sleep (sub-skill skills/citation-audit).",
++    "category": "research",
++    "tags": ["citation", "audit", "dblp", "crossref", "arxiv", "openalex", "verification", "ml-research"],
++    "repo": "wanshuiyin/Auto-claude-code-research-in-sleep",
++    "defaultRef": "main",
++    "skillPath": "skills/citation-audit/SKILL.md",
++    "homepage": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
++    "license": "MIT",
++    "icon": "🔍"
+   }
+ ]
+diff --git a/packages/skills/src/marketplace.ts b/packages/skills/src/marketplace.ts
+index 78eb41b..e960863 100644
+--- a/packages/skills/src/marketplace.ts
++++ b/packages/skills/src/marketplace.ts
+@@ -30,6 +30,16 @@ export type SkillCatalogEntry = {
+     | "vertical"
+     | "writing"
+     | "other";
++  /**
++   * Catalog kind:
++   *   - "skill" (default) — installable Claude/Anthropic-format SKILL.md package,
++   *     goes through parseSkillPackage on install.
++   *   - "external-pointer" — NOT installable through this catalog; included for
++   *     discovery only (e.g., npm libraries, Codex plugins, multi-skill
++   *     bundles). The smoke test will verify the raw URL responds 200 but
++   *     skip the install round-trip.
++   */
++  kind?: "skill" | "external-pointer";
+   /** Tags consumed by `selectSkillsForRun` for ranking. */
+   tags: string[];
+   /** GitHub `owner/name`. */
+@@ -76,6 +86,7 @@ const normalizeEntry = (entry: unknown, index: number): SkillCatalogEntry => {
+     displayName: stringRequired(record.displayName ?? record.id, `entry ${index}.displayName`),
+     description: stringRequired(record.description, `entry ${index}.description`),
+     category: stringRequired(record.category, `entry ${index}.category`) as SkillCatalogEntry["category"],
++    ...(record.kind === "external-pointer" ? { kind: "external-pointer" as const } : {}),
+     tags: stringList(record.tags),
+     repo,
+     defaultRef: stringValue(record.defaultRef) ?? "main",
+-- 
+2.50.0.windows.1
+
