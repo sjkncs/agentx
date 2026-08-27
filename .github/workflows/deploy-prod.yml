@@ -47,8 +47,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm install --no-audit --no-fund --legacy-peer-deps --include-workspace-root
-          cp -rs node_modules apps/web/node_modules
-        working-directory: apps/web
+          mkdir -p apps/web/node_modules
+          cp -rs node_modules/* apps/web/node_modules/
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
