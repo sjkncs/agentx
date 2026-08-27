@@ -44,6 +44,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          cd .. && npm install --no-audit --no-fund --legacy-peer-deps --include-workspace-root
+          cp -rs node_modules apps/web/node_modules
+        working-directory: apps/web
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
@@ -71,7 +77,7 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
-        run: vercel deploy --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes
+        run: vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes
         working-directory: apps/web
 
   # ---------------------------------------------------------------------------
