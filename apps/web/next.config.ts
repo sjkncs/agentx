@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   // sources directly from packages/*/src.
   transpilePackages: [
     "@datafoundry/contracts",
+    "@datafoundry/metadata",
+    "@datafoundry/harness-core",
   ],
   // Next's default `compress: true` applies gzip to `text/*`, including
   // `text/event-stream`. Even with flush hooks, compression is the wrong layer
@@ -29,15 +31,19 @@ const nextConfig: NextConfig = {
   // tells Next to also rewrite _next/* URLs (CSS/JS chunks) to the same prefix
   // so they are served from the Pages origin, not the dev origin.
   //
-  // Note: this project intentionally uses `output: "standalone"` for the
-  // Node API deploy path (see Dockerfile / deploy.sh). Pure static
-  // `output: "export"` is NOT supported because /admin/workorders/[case_no]
-  // is a "use client" dynamic route — Next.js 15.5 still forbids the
-  // "use client" + generateStaticParams combo. If you ever need a pure
-  // GitHub Pages marketing-only deploy, fork the marketing pages into a
-  // separate repo and build that with `output: "export"`.
+  // Note: this project uses `output: "standalone"` for the Node.js API
+  // deploy path (see Dockerfile / deploy.sh). For GitHub Pages, we override
+  // to `output: "export"` under the AGENTX_PAGES=1 flag so the pages.yml
+  // workflow can upload the static `out/` directory. Dynamic admin routes
+  // (e.g. /admin/workorders/[case_no]) are out of scope for the Pages
+  // marketing deploy 鈥?users of those features should use the self-hosted
+  // or Vercel deployment instead.
   ...(isGitHubPages
     ? {
+        // output: "export" is needed so `next build` writes a static `out/`
+        // directory that the pages.yml upload-pages-artifact step expects.
+        // It is only used for the GitHub Pages static deploy (AGENTX_PAGES=1).
+        output: "export",
         basePath: pagesBasePath,
         assetPrefix: pagesBasePath,
         images: { unoptimized: true },
@@ -54,7 +60,7 @@ const nextConfig: NextConfig = {
     root: workspaceRoot,
   },
   // Same-origin `/api/*` is owned by App Router route handlers
-  // (`app/api/**/route.ts` → `proxyToApi`). Do not add rewrites for those
+  // (`app/api/**/route.ts` 鈫?`proxyToApi`). Do not add rewrites for those
   // paths: rewrites cannot set SSE anti-buffering headers, and would race the
   // intentional streaming BFF.
   webpack(config, { isServer }) {
