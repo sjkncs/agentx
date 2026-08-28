@@ -14,14 +14,10 @@
 #      out of sync with the new apps/marketing workspace, so we use
 #      `npm install` rather than `npm ci` to reconcile)
 #   2. Build apps/marketing with AGENTX_PAGES=1 → output: "export" →
-#      static .next/server/app/ (HTML) and .next/static/ (JS/CSS)
-#   3. Reorganise the build into .artifact/agentx/ so every link
-#      (/features, /_next/static/...) resolves at
-#      https://sjkncs.github.io/agentx/ — Next.js 15 does NOT
-#      automatically apply basePath to output:export HTML hrefs, so
-#      we copy into a project-site-prefixed subdirectory manually.
-#   4. Upload .artifact/agentx as the GitHub Pages artifact
-#   5. Deploy via actions/deploy-pages@v4 to the github-pages environment
+#      apps/marketing/out/: a finished static site with folder-style
+#      pages (features/index.html), 404.html, and _next/ assets
+#   3. Upload apps/marketing/out directly as the GitHub Pages artifact
+#   4. Deploy via actions/deploy-pages@v4 to the github-pages environment
 #
 # Required repo setup:
 #   - GitHub repo: <owner>/agentx (project Pages site)
@@ -29,13 +25,15 @@
 #   - The first successful run auto-creates the Pages environment;
 #     no extra secrets needed beyond the default GITHUB_TOKEN.
 #
-# Why this artifact layout (manual /agentx/ prefix):
-#   GitHub Pages URLs are https://<owner>.github.io/<repo>/ so the static
-#   bundle needs /agentx prefix on every internal link and _next asset.
-#   Setting `basePath: "/agentx"` in next.config.ts works for the dev
-#   server but Next.js 15's `output: "export"` keeps the un-prefixed
-#   paths in the HTML, so we copy the build into `.artifact/agentx/`
-#   and upload that.
+# Why no manual reorganisation:
+#   AGENTX_PAGES=1 sets `basePath: "/agentx"` and `trailingSlash: true`
+#   in apps/marketing/next.config.ts. next/link and the asset URLs in
+#   the exported HTML both honor basePath, so every href/src is already
+#   /agentx-prefixed in out/. trailingSlash makes the export emit
+#   folder-style pages (features/index.html), which GitHub Pages needs
+#   to serve trailing-slash URLs — a flat features.html 404s at
+#   /agentx/features/. GitHub Pages serves the artifact root at
+#   https://<owner>.github.io/<repo>/, so out/ uploads as-is.
 
 name: Deploy marketing site to GitHub Pages
 
@@ -90,40 +88,15 @@ jobs:
           AGENTX_PAGES: "1"
         run: npm run build
 
-      - name: Organize artifact under /agentx prefix
-        # Next.js output:export puts HTML in .next/server/app/ and JS/CSS
-        # in .next/static/. GitHub Pages serves from a project-site root.
-        #
-        # Goal: agentx/index.html, agentx/features.html, agentx/_next/...
-        #       (so URLs at https://sjkncs.github.io/agentx/ work)
-        #
-        # We copy HTML files individually so the (marketing) subdir gets
-        # stripped and every page lands directly under .artifact/agentx/.
-        # _next/ static assets are copied wholesale (their internal
-        # /_next/static/... paths need to keep their structure intact).
-        run: |
-          mkdir -p .artifact/agentx/_next/static
-          cp -r apps/marketing/.next/static/. .artifact/agentx/_next/static/
-          cp -r apps/marketing/public/. .artifact/agentx/ 2>/dev/null || true
-          # Copy each top-level *.html file from .next/server/app/ to agentx/
-          for f in apps/marketing/.next/server/app/*.html; do
-            cp "$f" ".artifact/agentx/$(basename "$f")"
-          done
-          # Copy nested pages from (marketing)/ subdir, e.g.
-          # .next/server/app/(marketing)/skills.html → agentx/skills.html
-          for f in apps/marketing/.next/server/app/\(marketing\)/*.html; do
-            [ -f "$f" ] && cp "$f" ".artifact/agentx/$(basename "$f")"
-          done
-          # 404 fallback at root
-          cp apps/marketing/.next/server/app/_not-found.html .artifact/agentx/404.html 2>/dev/null || true
-
       - name: Setup Pages artifact
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .artifact/agentx
+          # out/ is the finished export: folder-style pages, 404.html,
+          # _next/ assets, public/ files — all hrefs already /agentx-prefixed.
+          path: apps/marketing/out
 
   deploy:
     name: Deploy to GitHub Pages

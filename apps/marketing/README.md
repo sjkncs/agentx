@@ -27,26 +27,31 @@ Bundled skill catalog: `src/data/skill-catalog.ts`.
 
 ## Artifact layout for Pages
 
-Next.js 15 doesn't honour `basePath` for `output: "export"` (the static HTML
-keeps the un-prefixed `/features` hrefs even when you set `basePath`).
-Instead, `pages.yml` copies the build output into an `/agentx/` subdirectory
-manually:
+`pages.yml` builds with `AGENTX_PAGES=1`, which turns on
+`basePath: "/agentx"` and `trailingSlash: true` in
+[`next.config.ts`](./next.config.ts). `next/link` hrefs and the asset URLs
+in the exported HTML both honour `basePath`, so everything is already
+`/agentx`-prefixed; `trailingSlash` makes the export emit folder-style
+pages, the layout GitHub Pages needs to serve trailing-slash URLs. The
+finished site lands in `out/` and is uploaded as-is:
 
 ```
-.artifact/agentx/
-├── index.html
-├── docs.html              → /agentx/docs
-├── features.html          → /agentx/features
-├── pricing.html           → /agentx/pricing
-├── skills.html            → /agentx/skills
+out/
+├── index.html             → /agentx/
+├── docs/index.html        → /agentx/docs/
+├── features/index.html    → /agentx/features/
+├── pricing/index.html     → /agentx/pricing/
+├── skills/index.html      → /agentx/skills/
 ├── 404.html
 ├── _next/
 │   └── static/...         → /agentx/_next/static/...
 ├── brand/ax-favicon.svg   → /agentx/brand/ax-favicon.svg
 ```
 
-All internal Next.js generated links (`/_next/static/chunks/...`) and
-`<Link href="/features">` resolve naturally at the Pages URL.
+GitHub Pages serves the artifact root at `https://sjkncs.github.io/agentx/`,
+so no reorganisation is needed. (The flat `features.html` you see under
+`.next/server/app/` is an intermediate build artifact — the `out/` export
+is the one that applies `trailingSlash`.)
 
 ## What's deliberately removed (vs. the live site)
 
