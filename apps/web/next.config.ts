@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
   // Note: this project intentionally uses `output: "standalone"` for the
   // Node API deploy path (see Dockerfile / deploy.sh). Pure static
   // `output: "export"` is NOT supported because:
-  //   (a) /admin/workorders/[case_no] is a "use client" dynamic route 鈥?
+  //   (a) /admin/workorders/[case_no] is a "use client" dynamic route —
   //       Next.js 15.5 still forbids the "use client" + generateStaticParams
   //       combo;
   //   (b) every /api/* route handler sets `dynamic = "force-dynamic"`,
@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
   //       would freeze an empty catalog snapshot.
   // If you need a GitHub Pages marketing-only deploy, fork the marketing
   // pages into a separate Next.js project with `output: "export"` and
-  // host that 鈥?the current monorepo is built for the Node.js API path.
+  // host that — the current monorepo is built for the Node.js API path.
   ...(isGitHubPages
     ? {
         basePath: pagesBasePath,
@@ -62,7 +62,7 @@ const nextConfig: NextConfig = {
     root: workspaceRoot,
   },
   // Same-origin `/api/*` is owned by App Router route handlers
-  // (`app/api/**/route.ts` 鈫?`proxyToApi`). Do not add rewrites for those
+  // (`app/api/**/route.ts` → `proxyToApi`). Do not add rewrites for those
   // paths: rewrites cannot set SSE anti-buffering headers, and would race the
   // intentional streaming BFF.
   webpack(config, { isServer }) {

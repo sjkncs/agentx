@@ -1,12 +1,27 @@
-# GitHub Pages deploy for apps/web marketing site.
+# GitHub Pages deploy for the DataFoundry marketing site.
+#
+# The marketing site lives in apps/marketing (a standalone Next.js 15.5
+# project) because the main apps/web app mixes marketing routes with
+# runtime API routes and dynamic admin pages — Next.js refuses to bundle
+# those under `output: "export"`. apps/marketing is a trimmed fork with
+# no API dependencies, so it produces a static bundle this workflow can
+# upload.
 #
 # Trigger: push to main, OR manual dispatch from the Actions tab.
 #
 # What it does:
-#   1. npm ci (workspace via npm workspaces)
-#   2. Build apps/web with AGENTX_PAGES=1 → /agentx basePath + static export
-#   3. Upload apps/web/out as the GitHub Pages artifact
-#   4. Deploy via actions/deploy-pages@v4 to the GitHub Pages environment
+#   1. npm install (workspace via npm workspaces; package-lock.json is
+#      out of sync with the new apps/marketing workspace, so we use
+#      `npm install` rather than `npm ci` to reconcile)
+#   2. Build apps/marketing with AGENTX_PAGES=1 → output: "export" →
+#      static .next/server/app/ (HTML) and .next/static/ (JS/CSS)
+#   3. Reorganise the build into .artifact/agentx/ so every link
+#      (/features, /_next/static/...) resolves at
+#      https://sjkncs.github.io/agentx/ — Next.js 15 does NOT
+#      automatically apply basePath to output:export HTML hrefs, so
+#      we copy into a project-site-prefixed subdirectory manually.
+#   4. Upload .artifact/agentx as the GitHub Pages artifact
+#   5. Deploy via actions/deploy-pages@v4 to the github-pages environment
 #
 # Required repo setup:
 #   - GitHub repo: <owner>/agentx (project Pages site)
@@ -14,14 +29,13 @@
 #   - The first successful run auto-creates the Pages environment;
 #     no extra secrets needed beyond the default GITHUB_TOKEN.
 #
-# Why AGENTX_PAGES=1 + /agentx basePath:
+# Why this artifact layout (manual /agentx/ prefix):
 #   GitHub Pages URLs are https://<owner>.github.io/<repo>/ so the static
 #   bundle needs /agentx prefix on every internal link and _next asset.
-#   Local dev and prod (nginx / Vercel) keep the un-prefixed paths.
-#
-# Note: upstream uses package-lock.json (npm), not pnpm — this monorepo
-# historically installed via npm workspaces, so we use npm ci instead of
-# pnpm install --frozen-lockfile.
+#   Setting `basePath: "/agentx"` in next.config.ts works for the dev
+#   server but Next.js 15's `output: "export"` keeps the un-prefixed
+#   paths in the HTML, so we copy the build into `.artifact/agentx/`
+#   and upload that.
 
 name: Deploy marketing site to GitHub Pages
 
@@ -29,8 +43,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/web/**"
-      - "packages/**"
+      - "apps/marketing/**"
+      - "apps/web/src/app/(marketing)/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/pages.yml"
@@ -65,16 +79,30 @@ jobs:
 
       - name: Install dependencies
         # Use `npm install` (not `npm ci`) — package-lock.json is out of
-        # sync with package.json in this monorepo (new workspaces and
-        # dependencies have been added since the lockfile was last
-        # regenerated). `npm install` reconciles both on each run.
+        # sync with package.json (new workspaces and dependencies have
+        # been added since the lockfile was last regenerated). `npm
+        # install` reconciles both on each run.
         run: npm install
 
       - name: Build marketing site
-        working-directory: apps/web
+        working-directory: apps/marketing
         env:
           AGENTX_PAGES: "1"
         run: npm run build
+
+      - name: Organize artifact under /agentx prefix
+        # Next.js output:export puts HTML in .next/server/app/ and JS/CSS
+        # in .next/static/. GitHub Pages serves from a project-site root,
+        # so we need the content at /agentx/* on the Pages URL.
+        # We copy the HTML into agentx/ and the static assets into
+        # agentx/_next/ so every link (/features, /_next/static/...)
+        # resolves correctly at https://sjkncs.github.io/agentx/.
+        run: |
+          mkdir -p .artifact/agentx/_next/static
+          cp -r apps/marketing/.next/static/. .artifact/agentx/_next/static/
+          cp -r apps/marketing/.next/server/app .artifact/agentx/
+          cp -r apps/marketing/public/. .artifact/agentx/ 2>/dev/null || true
+          cp apps/marketing/.next/server/404.html .artifact/agentx/ 2>/dev/null || true
 
       - name: Setup Pages artifact
         uses: actions/configure-pages@v5
@@ -82,7 +110,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/web/out
+          path: .artifact/agentx
 
   deploy:
     name: Deploy to GitHub Pages

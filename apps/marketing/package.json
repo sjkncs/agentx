@@ -1,0 +1,24 @@
+{
+  "name": "@agentx/marketing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DataFoundry marketing site — standalone Next.js project with output:export, built for GitHub Pages deploy. Mirrors apps/web/src/app/(marketing)/* but stripped of all runtime dependencies (no API fetch, no CopilotKit).",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "build:pages": "AGENTX_PAGES=1 next build",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.5.19",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "^5.8.0"
+  }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  apps/marketing/public/brand/ax-favicon.svg
+
+  Verbatim copy of apps/web/public/brand/ax-favicon.svg. Kept in sync;
+  any redesign belongs in apps/web and is mirrored here.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 32 32"
+     width="32" height="32"
+     role="img"
+     aria-label="AgentX">
+  <polygon points="16,6 24,11 24,21 16,26 8,21 8,11"
+           fill="#E8EAF0"/>
+  <line x1="16" y1="6"  x2="16" y2="26" stroke="#16151C" stroke-opacity="0.15" stroke-width="0.5"/>
+  <line x1="8"  y1="11" x2="24" y2="21" stroke="#16151C" stroke-opacity="0.10" stroke-width="0.5"/>
+  <line x1="24" y1="11" x2="8"  y2="21" stroke="#16151C" stroke-opacity="0.10" stroke-width="0.5"/>
+  <circle cx="18.5" cy="9.5" r="1.2" fill="#FFFFFF" opacity="0.95"/>
+  <circle cx="13.5" cy="11"   r="0.7" fill="#FFFFFF" opacity="0.75"/>
+</svg>
