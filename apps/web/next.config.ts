@@ -17,8 +17,6 @@ const nextConfig: NextConfig = {
   // sources directly from packages/*/src.
   transpilePackages: [
     "@datafoundry/contracts",
-    "@datafoundry/metadata",
-    "@datafoundry/harness-core",
   ],
   // Next's default `compress: true` applies gzip to `text/*`, including
   // `text/event-stream`. Even with flush hooks, compression is the wrong layer
@@ -31,19 +29,23 @@ const nextConfig: NextConfig = {
   // tells Next to also rewrite _next/* URLs (CSS/JS chunks) to the same prefix
   // so they are served from the Pages origin, not the dev origin.
   //
-  // Note: this project uses `output: "standalone"` for the Node.js API
-  // deploy path (see Dockerfile / deploy.sh). For GitHub Pages, we override
-  // to `output: "export"` under the AGENTX_PAGES=1 flag so the pages.yml
-  // workflow can upload the static `out/` directory. Dynamic admin routes
-  // (e.g. /admin/workorders/[case_no]) are out of scope for the Pages
-  // marketing deploy 鈥?users of those features should use the self-hosted
-  // or Vercel deployment instead.
+  // Note: this project intentionally uses `output: "standalone"` for the
+  // Node API deploy path (see Dockerfile / deploy.sh). Pure static
+  // `output: "export"` is NOT supported because:
+  //   (a) /admin/workorders/[case_no] is a "use client" dynamic route 鈥?
+  //       Next.js 15.5 still forbids the "use client" + generateStaticParams
+  //       combo;
+  //   (b) every /api/* route handler sets `dynamic = "force-dynamic"`,
+  //       which Next refuses under `output: "export"` with
+  //       "force-dynamic on page /api/... cannot be used with output: export";
+  //   (c) the marketing routes fetch the live catalog with
+  //       `cache: "no-store"`, so even if we forced them static the build
+  //       would freeze an empty catalog snapshot.
+  // If you need a GitHub Pages marketing-only deploy, fork the marketing
+  // pages into a separate Next.js project with `output: "export"` and
+  // host that 鈥?the current monorepo is built for the Node.js API path.
   ...(isGitHubPages
     ? {
-        // output: "export" is needed so `next build` writes a static `out/`
-        // directory that the pages.yml upload-pages-artifact step expects.
-        // It is only used for the GitHub Pages static deploy (AGENTX_PAGES=1).
-        output: "export",
         basePath: pagesBasePath,
         assetPrefix: pagesBasePath,
         images: { unoptimized: true },
