@@ -92,17 +92,23 @@ jobs:
 
       - name: Organize artifact under /agentx prefix
         # Next.js output:export puts HTML in .next/server/app/ and JS/CSS
-        # in .next/static/. GitHub Pages serves from a project-site root,
-        # so we need the content at /agentx/* on the Pages URL.
-        # We copy the HTML into agentx/ and the static assets into
-        # agentx/_next/ so every link (/features, /_next/static/...)
-        # resolves correctly at https://sjkncs.github.io/agentx/.
+        # in .next/static/. GitHub Pages serves from a project-site root.
+        #
+        # Problem: cp -r .next/server/app copies into agentx/app/* — making
+        # the site live at /agentx/app/ instead of /agentx/.
+        #
+        # Fix: find all .html files inside app/ and copy them directly into
+        # agentx/, preserving their /features /pricing /skills /docs sub-paths.
+        # _next/ goes at the top level so absolute /_next/static/ links work.
         run: |
           mkdir -p .artifact/agentx/_next/static
           cp -r apps/marketing/.next/static/. .artifact/agentx/_next/static/
-          cp -r apps/marketing/.next/server/app .artifact/agentx/
           cp -r apps/marketing/public/. .artifact/agentx/ 2>/dev/null || true
-          cp apps/marketing/.next/server/404.html .artifact/agentx/ 2>/dev/null || true
+          # Copy HTML files from nested app/(marketing)/ subdirs to agentx root,
+          # e.g. app/(marketing)/features.html → agentx/features.html
+          find apps/marketing/.next/server/app -name "*.html" -exec cp --parents {} .artifact/agentx/ \;
+          # Also copy _not-found.html to root
+          cp apps/marketing/.next/server/app/_not-found.html .artifact/agentx/404.html 2>/dev/null || true
 
       - name: Setup Pages artifact
         uses: actions/configure-pages@v5
