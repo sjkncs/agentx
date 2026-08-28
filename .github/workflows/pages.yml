@@ -94,20 +94,27 @@ jobs:
         # Next.js output:export puts HTML in .next/server/app/ and JS/CSS
         # in .next/static/. GitHub Pages serves from a project-site root.
         #
-        # Problem: cp -r .next/server/app copies into agentx/app/* — making
-        # the site live at /agentx/app/ instead of /agentx/.
+        # Goal: agentx/index.html, agentx/features.html, agentx/_next/...
+        #       (so URLs at https://sjkncs.github.io/agentx/ work)
         #
-        # Fix: find all .html files inside app/ and copy them directly into
-        # agentx/, preserving their /features /pricing /skills /docs sub-paths.
-        # _next/ goes at the top level so absolute /_next/static/ links work.
+        # We copy HTML files individually so the (marketing) subdir gets
+        # stripped and every page lands directly under .artifact/agentx/.
+        # _next/ static assets are copied wholesale (their internal
+        # /_next/static/... paths need to keep their structure intact).
         run: |
           mkdir -p .artifact/agentx/_next/static
           cp -r apps/marketing/.next/static/. .artifact/agentx/_next/static/
           cp -r apps/marketing/public/. .artifact/agentx/ 2>/dev/null || true
-          # Copy HTML files from nested app/(marketing)/ subdirs to agentx root,
-          # e.g. app/(marketing)/features.html → agentx/features.html
-          find apps/marketing/.next/server/app -name "*.html" -exec cp --parents {} .artifact/agentx/ \;
-          # Also copy _not-found.html to root
+          # Copy each top-level *.html file from .next/server/app/ to agentx/
+          for f in apps/marketing/.next/server/app/*.html; do
+            cp "$f" ".artifact/agentx/$(basename "$f")"
+          done
+          # Copy nested pages from (marketing)/ subdir, e.g.
+          # .next/server/app/(marketing)/skills.html → agentx/skills.html
+          for f in apps/marketing/.next/server/app/\(marketing\)/*.html; do
+            [ -f "$f" ] && cp "$f" ".artifact/agentx/$(basename "$f")"
+          done
+          # 404 fallback at root
           cp apps/marketing/.next/server/app/_not-found.html .artifact/agentx/404.html 2>/dev/null || true
 
       - name: Setup Pages artifact
