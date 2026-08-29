@@ -1,9 +1,11 @@
 # apps/marketing
 
 Standalone Next.js 15.5 project for the public DataFoundry marketing site.
-Built with `output: "export"` so it produces a static bundle that
-[`.github/workflows/pages.yml`](../../.github/workflows/pages.yml) uploads to
-GitHub Pages at `https://sjkncs.github.io/agentx/`.
+Built with `output: "export"` so it produces a static bundle deployed to
+**Vercel** (primary, via [`vercel.json`](./vercel.json)) and **GitHub
+Pages** (backup, via
+[`.github/workflows/pages.yml`](../../.github/workflows/pages.yml) →
+`https://sjkncs.github.io/agentx/`).
 
 This project is a **deliberately trimmed** fork of
 [`apps/web/src/app/(marketing)`](../web/src/app/(marketing)). It exists because
@@ -76,8 +78,36 @@ npm --workspace @agentx/marketing run dev   # http://localhost:3001
 
 ## Deploy
 
-The pages.yml workflow builds and uploads this project automatically on
-push to `main` whenever any of the following change:
+Two targets run in parallel — **Vercel is primary**, **GitHub Pages is the
+automatic backup**. Both build the same static export; they just differ in
+URL prefixing (see "Artifact layout for Pages" above).
+
+### Primary: Vercel
+
+Driven by [`vercel.json`](./vercel.json). It builds with a clean
+environment (no `AGENTX_PAGES`), so there is **no `/agentx` prefix** — the
+site serves from the Vercel domain root, and Vercel's clean URLs serve
+`features.html` at `/features`.
+
+- `installCommand`: `npm install --engine-strict=false` — the monorepo
+  `.npmrc` sets `engine-strict=true`, which fails on Vercel's Node; this
+  bypasses it and also tolerates the out-of-sync lockfile.
+- `outputDirectory`: `out` (the finished static export).
+- `ignoreCommand`: skips builds when nothing marketing-related changed
+  (`scripts/vercel-ignore-marketing.mjs`).
+
+One-time setup (no repo secrets needed):
+
+1. Go to <https://vercel.com/new> → import `sjkncs/agentx`.
+2. **Root Directory:** `apps/marketing`. Framework auto-detects as Next.js;
+   the `vercel.json` supplies install/build/output settings.
+3. Deploy. You get `https://<project>.vercel.app`.
+
+### Backup: GitHub Pages
+
+The [`pages.yml`](../../.github/workflows/pages.yml) workflow builds and
+uploads this project automatically on push to `main` whenever any of the
+following change:
 
 - `apps/marketing/**`
 - `apps/web/src/app/(marketing)/**`
@@ -85,7 +115,7 @@ push to `main` whenever any of the following change:
 - `.github/workflows/pages.yml`
 
 To trigger a manual deploy: Actions → "Deploy marketing site to GitHub
-Pages" → Run workflow.
+Pages" → Run workflow. Result: <https://sjkncs.github.io/agentx/>.
 
 ## Sync with apps/web
 

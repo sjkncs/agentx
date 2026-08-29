@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "npm install --no-audit --no-fund --engine-strict=false",
+  "buildCommand": "next build",
+  "outputDirectory": "out",
+  "ignoreCommand": "node ../../scripts/vercel-ignore-marketing.mjs",
+  "github": {
+    "silent": true
+  }
+}
