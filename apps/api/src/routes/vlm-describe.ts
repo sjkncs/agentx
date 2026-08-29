@@ -32,7 +32,7 @@
  *       review and edit before saving (spec §6.2).
  */
 
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
 import type { IncomingMessage } from "node:http";
 
 import type { ConfigApiContext, ConfigApiResponse } from "./types.js";

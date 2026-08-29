@@ -1234,7 +1234,7 @@ function pushStartupLines(
   push('startup:border:top', <Text key="startup:border:top" color={inkColors.accent}>{border}</Text>);
   push('startup:title', (
     <Text key="startup:title" bold color={inkColors.accent}>
-      {bannerContent('DataFoundry', bannerWidth)}
+      {bannerContent('AgentX', bannerWidth)}
     </Text>
   ));
 

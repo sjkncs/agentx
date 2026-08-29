@@ -1,4 +1,4 @@
-// Build-time helper: hoist @datafoundry/* + better-sqlite3 + bindings from
+// Build-time helper: hoist @agentx/* + better-sqlite3 + bindings from
 // the workspace root's node_modules into apps/desktop/node_modules as real
 // directories (npm workspaces installs workspace packages as symlinks, which
 // breaks electron-builder's unpack logic).
@@ -37,7 +37,7 @@ function copyDirSync(src, dst) {
 }
 
 const targets = [
-  path.join(SOURCE_ROOT, "@datafoundry"),
+  path.join(SOURCE_ROOT, "@agentx"),
   path.join(SOURCE_ROOT, "better-sqlite3"),
   path.join(SOURCE_ROOT, "bindings"),
   path.join(SOURCE_ROOT, "file-uri-to-path"),

@@ -1,7 +1,7 @@
 {
-  "name": "@datafoundry/counterfactual",
+  "name": "@agentx/counterfactual",
   "version": "0.1.0",
-  "description": "Counterfactual Diagnosis Layer — adds ATE estimation over a Unified Semantic Layer on top of the DataFoundry agent runtime. Inspired by Ying et al. 2025 (DOI: 10.20944/preprints202512.2718.v1).",
+  "description": "Counterfactual Diagnosis Layer — adds ATE estimation over a Unified Semantic Layer on top of the AgentX agent runtime. Inspired by Ying et al. 2025 (DOI: 10.20944/preprints202512.2718.v1).",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.mjs",
@@ -18,8 +18,8 @@
     "test:async": "node test/async.test.mjs"
   },
   "dependencies": {
-    "@datafoundry/contracts": "*",
-    "@datafoundry/agent-runtime": "*"
+    "@agentx/contracts": "*",
+    "@agentx/agent-runtime": "*"
   },
   "engines": {
     "node": ">=22"

@@ -5,7 +5,7 @@ import type {
   AuditEventSeverity,
   MetadataStore,
   WorkspaceRole,
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 
 export type AuditContext = {
   workspace_id?: string | null;
@@ -54,7 +54,7 @@ export class AuditService {
   }
 }
 
-export const SYSTEM_USER_EMAIL = "system@datafoundry.internal";
+export const SYSTEM_USER_EMAIL = "system@agentx.internal";
 
 export const SYSTEM_ACTOR: AuditContext = {
   actor_user_id: null,

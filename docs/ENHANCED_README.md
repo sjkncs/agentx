@@ -1,15 +1,15 @@
-# DataFoundry Enhanced — Local Reinforced Edition
+# AgentX Enhanced — Local Reinforced Edition
 
 **Date:** 2026-08-09
 **Source:** Forked from [datagallery-lab/datafoundry](https://github.com/datagallery-lab/datafoundry) v0.2.0 (Apache-2.0)
 **linux.do reference:** Topic #2526680 (community discussion on counterfactual methodology)
-**Local path:** `E:\FFD-Downloader-Windows\datafoundry-enhanced\`
+**Local path:** `E:\FFD-Downloader-Windows\agentx-enhanced\`
 
 ---
 
 ## What this is
 
-A local, hardened, **fully-functional** copy of DataFoundry with:
+A local, hardened, **fully-functional** copy of AgentX with:
 
 1. **CDL (Counterfactual Diagnosis Layer)** — new `packages/counterfactual/` that wraps the existing agent runtime with ATE estimation over a Unified Semantic Layer (see §5.5 of `paper_icaif2026`).
 2. **Process-isolation guard** — `scripts/dev-isolated.mjs` that allocates free ports, creates `.lock` files, and prevents collisions with existing 5 node processes.
@@ -45,7 +45,7 @@ The host already runs 5 node processes (PIDs 2752, 11648, 14724, 25904, 33316, 3
 
 1. **Port allocator** (`scripts/port-allocator.mjs`) — finds N consecutive free ports in a configured range (default 14000–14999), avoiding the busy 3000/8787/8000 range. Returns a `Promise<{web: 14xxx, api: 14yyy, db: 14zzz}>`.
 
-2. **Lock file** (`scripts/process-lock.mjs`) — before each test, writes `e:/FFD-Downloader-Windows/datafoundry-enhanced/.run/<test-name>.lock` with PID + port. After test, deletes the lock. A test that finds an existing lock for a port it needs aborts cleanly.
+2. **Lock file** (`scripts/process-lock.mjs`) — before each test, writes `e:/FFD-Downloader-Windows/agentx-enhanced/.run/<test-name>.lock` with PID + port. After test, deletes the lock. A test that finds an existing lock for a port it needs aborts cleanly.
 
 3. **Per-test cleanup** — `test-full-stack-async.mjs` writes logs to `.run/<test>/stderr.log` + `stdout.log`; on SIGINT, all child processes receive SIGTERM with 5-second grace, then SIGKILL.
 
@@ -55,7 +55,7 @@ The host already runs 5 node processes (PIDs 2752, 11648, 14724, 25904, 33316, 3
 
 ```powershell
 # 1. Install dependencies (already done)
-cd e:\FFD-Downloader-Windows\datafoundry-enhanced
+cd e:\FFD-Downloader-Windows\agentx-enhanced
 npm install --no-audit --no-fund
 
 # 2. Build all packages (incremental, may be slow first time)
@@ -79,7 +79,7 @@ Remove-Item -Recurse .run
 - [done] Smoke baseline
 - [done] Anthropic-style skill layer + builtin feature-dev skill
 - [done] Protocol phase guidance + stepper, HITL approval cards, slash palette, follow-up chips
-- [done] LATS tree-search tracking (opt-in via DATAFOUNDRY_LATS_ENABLED)
+- [done] LATS tree-search tracking (opt-in via AGENTX_LATS_ENABLED)
 - [done] Test suites green: agent-runtime 213, web 592
 - [done] Process-collision guard verified
 

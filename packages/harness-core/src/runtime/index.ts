@@ -46,7 +46,7 @@ export {
 export {
   RemoteRuntime,
   createRemoteRuntime,
-  createDataFoundryCloudRuntime,
+  createAgentXCloudRuntime,
 } from "./remote-runtime.js";
 
 export {

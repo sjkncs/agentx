@@ -1,5 +1,5 @@
 {
-  "comment": "DataFoundry sandbox seccomp profile — blocks 86 dangerous syscall families",
+  "comment": "AgentX sandbox seccomp profile — blocks 86 dangerous syscall families",
   "defaultAction": "SCMP_ACT_ALLOW",
   "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_AARCH64"],
   "syscalls": [

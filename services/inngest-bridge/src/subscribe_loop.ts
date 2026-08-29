@@ -134,7 +134,7 @@ function bodyFor(targetChannel: string, payload: Record<string, unknown>): strin
     "",
     description,
     "",
-    `> 系统: DataFoundry  |  ${new Date().toLocaleString("en-US")}`,
+    `> 系统: AgentX  |  ${new Date().toLocaleString("en-US")}`,
   ].filter(Boolean).join("\n");
 
   return JSON.stringify({

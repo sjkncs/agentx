@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DataFoundry Desktop — Electron main process
+ * AgentX Desktop — Electron main process
  *
  * Architecture:
  *   BrowserWindow (renderer)
@@ -87,7 +87,7 @@ function startChild(name, scriptPath, port, env = {}) {
       ...process.env,
       ...env,
       PORT: String(port),
-      DATAFOUNDRY_PORT: String(port),
+      AGENTX_PORT: String(port),
       NODE_ENV: 'production',
       ELECTRON_RUN_AS_NODE: '1',
     },
@@ -139,8 +139,8 @@ async function startApiServer() {
     AUTH_REGISTRATION_MODE: 'open',
     AUTH_PUBLIC_BASE_URL: `http://127.0.0.1:${apiPort}`,
     AUTH_SESSION_SECRET: 'desktop_session_secret_at_least_32_characters_long',
-    DATAFOUNDRY_AUTH_MODE: 'password',
-    DATAFOUNDRY_PORT: String(apiPort),
+    AGENTX_AUTH_MODE: 'password',
+    AGENTX_PORT: String(apiPort),
     PORT: String(apiPort),
     NODE_ENV: 'production',
   };
@@ -189,7 +189,7 @@ async function createMainWindow() {
     y: state.y,
     minWidth: 1024,
     minHeight: 700,
-    title: 'DataFoundry Desktop',
+    title: 'AgentX Desktop',
     backgroundColor: '#0b0d12',
     show: false,
     webPreferences: {
@@ -258,7 +258,7 @@ ipcMain.handle('app:restart', async () => {
 });
 
 // ---------------- Resilient counterfactual loader ----------------
-// Cached dynamic import for @datafoundry/counterfactual. We try several
+// Cached dynamic import for @agentx/counterfactual. We try several
 // resolution strategies because the right path differs between `npm start`
 // (dev, .mjs source tree) and the packaged `electron-builder` build
 // (asar, node_modules). The version exported from packages/counterfactual's
@@ -270,7 +270,7 @@ async function loadCdl() {
     const candidates = [
       // 1) node_modules (dev install + packaged app.asar/node_modules)
       () => {
-        const entry = require.resolve('@datafoundry/counterfactual');
+        const entry = require.resolve('@agentx/counterfactual');
         return { kind: 'node_modules', spec: entry };
       },
       // 2) workspace source tree (dev, when symlinks are present)
@@ -297,7 +297,7 @@ async function loadCdl() {
       }
     }
     throw new Error(
-      `Failed to load @datafoundry/counterfactual: ${errors.join(' | ')}`,
+      `Failed to load @agentx/counterfactual: ${errors.join(' | ')}`,
     );
   })().catch((err) => {
     cdlModulePromise = null; // allow retry on next call
@@ -347,7 +347,7 @@ function createTray() {
   try {
     tray = new Tray(image);
     const menu = Menu.buildFromTemplate([
-      { label: 'DataFoundry Desktop', enabled: false },
+      { label: 'AgentX Desktop', enabled: false },
       { type: 'separator' },
       { label: 'Show window', click: () => mainWindow?.show() },
       { label: 'Add a pet…', click: () => openPetBuilder({ parent: mainWindow ?? undefined }) },
@@ -380,7 +380,7 @@ function createTray() {
       { type: 'separator' },
       { label: 'Quit', click: () => app.quit() },
     ]);
-    tray.setToolTip('DataFoundry Desktop');
+    tray.setToolTip('AgentX Desktop');
     tray.setContextMenu(menu);
   } catch (err) {
     console.warn('Tray creation failed:', err);
@@ -447,7 +447,7 @@ if (fs.existsSync(LOCK_FILE)) {
   try {
     const prev = JSON.parse(fs.readFileSync(LOCK_FILE, 'utf8'));
     process.kill(prev.pid, 0);
-    dialog.showErrorBox('DataFoundry Desktop', 'Another instance is already running.');
+    dialog.showErrorBox('AgentX Desktop', 'Another instance is already running.');
     app.quit();
     process.exit(0);
   } catch {
@@ -464,7 +464,7 @@ async function loadHarnessCore() {
     const candidates = [
       // 1) node_modules (dev install + packaged app.asar/node_modules)
       () => {
-        const entry = require.resolve('@datafoundry/harness-core');
+        const entry = require.resolve('@agentx/harness-core');
         return { kind: 'node_modules', spec: entry };
       },
       // 2) workspace source tree (dev, when symlinks are present)
@@ -491,7 +491,7 @@ async function loadHarnessCore() {
       }
     }
     throw new Error(
-      `Failed to load @datafoundry/harness-core: ${errors.join(' | ')}`,
+      `Failed to load @agentx/harness-core: ${errors.join(' | ')}`,
     );
   })().catch((err) => {
     harnessCorePromise = null;

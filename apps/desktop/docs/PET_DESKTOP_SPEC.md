@@ -1,12 +1,12 @@
 # PET_DESKTOP_SPEC — Smart Desktop Pet (桌宠)
 
 **Status:** Draft v0.1 — awaiting acceptance criteria sign-off.
-**Owner:** DataFoundry Enhanced
+**Owner:** AgentX Enhanced
 **Target release:** A32 (following A31 run-persistence)
 
 ## 1. Problem
 
-Users interact with DataFoundry Enhanced only inside the Web UI tab. For workflows where DataFoundry should be ambient (always visible, no window juggling, voice-driven), the UX needs a desktop-resident avatar that:
+Users interact with AgentX Enhanced only inside the Web UI tab. For workflows where AgentX should be ambient (always visible, no window juggling, voice-driven), the UX needs a desktop-resident avatar that:
 
 1. Launches via a single click on a custom image (the "pet").
 2. Lets the user pick what they want to do (mode picker).
@@ -123,8 +123,8 @@ Because the Electron app cannot run the API server locally (FTS5 — see `apps/d
 
 | Mode | Trigger | Behaviour |
 |---|---|---|
-| `connected` | `DATAFOUNDRY_API_URL` env or remote API reachable on startup | All pet chats POST to `POST /api/v1/runs`. Full harness. |
-| `standalone` | No API reachable | Direct package import of `@datafoundry/agent-runtime` (the path already used for CDL panel). Read-only harness subset; no Supabase persistence. |
+| `connected` | `AGENTX_API_URL` env or remote API reachable on startup | All pet chats POST to `POST /api/v1/runs`. Full harness. |
+| `standalone` | No API reachable | Direct package import of `@agentx/agent-runtime` (the path already used for CDL panel). Read-only harness subset; no Supabase persistence. |
 
 The Pet Builder / Persona / voice adapter are identical in both modes.
 
@@ -186,7 +186,7 @@ When the user picks `陪伴` mode for the first time per session, a modal appear
 >
 > - 该角色为用户自定义的人格配置，不会替代专业心理咨询、医疗或法律建议。
 > - 不应将对话视为真实社交关系的替代。长期过度依赖可能影响您的心理健康与现实人际关系。
-> - 您与角色之间生成的所有内容仅存储于您的本地设备与您授权的云端账户；DataFoundry 不会用于训练第三方模型。
+> - 您与角色之间生成的所有内容仅存储于您的本地设备与您授权的云端账户；AgentX 不会用于训练第三方模型。
 > - 不得使用本模式冒充真实人物、传播违法或侵权内容，包括但不限于：未授权使用他人姓名、肖像、声音或受版权保护的角色。
 >
 > [I understand / 我已知晓]
@@ -251,7 +251,7 @@ Animation polish, multiple pets, pet-to-pet, voice cloning, cross-device sync, p
 | VLM cost on pet creation | Medium | One-shot at creation, not per-message. Quota: 50 creations/user/day default, configurable. |
 | User creates persona that violates §7.1 (e.g. names pet "Miku" + tries to make it sing) | High | Runtime guardrails §7.3 + operator kill switch via HITL panel. |
 | Electron FTS5 limitation prevents API server | Already known | `connected` vs `standalone` modes §5.4. |
-| Persona prompt-injection: user types persona JSON into the message and tries to override the system prompt | Medium | The persona is concatenated into the `goal` field by `createDataFoundryRunContext` which already lives in the trusted boundary; the message body goes through the normal model pipeline. |
+| Persona prompt-injection: user types persona JSON into the message and tries to override the system prompt | Medium | The persona is concatenated into the `goal` field by `createAgentXRunContext` which already lives in the trusted boundary; the message body goes through the normal model pipeline. |
 
 ---
 

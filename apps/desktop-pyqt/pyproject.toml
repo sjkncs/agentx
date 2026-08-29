@@ -5,11 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "df-desktop"
 version = "0.1.0"
-description = "PyQt6 desktop client for DataFoundry — 3D trajectory + lineage visualisation"
+description = "PyQt6 desktop client for AgentX — 3D trajectory + lineage visualisation"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "DataFoundry Team" }]
+authors = [{ name = "AgentX Team" }]
 
 dependencies = [
     # Qt

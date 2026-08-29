@@ -5,7 +5,7 @@
  * SKILL.md from raw.githubusercontent.com, computing a sha256 over the
  * bytes. If the bytes changed since the last sync we:
  *   - write a new versioned snapshot under sync/<id>/<sha256>.SKILL.md
- *     in the datafoundry audit dir, and
+ *     in the agentx audit dir, and
  *   - record a dfd_audit_events row (action="sync", severity="info")
  *   - append a fsf_messages row (intent="skill_marketplace", sub_intent="sync")
  *
@@ -25,8 +25,8 @@ import {
   buildSkillRawUrl,
   loadCatalog,
   type SkillCatalogEntry
-} from "@datafoundry/skills";
-import { supabase } from "@datafoundry/supabase-bridge";
+} from "@agentx/skills";
+import { supabase } from "@agentx/supabase-bridge";
 
 const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6h
 const FETCH_TIMEOUT_MS = 15_000;
@@ -78,7 +78,7 @@ const fetchOne = async (
   const response = await Promise.race([
     fetcher(url, {
       headers: {
-        "User-Agent": "DataFoundry-Skill-Sync/1.0",
+        "User-Agent": "AgentX-Skill-Sync/1.0",
         Accept: "text/plain,text/markdown"
       },
       redirect: "follow"

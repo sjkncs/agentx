@@ -1,4 +1,4 @@
-import type { MetadataStore, RunRecord } from "@datafoundry/metadata";
+import type { MetadataStore, RunRecord } from "@agentx/metadata";
 
 import type { RunCancelRegistry } from "./run-cancel-registry.js";
 

@@ -31,7 +31,7 @@ MAX_RETRIES = 2
 
 
 class ApiError(RuntimeError):
-    """A non-2xx response from the DataFoundry API."""
+    """A non-2xx response from the AgentX API."""
 
     def __init__(self, status: int, code: str, message: str) -> None:
         hint = _hint_for(code, status)
@@ -62,7 +62,7 @@ class NetworkError(RuntimeError):
         self.kind = kind
 
 
-class DataFoundryClient:
+class AgentXClient:
     """Synchronous httpx wrapper that injects the bearer token from keyring."""
 
     def __init__(self, config: Config, *, token: str | None = None) -> None:
@@ -80,8 +80,8 @@ class DataFoundryClient:
             return load_token(self._config.email)
         return None
 
-    def with_token(self, token: str) -> "DataFoundryClient":
-        clone = DataFoundryClient(self._config, token=token)
+    def with_token(self, token: str) -> "AgentXClient":
+        clone = AgentXClient(self._config, token=token)
         return clone
 
     # ------------------------------------------------------------ http core
@@ -300,7 +300,7 @@ def json_invalid(response: httpx.Response) -> type[ValueError]:
 
 __all__ = [
     "ApiError",
-    "DataFoundryClient",
+    "AgentXClient",
     "DEFAULT_TIMEOUT",
     "NetworkError",
     "RETRYABLE_STATUSES",

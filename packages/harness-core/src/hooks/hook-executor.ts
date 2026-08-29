@@ -292,7 +292,7 @@ export class HookExecutor {
       .replace(/\{\{toolOutput\}\}/g, context.toolOutput ? JSON.stringify(context.toolOutput) : "")
       .replace(/\{\{error\}\}/g, context.error || "")
       .replace(/\{\{stepIndex\}\}/g, String(context.stepIndex ?? 0))
-      .replace(/\{\{agentName\}\}/g, context.agentName || "datafoundry");
+      .replace(/\{\{agentName\}\}/g, context.agentName || "agentx");
   }
   
   /**

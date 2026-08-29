@@ -19,7 +19,7 @@ import { useCallback, useEffect, useState } from "react";
  *   if (isPathAllowed(targetPath)) { ...}
  */
 
-const STORAGE_KEY = "datafoundry-workspace-auto-permission";
+const STORAGE_KEY = "agentx-workspace-auto-permission";
 
 /** 用户允许 agent 在此目录下"自由编辑" */
 export interface AutoPermissionState {

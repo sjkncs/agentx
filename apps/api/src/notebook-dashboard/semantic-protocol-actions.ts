@@ -11,7 +11,7 @@
  * Action result shapes match what `reduceDataAnalysisAction` in
  * `data-analysis.ts` expects.
  */
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
+import type { LocalDataGateway } from "@agentx/data-gateway";
 
 import { SemanticCatalogRepository } from "./semantic-catalog.js";
 import { groundDatasourceSchema, inferSemanticTypes, inferGlossaryTerms, type PhysicalSchema } from "./semantic-grounder.js";

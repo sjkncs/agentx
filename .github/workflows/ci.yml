@@ -44,7 +44,7 @@ jobs:
         run: npm run test:web
 
       - name: Run TUI unit tests
-        run: npm --workspace @datafoundry/tui test
+        run: npm --workspace @agentx/tui test
 
       - name: Build Web application
         run: npm run build:web

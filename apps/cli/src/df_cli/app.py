@@ -12,7 +12,7 @@ from .commands import dashboard, doctor, init, notebook, run, status, upgrade
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="df",
-        description="DataFoundry command-line interface — orchestrate notebooks, dashboards, and runs.",
+        description="AgentX command-line interface — orchestrate notebooks, dashboards, and runs.",
     )
     parser.add_argument("--version", action="version", version=f"df-cli {__version__}")
     parser.add_argument(

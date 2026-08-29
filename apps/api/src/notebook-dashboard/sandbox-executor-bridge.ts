@@ -46,7 +46,7 @@
 import type {
   SandboxManager,
   Sandbox,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 
 import {
   createSandbox,
@@ -56,7 +56,7 @@ import {
   type SandboxExecutionRequest,
   type SandboxExecutionResult,
   type SandboxStatus,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 
 import type { CellOutput } from "./types.js";
 
@@ -433,7 +433,7 @@ export function createSandboxExecutorBridge(options: SandboxExecutorBridgeOption
 }
 
 async function createDefaultSandboxManager(): Promise<SandboxManager> {
-  const mod = await import("@datafoundry/harness-core");
+  const mod = await import("@agentx/harness-core");
   return mod.createSandboxManager({
     maxSandboxes: 10,
     cleanupInterval: 60_000,

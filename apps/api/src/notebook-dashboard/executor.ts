@@ -22,7 +22,7 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
+import type { LocalDataGateway } from "@agentx/data-gateway";
 import { wireMetrics, type WiredMetrics } from "../metrics.js";
 import {
   runSandboxedPython,

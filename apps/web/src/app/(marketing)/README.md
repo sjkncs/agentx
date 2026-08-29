@@ -1,6 +1,6 @@
-# DataFoundry marketing site — v1 launch surface
+# AgentX marketing site — v1 launch surface
 
-This folder holds the public marketing site for DataFoundry. Every
+This folder holds the public marketing site for AgentX. Every
 page here is server-rendered with Next.js 15.5 / React 19, lives in a
 route group `(marketing)/` so its chrome (sticky nav + footer) is
 scoped to the public surface only, and reads the live API for any
@@ -83,14 +83,14 @@ The marketing site lives inside the existing Next.js app — same
 
 ```bash
 # build everything
-pnpm --filter @datafoundry/api build
-pnpm --filter @datafoundry/web build
+pnpm --filter @agentx/api build
+pnpm --filter @agentx/web build
 
 # run the API for the live /skills catalog
 node apps/api/dist/server.js          # :8787
 
 # run the web (with marketing + workspace) — defaults to /
-pnpm --filter @datafoundry/web start  # :3000
+pnpm --filter @agentx/web start  # :3000
 ```
 
 If you only want the marketing chrome without the API running,

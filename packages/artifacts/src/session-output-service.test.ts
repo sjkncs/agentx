@@ -1,5 +1,5 @@
-import { LocalFileAssetService } from "@datafoundry/files";
-import { createMetadataStore, createVerifiedTestIdentity } from "@datafoundry/metadata";
+import { LocalFileAssetService } from "@agentx/files";
+import { createMetadataStore, createVerifiedTestIdentity } from "@agentx/metadata";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

@@ -3,7 +3,7 @@
  * 设计：
  *   - 不引入 express，server.ts 用裸 http；这里也是裸 handler
  *   - 签名校验：DingTalk SHA1(token+ts+body) ; Inngest HMAC-SHA256
- *   - 入站 payload 落到 datafoundry.fsf_webhook_inbox
+ *   - 入站 payload 落到 agentx.fsf_webhook_inbox
  *   - 关联到工单：rpc_inngest_ack_webhook(source, external_event_id, work_order_id, result)
  * 路由：
  *   POST /api/webhooks/inngest

@@ -1,6 +1,6 @@
 import { EventType } from "@ag-ui/client";
-import type { RunEventEnvelope } from "@datafoundry/contracts";
-import type { MetadataStore, TraceSectionRecord } from "@datafoundry/metadata";
+import type { RunEventEnvelope } from "@agentx/contracts";
+import type { MetadataStore, TraceSectionRecord } from "@agentx/metadata";
 import { Agent } from "@mastra/core/agent";
 
 const CONTEXT_STEPS_PER_SECTION_CHECK = 3;

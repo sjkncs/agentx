@@ -1,6 +1,6 @@
 # DataLink 语义服务
 
-DataLink 是 DataFoundry 的可选语义图服务，用于将 Schema 与数据画像连接到业务概念、实体、可 JOIN 路径和带置信度的关系。实现位于 `services/datalink`，但作为独立 Python 服务运行。
+DataLink 是 AgentX 的可选语义图服务，用于将 Schema 与数据画像连接到业务概念、实体、可 JOIN 路径和带置信度的关系。实现位于 `services/datalink`，但作为独立 Python 服务运行。
 
 ## 运行拓扑
 
@@ -9,7 +9,7 @@ DataLink 是 DataFoundry 的可选语义图服务，用于将 Schema 与数据�
 | DataLink MCP | `http://127.0.0.1:8080/mcp` | 提供 `datalink_explore`，为 Agent 提供语义上下文 |
 | DataLink REST | `http://127.0.0.1:8081` | 图谱管理与可视化 API |
 
-DataFoundry 的 Web 与 API 进程不受影响。`deploy.sh` 和 `npm run start` 不会启动 DataLink；需要语义增强时请单独启动。
+AgentX 的 Web 与 API 进程不受影响。`deploy.sh` 和 `npm run start` 不会启动 DataLink；需要语义增强时请单独启动。
 
 ## 安装与启动
 
@@ -30,7 +30,7 @@ uv run datalink api --port 8081
 
 提供商示例、建图和探索命令见服务目录下的 README。
 
-## 在 DataFoundry 中连接
+## 在 AgentX 中连接
 
 在 Web 工作台打开 MCP 设置，添加外部服务：
 

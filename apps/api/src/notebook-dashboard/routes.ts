@@ -8,8 +8,8 @@
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
+import type { LocalDataGateway } from "@agentx/data-gateway";
 
 import {
   executeCell,

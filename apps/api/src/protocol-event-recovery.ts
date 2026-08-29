@@ -1,5 +1,5 @@
 import type { BaseEvent } from "@ag-ui/client";
-import { createCustomEvent, type ProtocolEvent } from "@datafoundry/agent-runtime";
+import { createCustomEvent, type ProtocolEvent } from "@agentx/agent-runtime";
 
 type ProtocolEventJournal = {
   acknowledgeEvent(event: ProtocolEvent): void;

@@ -2,9 +2,9 @@
 # Shared bootstrap helpers for native deploy (sourced by ./deploy.sh).
 
 check_supported_system() {
-  local os_release="${DATAFOUNDRY_OS_RELEASE_FILE:-/etc/os-release}"
+  local os_release="${AGENTX_OS_RELEASE_FILE:-/etc/os-release}"
   if [[ ! -r "${os_release}" ]]; then
-    echo "Unsupported operating system: ${os_release} is missing. DataFoundry native deploy supports Ubuntu/Debian only." >&2
+    echo "Unsupported operating system: ${os_release} is missing. AgentX native deploy supports Ubuntu/Debian only." >&2
     exit 1
   fi
   # shellcheck disable=SC1090,SC1091
@@ -12,17 +12,17 @@ check_supported_system() {
   case "${ID:-}" in
     ubuntu|debian) ;;
     *)
-      echo "Unsupported operating system: ${ID:-unknown}. DataFoundry native deploy supports Ubuntu/Debian only." >&2
+      echo "Unsupported operating system: ${ID:-unknown}. AgentX native deploy supports Ubuntu/Debian only." >&2
       exit 1
       ;;
   esac
 
   local arch
-  arch="${DATAFOUNDRY_UNAME_M:-$(uname -m)}"
+  arch="${AGENTX_UNAME_M:-$(uname -m)}"
   case "${arch}" in
     x86_64|amd64|aarch64|arm64) ;;
     *)
-      echo "Unsupported architecture: ${arch}. DataFoundry native deploy supports x86_64/amd64 and aarch64/arm64 only." >&2
+      echo "Unsupported architecture: ${arch}. AgentX native deploy supports x86_64/amd64 and aarch64/arm64 only." >&2
       exit 1
       ;;
   esac
@@ -137,7 +137,7 @@ ensure_node_22() {
   fi
 
   if [[ -n "${major}" && "${major}" -lt 22 ]]; then
-    echo "Unsupported Node.js version: $(node --version). DataFoundry requires Node.js 22.x." >&2
+    echo "Unsupported Node.js version: $(node --version). AgentX requires Node.js 22.x." >&2
   fi
 
   install_node_22 "$@"

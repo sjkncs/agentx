@@ -1,4 +1,4 @@
-# Fly.io manifest for the DataFoundry API server.
+# Fly.io manifest for the AgentX API server.
 # 1. Install flyctl: https://fly.io/docs/hands-on/install-flyctl/
 # 2. Sign in: fly auth signup
 # 3. Create app: fly launch --no-deploy --copy-config --name df-api-<your-name>

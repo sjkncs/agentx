@@ -30,12 +30,12 @@ const STEPS: ReadonlyArray<{
     eyebrow: "Install",
     title: "Get the source and install dependencies.",
     body:
-      "DataFoundry is a pnpm workspaces monorepo. You'll need Node 20+ and pnpm 9. The install is local — no Docker required for development.",
+      "AgentX is a pnpm workspaces monorepo. You'll need Node 20+ and pnpm 9. The install is local — no Docker required for development.",
     bullets: [
       { k: "Clone", v: "git clone the repo and cd into the workspace root." },
       { k: "Install", v: "pnpm install at the root. ~600 MB of disk; first run takes 1–3 minutes." },
-      { k: "Build", v: "pnpm --filter @datafoundry/api build && pnpm --filter @datafoundry/web build." },
-      { k: "Optional: desktop", v: "pnpm --filter @datafoundry/desktop dist:dir to bundle the Electron companion app." },
+      { k: "Build", v: "pnpm --filter @agentx/api build && pnpm --filter @agentx/web build." },
+      { k: "Optional: desktop", v: "pnpm --filter @agentx/desktop dist:dir to bundle the Electron companion app." },
     ],
   },
   {
@@ -46,7 +46,7 @@ const STEPS: ReadonlyArray<{
       "The local install ships with a .env.example that documents every required variable. The auth module is auto-verified in test mode so you can sign in immediately after registration.",
     bullets: [
       { k: "API auth", v: "AUTH_REGISTRATION_MODE=open, AUTH_SESSION_SECRET=<32+ chars>, AUTH_PUBLIC_BASE_URL=http://127.0.0.1:8787, AUTH_EMAIL_DELIVERY=test." },
-      { k: "Run the API", v: "node apps/api/dist/server.js — listens on :8787. Run `node apps/web/.next/standalone/server.js` after `pnpm --filter @datafoundry/web start` for :3000." },
+      { k: "Run the API", v: "node apps/api/dist/server.js — listens on :8787. Run `node apps/web/.next/standalone/server.js` after `pnpm --filter @agentx/web start` for :3000." },
       { k: "Register", v: "Open /register on :3000, any email + password (≥6 chars). Auto-verifies in test mode." },
       { k: "Sign in", v: "Open /login — back into the same session. The same browser session is also what powers the desktop pet companion app." },
     ],
@@ -99,7 +99,7 @@ export default function DocsPage() {
       <section className={styles.hero}>
         <span className={styles.eyebrow}>Docs</span>
         <h1 className={styles.heroTitle}>
-          How to run DataFoundry from a clean checkout.
+          How to run AgentX from a clean checkout.
         </h1>
         <p className={styles.heroSubtitle}>
           Every command / path on this page is a real file in the

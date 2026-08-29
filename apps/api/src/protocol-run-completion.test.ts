@@ -1,5 +1,5 @@
 import { EventType, type BaseEvent } from "@ag-ui/client";
-import type { ProtocolRunState } from "@datafoundry/agent-runtime";
+import type { ProtocolRunState } from "@agentx/agent-runtime";
 import { describe, expect, it, vi } from "vitest";
 
 import { assistantMessageIdFromEvent, completeProtocolRun } from "./protocol-run-completion.js";

@@ -1,11 +1,11 @@
 # Hook System Usage Examples
 
-This directory contains examples of using the `@datafoundry/harness-core` Hook system.
+This directory contains examples of using the `@agentx/harness-core` Hook system.
 
 ## Example 1: Basic Hook Registration
 
 ```typescript
-import { HookRegistry, loadHookConfig } from "@datafoundry/harness-core";
+import { HookRegistry, loadHookConfig } from "@agentx/harness-core";
 
 // Create registry
 const registry = new HookRegistry({ enabled: true });
@@ -31,7 +31,7 @@ await registry.emit("tool.post-execute", {
 ## Example 2: Programmatic Hook Definition
 
 ```typescript
-import { HookRegistry, HookDefinition } from "@datafoundry/harness-core";
+import { HookRegistry, HookDefinition } from "@agentx/harness-core";
 
 const registry = new HookRegistry({ enabled: true });
 
@@ -93,13 +93,13 @@ const logHook: HookDefinition = {
 };
 ```
 
-## Example 5: Using with createEnhancedDataFoundry
+## Example 5: Using with createEnhancedAgentX
 
 ```typescript
-import { createEnhancedDataFoundry } from "@datafoundry/harness-core";
+import { createEnhancedAgentX } from "@agentx/harness-core";
 
-const result = await createEnhancedDataFoundry({
-  dataFoundryInput: {
+const result = await createEnhancedAgentX({
+  agentXInput: {
     modelProvider: myModelProvider,
     runContext: myRunContext,
     dataGateway: myDataGateway,
@@ -110,8 +110,8 @@ const result = await createEnhancedDataFoundry({
   hooksConfigPath: "./hooks.json",
 });
 
-// Use original DataFoundry features
-const { agent, protocol } = result.dataFoundry;
+// Use original AgentX features
+const { agent, protocol } = result.agentX;
 
 // Use enhanced Hook features (optional)
 if (result.hookRegistry) {

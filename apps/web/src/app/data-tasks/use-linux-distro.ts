@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 
 export type LinuxDistroFlavor = "uos" | "kylin" | "deepin" | "other" | "unknown";
 
-const UOS_FLAG_KEY = "datafoundry-linux-distro-flag";
+const UOS_FLAG_KEY = "agentx-linux-distro-flag";
 
 export interface UseLinuxDistroResult {
   flavor: LinuxDistroFlavor;

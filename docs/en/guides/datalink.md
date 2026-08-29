@@ -1,6 +1,6 @@
 # DataLink semantic service
 
-DataLink is an optional semantic graph service for DataFoundry. It connects schemas and profiles to business concepts, entities, join paths, and confidence-scored relationships. The implementation is included under `services/datalink`, but it runs as a separate Python service.
+DataLink is an optional semantic graph service for AgentX. It connects schemas and profiles to business concepts, entities, join paths, and confidence-scored relationships. The implementation is included under `services/datalink`, but it runs as a separate Python service.
 
 ## Runtime topology
 
@@ -9,7 +9,7 @@ DataLink is an optional semantic graph service for DataFoundry. It connects sche
 | DataLink MCP | `http://127.0.0.1:8080/mcp` | Exposes `datalink_explore` for agent grounding |
 | DataLink REST | `http://127.0.0.1:8081` | Graph management and visualization API |
 
-DataFoundry's Web and API processes remain unchanged. DataLink is not started by `deploy.sh` or `npm run start`; start it separately when semantic grounding is needed.
+AgentX's Web and API processes remain unchanged. DataLink is not started by `deploy.sh` or `npm run start`; start it separately when semantic grounding is needed.
 
 ## Install and start
 
@@ -30,7 +30,7 @@ uv run datalink api --port 8081
 
 The service README contains provider examples and CLI commands for building and exploring a graph.
 
-## Connect it in DataFoundry
+## Connect it in AgentX
 
 In the Web workbench, open MCP settings and add an external server with:
 

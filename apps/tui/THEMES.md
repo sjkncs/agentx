@@ -1,6 +1,6 @@
 # TUI themes
 
-DataFoundry separates theme presets from semantic color usage:
+AgentX separates theme presets from semantic color usage:
 
 - `src/ui/themes/types.ts` defines the semantic token contract.
 - `src/ui/themes/presets.ts` contains complete theme presets.
@@ -16,8 +16,8 @@ Components should use semantic groups instead of literal colors:
 The default preset is `mist-dark`. To switch at startup:
 
 ```bash
-datafoundry-tui --theme legacy-dark
-DATAFOUNDRY_TUI_THEME=legacy-dark datafoundry-tui
+agentx-tui --theme legacy-dark
+AGENTX_TUI_THEME=legacy-dark agentx-tui
 ```
 
 To add a style, define one complete `TuiThemePreset` in `presets.ts` and append it

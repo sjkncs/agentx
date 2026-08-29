@@ -1,6 +1,6 @@
-# DataFoundry Desktop — Electron App
+# AgentX Desktop — Electron App
 
-**Electron wrapper** that bundles DataFoundry Enhanced (API + Web + CDL panels) into a single Windows desktop application.
+**Electron wrapper** that bundles AgentX Enhanced (API + Web + CDL panels) into a single Windows desktop application.
 
 ## Layout
 
@@ -49,17 +49,17 @@ apps/desktop/
 cd apps\desktop
 node build\make-icon.mjs
 
-# 2. Dev launch (uses existing build output from datafoundry-enhanced)
+# 2. Dev launch (uses existing build output from agentx-enhanced)
 npm start
 
 # 3. Package a directory build (fast, no installer)
 npm run dist:dir
-# Output: apps/desktop/dist/win-unpacked/DataFoundry Desktop.exe
+# Output: apps/desktop/dist/win-unpacked/AgentX Desktop.exe
 
 # 4. Full installer build (NSIS + portable .exe)
 npm run dist
-# Output: apps/desktop/dist/DataFoundry Desktop-0.1.0-x64.exe
-#         apps/desktop/dist/DataFoundry Desktop-0.1.0-portable.exe
+# Output: apps/desktop/dist/AgentX Desktop-0.1.0-x64.exe
+#         apps/desktop/dist/AgentX Desktop-0.1.0-portable.exe
 ```
 
 ## IPC API surface (window.dfd)

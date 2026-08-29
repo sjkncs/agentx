@@ -3,18 +3,18 @@ import type {
   EvidenceResolutionDiagnostics,
   EvidenceResolutionIssue,
   EvidenceSelection
-} from "@datafoundry/contracts";
+} from "@agentx/contracts";
 import {
   createAgentContextItem,
   createAgentContextSourceMetadata,
   type AgentContextItem
-} from "@datafoundry/agent-runtime";
+} from "@agentx/agent-runtime";
 import type {
   MetadataStore,
   RunEventRecord,
   RunRecord,
   SqlAuditLogRecord
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 
 type ResolveEvidenceReferenceContextInput = {
   evidenceRefs: EvidenceRef[];

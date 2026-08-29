@@ -11,15 +11,15 @@ import { Mastra } from "@mastra/core/mastra";
 import { WorkingMemory } from "@mastra/core/processors";
 import { createSkillTools, createWorkspaceTools } from "@mastra/core/workspace";
 import type { Message } from "@ag-ui/core";
-import type { ArtifactService, SessionOutputService } from "@datafoundry/artifacts";
-import type { DataGateway } from "@datafoundry/data-gateway";
-import type { KnowledgeService } from "@datafoundry/knowledge";
-import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@datafoundry/files";
+import type { ArtifactService, SessionOutputService } from "@agentx/artifacts";
+import type { DataGateway } from "@agentx/data-gateway";
+import type { KnowledgeService } from "@agentx/knowledge";
+import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@agentx/files";
 import {
   materializeSkillPackages,
   type SkillRecord,
   type SkillSelectionResult
-} from "@datafoundry/skills";
+} from "@agentx/skills";
 import { copyFileSync, linkSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -28,7 +28,7 @@ import {
   createModelProviderFromConfig,
   type ChatProviderConfig,
   type ModelProvider
-} from "@datafoundry/providers";
+} from "@agentx/providers";
 
 import { AGENT_MAX_STEPS } from "./runtime-limits.js";
 import { buildAgentInstructions, type MaterializedWorkspaceAttachment } from "./agent-instructions.js";
@@ -61,7 +61,7 @@ import {
   type ContextSourceMetadata
 } from "./context/inventory/context-source-metadata.js";
 import { GoalRuntimeAdapter, type GoalRequest } from "./memory/goal-runtime-adapter.js";
-import { createDataFoundryToolRegistry } from "./tools/data-tools.js";
+import { createAgentXToolRegistry } from "./tools/data-tools.js";
 import { GovernedToolFactory, type GovernedToolErrorHandler } from "./tools/governed-tool-factory.js";
 import { createWebSearchTool } from "./tools/web-search.js";
 import { LatsRuntime } from "./lats/lats-runtime.js";
@@ -194,7 +194,7 @@ export {
   resolveWorkspaceRoot
 } from "./tools/workspace-factory.js";
 export { resolvePythonRuntime } from "./tools/python-runtime.js";
-export { createDataFoundryToolRegistry, type ToolRegistry } from "./tools/data-tools.js";
+export { createAgentXToolRegistry, type ToolRegistry } from "./tools/data-tools.js";
 export {
   GoalRuntimeAdapter,
   type GoalRequest,
@@ -222,7 +222,7 @@ export type AgentLongTermMemoryRecord = {
   source_run_id?: string;
 };
 
-export type CreateDataFoundryInput = {
+export type CreateAgentXInput = {
   abortSignal?: AbortSignal | undefined;
   artifactService?: ArtifactService;
   contextPackageRecorder?: ContextPackageRecorder;
@@ -300,8 +300,8 @@ export type WorkspaceAttachment = {
   source_path: string;
 };
 
-export const createDataFoundry = async (
-  input: CreateDataFoundryInput
+export const createAgentX = async (
+  input: CreateAgentXInput
 ): Promise<{
   agent: Agent;
   governedMessages: Message[];
@@ -348,7 +348,7 @@ export const createDataFoundry = async (
   }
   mkdirSync(join(skillCacheDir, "skills"), { recursive: true });
   // 绑定到本次 session 的工作区：LocalFilesystem + LocalSandbox。
-  // createDataFoundry 每次 run 都调用，直接闭包捕获 runContext，不依赖下游 requestContext 注入。
+  // createAgentX 每次 run 都调用，直接闭包捕获 runContext，不依赖下游 requestContext 注入。
   const runWorkspace = createRunWorkspace({
     runContext: input.runContext,
     skillPaths: ["skills"],
@@ -360,7 +360,7 @@ export const createDataFoundry = async (
   const governedMessages = normalizeIngressMessages(input.messages);
 
   const tokenUsageCorrelation = createTokenUsageCorrelationStore();
-  const registry = createDataFoundryToolRegistry({
+  const registry = createAgentXToolRegistry({
     ...(input.abortSignal ? { abortSignal: input.abortSignal } : {}),
     dataGateway: input.dataGateway,
     emitter: input.emitter,
@@ -688,8 +688,8 @@ export const createDataFoundry = async (
     })
   };
   const agent = new Agent({
-    id: "data-foundry",
-    name: "DataFoundry",
+    id: "agentx",
+    name: "AgentX",
     instructions: buildAgentInstructions({
       runContext: input.runContext,
       commandExecutionEnabled: runWorkspace.commandExecutionEnabled,
@@ -747,7 +747,7 @@ export const createDataFoundry = async (
   );
   const mastra = input.taskStateRuntime
     ? new Mastra({
-        agents: { dataFoundry: agentForAgUi },
+        agents: { agentX: agentForAgUi },
         storage: input.taskStateRuntime.storage
       })
     : undefined;
@@ -808,7 +808,7 @@ const createEvidenceFocusRuntimeSource = (items: AgentContextItem[]): RuntimeCon
   };
 };
 
-export const createDataFoundryRunContext = (input: AgentRunContextInput): AgentRunContext => {
+export const createAgentXRunContext = (input: AgentRunContextInput): AgentRunContext => {
   if ((input.enabled_datasource_ids?.length ?? 0) === 0) {
     return input;
   }

@@ -7,7 +7,7 @@ from typing import Any
 import httpx
 import pytest
 
-from df_cli.client import ApiError, DataFoundryClient, NetworkError
+from df_cli.client import ApiError, AgentXClient, NetworkError
 from df_cli.config import Config
 
 
@@ -39,9 +39,9 @@ def patched_httpx(monkeypatch: pytest.MonkeyPatch) -> _FakeTransport:
     return transport
 
 
-def _client(token: str = "tok") -> DataFoundryClient:
+def _client(token: str = "tok") -> AgentXClient:
     cfg = Config(api_base="http://test", email="u@x.com")
-    return DataFoundryClient(cfg, token=token)
+    return AgentXClient(cfg, token=token)
 
 
 def test_unwraps_data_envelope_on_success(patched_httpx: _FakeTransport) -> None:

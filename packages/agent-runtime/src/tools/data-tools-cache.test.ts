@@ -1,7 +1,7 @@
-import type { DataGateway } from "@datafoundry/data-gateway";
+import type { DataGateway } from "@agentx/data-gateway";
 import { describe, expect, it } from "vitest";
 
-import { createDataFoundryToolRegistry } from "./data-tools.js";
+import { createAgentXToolRegistry } from "./data-tools.js";
 
 describe("data tool SQL reuse", () => {
   it("reuses an exact successful SQL result within one run and schema", async () => {
@@ -20,7 +20,7 @@ describe("data tool SQL reuse", () => {
         };
       }
     } as unknown as DataGateway;
-    const registry = createDataFoundryToolRegistry({
+    const registry = createAgentXToolRegistry({
       dataGateway,
       emitter: { emit: () => undefined },
       runContext: {

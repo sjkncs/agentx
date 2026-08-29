@@ -1,6 +1,6 @@
 # Phase 1-4 Complete - Summary
 
-This document summarizes the completed phases of the DataFoundry Harness Core upgrade.
+This document summarizes the completed phases of the AgentX Harness Core upgrade.
 
 ## Completed Phases
 
@@ -120,12 +120,12 @@ import {
   SessionEventLog,
   PluginManager,
   RuntimeManager,
-  createEnhancedDataFoundry,
-} from '@datafoundry/harness-core';
+  createEnhancedAgentX,
+} from '@agentx/harness-core';
 
-// Create enhanced DataFoundry with all features
-const harness = await createEnhancedDataFoundry({
-  dataFoundryInput: { /* ... */ },
+// Create enhanced AgentX with all features
+const harness = await createEnhancedAgentX({
+  agentXInput: { /* ... */ },
   enableHooks: true,
   enableEventLog: true,
   enableTimeline: true,
@@ -221,7 +221,7 @@ npm run typecheck      # Type check
 ```json
 {
   "dependencies": {
-    "@datafoundry/agent-runtime": ">=0.2.0",
+    "@agentx/agent-runtime": ">=0.2.0",
     "zod": "^4.2.1"
   }
 }

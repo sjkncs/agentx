@@ -5,7 +5,7 @@ import { EventType } from "@ag-ui/client";
 import { dacomp6ComplexCases, findDacomp6Case } from "./dacomp6-complex-cases.mjs";
 import { createAuthenticatedTestClient } from "./lib/authenticated-test-client.mjs";
 
-const baseUrl = (process.env.DATAFOUNDRY_BASE_URL ?? "http://127.0.0.1:8787").replace(/\/$/u, "");
+const baseUrl = (process.env.AGENTX_BASE_URL ?? "http://127.0.0.1:8787").replace(/\/$/u, "");
 
 const client = createAuthenticatedTestClient({ baseUrl });
 await client.registerAndLogin({ displayName: "DACOMP Smoke" });
@@ -54,7 +54,7 @@ console.log(`Trace sections (${trace.sections.length}):`);
 trace.sections.forEach((section, index) => {
   console.log(`  ${index + 1}. ${section.title} [${section.status}] (${section.nodeIds.length} nodes)`);
 });
-console.log(`Open in DataFoundry: http://localhost:3000/data-tasks?thread=${encodeURIComponent(threadId)}`);
+console.log(`Open in AgentX: http://localhost:3000/data-tasks?thread=${encodeURIComponent(threadId)}`);
 process.exit(0);
 
 async function runAgent(input) {
@@ -63,7 +63,7 @@ async function runAgent(input) {
     headers: requestHeaders("text/event-stream"),
     body: JSON.stringify({
       method: "agent/run",
-      params: { agentId: "dataFoundry" },
+      params: { agentId: "agentX" },
       body: {
         threadId: input.threadId,
         runId: input.runId,

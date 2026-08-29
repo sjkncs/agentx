@@ -12,24 +12,24 @@ import {
   resolveSkillCacheDir,
   type AgentMemoryMode,
   type TaskStateRuntime
-} from "@datafoundry/agent-runtime";
-import { LocalArtifactService, SessionOutputService } from "@datafoundry/artifacts";
-import { type MeResponse, createEnvConfig, createErrorResult, createSuccessResult } from "@datafoundry/contracts";
-import { LocalDataGateway } from "@datafoundry/data-gateway";
-import { LocalFileAssetService } from "@datafoundry/files";
+} from "@agentx/agent-runtime";
+import { LocalArtifactService, SessionOutputService } from "@agentx/artifacts";
+import { type MeResponse, createEnvConfig, createErrorResult, createSuccessResult } from "@agentx/contracts";
+import { LocalDataGateway } from "@agentx/data-gateway";
+import { LocalFileAssetService } from "@agentx/files";
 import {
   buildSkillResourcePayload,
   configResourceToSkillRecord,
   materializeSkillPackages,
   parseSkillPackage,
-} from "@datafoundry/skills";
-import { LocalKnowledgeService } from "@datafoundry/knowledge";
+} from "@agentx/skills";
+import { LocalKnowledgeService } from "@agentx/knowledge";
 import {
   RunEventWriter,
   createMetadataStore,
   type MetadataStore,
   type UserRecord,
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
@@ -188,7 +188,7 @@ const persistEarlyFailedUserMessage = (input: {
     });
   } catch (error) {
     // Keep the transport error visible even if best-effort history persistence fails.
-    console.warn("[data-foundry] failed to persist early failed user message", error);
+    console.warn("[agentx] failed to persist early failed user message", error);
   }
 };
 
@@ -279,14 +279,14 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
   startSkillSyncWorker();
 
   /**
-   * Headless executor for scheduled tasks: builds the same DataFoundryAgUiAgent used by
+   * Headless executor for scheduled tasks: builds the same AgentXAgUiAgent used by
    * the CopilotKit endpoint and drains its AG-UI event stream so the run executes
    * server-side without a browser client.
    */
   function launchScheduledRun(task: import("./scheduled-tasks.js").ScheduledTask): void {
     const user: MeResponse = { id: task.userId };
     const workspaceId = "default";
-    const agent = new DataFoundryAgUiAgent({
+    const agent = new AgentXAgUiAgent({
       dataGateway,
       artifactService,
       sessionOutputService,
@@ -547,7 +547,7 @@ export const createServer = async (options: CreateServerOptions = {}): Promise<S
         evaluateAlerts();
         sendJson(response, 200, createSuccessResult({
           version: 1,
-          groupKey: "datafoundry",
+          groupKey: "agentx",
           status: "firing",
           alerts: prometheusAlerts(),
         }));
@@ -663,7 +663,7 @@ const handleCopilotKitRequest = async ({
 }: HandleCopilotKitRequestInput): Promise<void> => {
   const runtime = new CopilotRuntime({
     agents: {
-      dataFoundry: new DataFoundryAgUiAgent({
+      agentX: new AgentXAgUiAgent({
         dataGateway,
         artifactService,
         sessionOutputService,
@@ -697,7 +697,7 @@ const handleCopilotKitRequest = async ({
   }
 };
 
-type DataFoundryAgUiAgentInput = {
+type AgentXAgUiAgentInput = {
   artifactService: LocalArtifactService;
   sessionOutputService: SessionOutputService;
   conversationMemoryMode: AgentMemoryMode;
@@ -714,19 +714,19 @@ type DataFoundryAgUiAgentInput = {
   workspaceRoot: string;
 };
 
-class DataFoundryAgUiAgent extends AbstractAgent {
-  private input: DataFoundryAgUiAgentInput;
+class AgentXAgUiAgent extends AbstractAgent {
+  private input: AgentXAgUiAgentInput;
 
-  constructor(input: DataFoundryAgUiAgentInput) {
+  constructor(input: AgentXAgUiAgentInput) {
     super({
-      agentId: "dataFoundry",
+      agentId: "agentX",
       description: "Read-only data analysis agent backed by Mastra and Data Gateway."
     });
     this.input = input;
   }
 
-  clone(): DataFoundryAgUiAgent {
-    const cloned = super.clone() as DataFoundryAgUiAgent;
+  clone(): AgentXAgUiAgent {
+    const cloned = super.clone() as AgentXAgUiAgent;
     cloned.input = this.input;
     return cloned;
   }

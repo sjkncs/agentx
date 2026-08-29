@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
     def __init__(self, theme: Theme | None = None) -> None:
         super().__init__()
         self._theme = theme or get_theme("default")
-        self.setWindowTitle(self.tr("DataFoundry Desktop — 3D Visualisation"))
+        self.setWindowTitle(self.tr("AgentX Desktop — 3D Visualisation"))
         self.resize(1280, 800)
         self._set_theme(self._theme)
 

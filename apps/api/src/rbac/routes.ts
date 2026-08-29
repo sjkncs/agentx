@@ -4,8 +4,8 @@ import {
   createErrorResult,
   createSuccessResult,
   type ApiResult,
-} from "@datafoundry/contracts";
-import type { AuditEventCategory, AuditEventRecord, MetadataStore, WorkspaceRole } from "@datafoundry/metadata";
+} from "@agentx/contracts";
+import type { AuditEventCategory, AuditEventRecord, MetadataStore, WorkspaceRole } from "@agentx/metadata";
 import type { AuthService } from "../auth/service.js";
 import {
   listPendingApprovals,

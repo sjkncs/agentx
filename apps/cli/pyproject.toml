@@ -5,11 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "df-cli"
 version = "0.1.0"
-description = "Command-line interface for DataFoundry — orchestrate notebooks, dashboards, and runs from any terminal."
+description = "Command-line interface for AgentX — orchestrate notebooks, dashboards, and runs from any terminal."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "DataFoundry Team" }]
+authors = [{ name = "AgentX Team" }]
 
 dependencies = [
     "httpx>=0.27,<1",

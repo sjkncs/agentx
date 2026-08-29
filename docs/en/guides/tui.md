@@ -21,7 +21,7 @@ npm run start:tui -- --runtime-url http://127.0.0.1:8787/api/copilotkit
 Set default data source and agent name:
 
 ```bash
-npm run start:tui -- --datasource-id dtc-growth-demo --agent dataFoundry
+npm run start:tui -- --datasource-id dtc-growth-demo --agent agentX
 ```
 
 Resume the latest server session:

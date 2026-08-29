@@ -1,5 +1,5 @@
-import type { ContextPackageRecorder } from "@datafoundry/agent-runtime";
-import type { MetadataStore } from "@datafoundry/metadata";
+import type { ContextPackageRecorder } from "@agentx/agent-runtime";
+import type { MetadataStore } from "@agentx/metadata";
 
 export const createMetadataContextPackageRecorder = (input: {
   metadataStore: MetadataStore;

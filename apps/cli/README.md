@@ -1,6 +1,6 @@
-# df — DataFoundry command-line interface
+# df — AgentX command-line interface
 
-`df` orchestrates DataFoundry resources from any terminal — notebooks, dashboards,
+`df` orchestrates AgentX resources from any terminal — notebooks, dashboards,
 runs, and upgrades. It's the same surface the web workbench exposes, wrapped in
 discoverable shell commands.
 

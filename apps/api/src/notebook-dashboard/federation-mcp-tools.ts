@@ -14,7 +14,7 @@
 import { FederationPlanner, FederationExecutor, type ExecutionPlan, type FederationQueryResult } from "./federation-engine.js";
 import { SemanticCatalogRepository } from "./semantic-catalog.js";
 import { ensureFederationSchema } from "./federation-schema.js";
-import type { LocalDataGateway, SqlExecutionResult } from "@datafoundry/data-gateway";
+import type { LocalDataGateway, SqlExecutionResult } from "@agentx/data-gateway";
 import type Database from "better-sqlite3";
 
 export interface FederationToolsDeps {

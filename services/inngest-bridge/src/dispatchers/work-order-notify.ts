@@ -62,7 +62,7 @@ export async function handleWorkOrderNotify(
         `| SLA | ${slaIcon} ${slaStatus} |`,
         body ? `\n### 问题描述\n${body}` : "",
         "",
-        `> DataFoundry  |  ${new Date().toLocaleString("en-US")}`,
+        `> AgentX  |  ${new Date().toLocaleString("en-US")}`,
       ].filter(Boolean).join("\n");
     }
   } catch (err) {

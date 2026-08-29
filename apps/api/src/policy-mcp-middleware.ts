@@ -293,7 +293,7 @@ export class PolicyMcpMiddleware extends Middleware {
   }
 
   private async connect(serverConfig: PolicyMcpClientConfig): Promise<Client> {
-    const client = new Client({ name: "datafoundry-mcp-policy", version: "0.2.0" });
+    const client = new Client({ name: "agentx-mcp-policy", version: "0.2.0" });
     const transport = createTransport(serverConfig);
     await client.connect(transport);
     return client;
@@ -339,7 +339,7 @@ export const callPolicyMcpTool = async (
 };
 
 export const connectPolicyMcpClient = async (serverConfig: PolicyMcpClientConfig): Promise<Client> => {
-  const client = new Client({ name: "datafoundry-mcp-policy", version: "0.2.0" });
+  const client = new Client({ name: "agentx-mcp-policy", version: "0.2.0" });
   const transport = createTransport(serverConfig);
   await client.connect(transport);
   return client;

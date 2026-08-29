@@ -9,14 +9,14 @@ hide:
 
 <section class="df-home-hero" markdown>
 
-# DataFoundry
+# AgentX
 
 An enterprise-grade Data Agent workbench — understand business definitions through unified semantics, run multi-table and multi-step analysis inside a read-only safety boundary, make every step auditable and replayable, and turn one question into trusted data analysis.
 
 </section>
 
 <figure class="df-home-shot" markdown>
-![DataFoundry web workbench](assets/readme/gui-demo.gif){ .df-shot }
+![AgentX web workbench](assets/readme/gui-demo.gif){ .df-shot }
 <figcaption>Web workbench, terminal workflow, and backend runtime share one governed task model.</figcaption>
 </figure>
 
@@ -49,8 +49,8 @@ Use the Web workbench for visual analysis review, the TUI for SSH and terminal w
 [TUI guide](en/guides/tui.md) · [Watch terminal demo](assets/readme/tui-demo.gif)
 </div>
 
-<a class="df-tui-preview" href="assets/readme/tui-demo.gif" aria-label="Watch DataFoundry TUI demo">
-  <img src="assets/readme/tui-demo.gif" alt="DataFoundry TUI demo" loading="lazy">
+<a class="df-tui-preview" href="assets/readme/tui-demo.gif" aria-label="Watch AgentX TUI demo">
+  <img src="assets/readme/tui-demo.gif" alt="AgentX TUI demo" loading="lazy">
 </a>
 
 </section>

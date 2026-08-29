@@ -159,7 +159,7 @@ async function runAgent(baseUrl, input) {
     },
     body: JSON.stringify({
       method: "agent/run",
-      params: { agentId: "dataFoundry" },
+      params: { agentId: "agentX" },
       body: {
         threadId: input.threadId,
         runId: input.runId,

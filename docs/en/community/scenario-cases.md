@@ -1,6 +1,6 @@
 # Scenario cases
 
-Scenario cases help users understand how DataFoundry handles realistic data-agent tasks across schema inspection, read-only SQL, trace evidence, and final operating decisions.
+Scenario cases help users understand how AgentX handles realistic data-agent tasks across schema inspection, read-only SQL, trace evidence, and final operating decisions.
 
 ## What makes a good case
 

@@ -11,17 +11,17 @@ const isGitHubPages = process.env.AGENTX_PAGES === "1";
 const pagesBasePath = "/agentx";
 
 const nextConfig: NextConfig = {
-  // Monorepo workspace packages (@datafoundry/*) are not pre-built during
+  // Monorepo workspace packages (@agentx/*) are not pre-built during
   // Vercel CI (we skip postinstall's monorepo tsc -b to avoid pulling in
   // apps/api's harness-core chain). Next.js needs to transpile the TS
   // sources directly from packages/*/src.
   transpilePackages: [
-    "@datafoundry/contracts",
+    "@agentx/contracts",
   ],
   // Next's default `compress: true` applies gzip to `text/*`, including
   // `text/event-stream`. Even with flush hooks, compression is the wrong layer
   // for AG-UI SSE. Disable here; terminate TLS/gzip at the reverse proxy for
-  // HTML/assets (see deploy/nginx.datafoundry.conf.example), and leave
+  // HTML/assets (see deploy/nginx.agentx.conf.example), and leave
   // `/api/copilotkit` uncompressed.
   compress: false,
   // GitHub Pages is a CDN with no runtime. basePath rewrites every internal

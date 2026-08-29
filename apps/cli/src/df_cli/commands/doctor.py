@@ -18,7 +18,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from ..client import DataFoundryClient
+from ..client import AgentXClient
 from ..config import CONFIG_PATH, KEYRING_SERVICE, config_path, load_config, load_token
 from ..ui import print_error, print_success, render_table
 
@@ -68,7 +68,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Network probe — use the client so we get the same timeout/retry logic.
     if not args.skip_network:
-        client = DataFoundryClient(cfg)
+        client = AgentXClient(cfg)
         status, code, authenticated = client.probe(timeout=3.0)
         if status == 0:
             rows.append(["network", cfg.api_base, f"unreachable ({code})"])

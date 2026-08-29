@@ -1,6 +1,6 @@
 """3D trajectory graph viewer.
 
-Renders a `TraceDag` from the DataFoundry API:
+Renders a `TraceDag` from the AgentX API:
 
 * each node = a tool call, branch decision, artifact, or message turn,
 * edges = `branches_from | continues_to | emits | produces_artifact | starts_run`,

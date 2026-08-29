@@ -1,4 +1,4 @@
-# GitHub Pages deploy for the DataFoundry marketing site.
+# GitHub Pages deploy for the AgentX marketing site.
 #
 # The marketing site lives in apps/marketing (a standalone Next.js 15.5
 # project) because the main apps/web app mixes marketing routes with

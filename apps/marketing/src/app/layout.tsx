@@ -4,11 +4,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "DataFoundry",
-    template: "%s · DataFoundry",
+    default: "AgentX",
+    template: "%s · AgentX",
   },
   description:
-    "DataFoundry turns the data stack you already have — datasources, notebooks, models, skills — into a workspace an agent can drive end-to-end.",
+    "AgentX turns the data stack you already have — datasources, notebooks, models, skills — into a workspace an agent can drive end-to-end.",
 };
 
 export default function RootLayout({

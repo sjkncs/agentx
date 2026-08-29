@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { ensureFederationSchema } from "./federation-schema.js";
 import type { Database as Statement } from "better-sqlite3";
-import type { LocalDataGateway, SqlExecutionResult, InspectSchemaInput } from "@datafoundry/data-gateway";
-import type { DataSourceSummary } from "@datafoundry/contracts";
+import type { LocalDataGateway, SqlExecutionResult, InspectSchemaInput } from "@agentx/data-gateway";
+import type { DataSourceSummary } from "@agentx/contracts";
 
 // ---------------------------------------------------------------------------
 // Types

@@ -107,7 +107,7 @@ def test_notebook_export_markdown_routes_to_server(parser, monkeypatch, capsys) 
             return {"id": "nb-1", "cells": []}
         raise AssertionError(path)
 
-    monkeypatch.setattr(client_mod.DataFoundryClient, "get", fake_get)
+    monkeypatch.setattr(client_mod.AgentXClient, "get", fake_get)
     rc = _run(["notebook", "export", "nb-1"])
     assert rc == 0
     assert captured and captured[0][0].endswith("/export.md")
@@ -118,7 +118,7 @@ def test_notebook_export_writes_to_file(parser, monkeypatch, tmp_path) -> None:
     from df_cli import client as client_mod
 
     monkeypatch.setattr(
-        client_mod.DataFoundryClient,
+        client_mod.AgentXClient,
         "get",
         lambda self, path, **_: "# Markdown body",
     )
@@ -169,7 +169,7 @@ def test_dashboard_refresh_handles_api_error(parser, monkeypatch, capsys) -> Non
     def boom(self, dashboard_id, **kwargs):  # noqa: ANN001
         raise client_mod.ApiError(502, "NON_JSON_RESPONSE", "server down")
 
-    monkeypatch.setattr(client_mod.DataFoundryClient, "refresh_dashboard", boom)
+    monkeypatch.setattr(client_mod.AgentXClient, "refresh_dashboard", boom)
     rc = _run(["dashboard", "refresh", "db-1"])
     assert rc == 1
     assert "server down" in capsys.readouterr().out
@@ -201,7 +201,7 @@ def test_notebook_runs_empty_message(parser, fake_client, monkeypatch, capsys) -
     def empty(self, notebook_id, limit=50):
         return []
 
-    monkeypatch.setattr(client_mod.DataFoundryClient, "list_notebook_runs", empty)
+    monkeypatch.setattr(client_mod.AgentXClient, "list_notebook_runs", empty)
     rc = _run(["notebook", "runs", "nb-x"])
     assert rc == 0
     assert "No runs recorded" in capsys.readouterr().out
@@ -233,7 +233,7 @@ def test_help_is_clean(parser, capsys) -> None:
         assert exc.code == 0
     captured = capsys.readouterr()
     out = captured.out + captured.err
-    assert "DataFoundry command-line interface" in out
+    assert "AgentX command-line interface" in out
 
 
 def test_missing_command_exits_2(parser) -> None:

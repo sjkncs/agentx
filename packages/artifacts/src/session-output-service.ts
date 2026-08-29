@@ -1,11 +1,11 @@
-import type { ArtifactSummary, ArtifactType } from "@datafoundry/contracts";
-import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@datafoundry/files";
+import type { ArtifactSummary, ArtifactType } from "@agentx/contracts";
+import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@agentx/files";
 import {
   artifactRecordToSummary,
   type ArtifactRecord,
   type ArtifactVersionRecord,
   type MetadataStore
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 import { randomUUID } from "node:crypto";
 import { basename } from "node:path";
 

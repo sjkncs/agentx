@@ -1,7 +1,7 @@
 /**
  * Command Handlers Module
  *
- * Implements all slash command handlers for the DataFoundry TUI.
+ * Implements all slash command handlers for the AgentX TUI.
  * Each handler validates arguments, interacts with store/config, and returns formatted results.
  */
 
@@ -617,7 +617,7 @@ export function clearCommand(context: HandlerContext): CommandResult {
 export function exitCommand(context: HandlerContext): CommandResult {
   return {
     success: true,
-    message: 'Exiting DataFoundry TUI. Goodbye!',
+    message: 'Exiting AgentX TUI. Goodbye!',
     data: { action: 'exit_application' },
   };
 }

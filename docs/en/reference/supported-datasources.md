@@ -2,7 +2,7 @@
 
 This reference is for users preparing to connect data sources. After reading it, you can choose a trial path, review supported types, and know which fields are treated as credentials.
 
-DataFoundry manages data sources through Data Gateway. Clients register, test, and select sources; the backend handles connections, schema checks, read-only queries, security policy, and audit.
+AgentX manages data sources through Data Gateway. Clients register, test, and select sources; the backend handles connections, schema checks, read-only queries, security policy, and audit.
 
 ## Recommended trial path
 

@@ -1,13 +1,13 @@
 # Contributing
 
-DataFoundry welcomes focused contributions that improve the workbench, docs, examples, connectors, and runtime reliability.
+AgentX welcomes focused contributions that improve the workbench, docs, examples, connectors, and runtime reliability.
 
 ## What to contribute
 
 - Product and documentation fixes that make the first-run experience clearer.
 - Reproducible bugs with logs, traces, and screenshots.
 - Datasource or connector improvements with clear setup and validation notes.
-- Scenario cases that show how teams use DataFoundry for real data-agent workflows.
+- Scenario cases that show how teams use AgentX for real data-agent workflows.
 - Tests and smoke checks that protect core behavior such as read-only SQL execution, datasource registration, and traceability.
 
 ## Pull request expectations

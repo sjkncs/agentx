@@ -4,8 +4,8 @@ import "@copilotkit/react-core/v2/styles.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "DataFoundry",
-    template: "%s · DataFoundry",
+    default: "AgentX",
+    template: "%s · AgentX",
   },
   description: "Agent-driven data task workspace",
 };

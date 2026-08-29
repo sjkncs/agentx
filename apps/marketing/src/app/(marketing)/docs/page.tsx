@@ -22,7 +22,7 @@ const STEPS: ReadonlyArray<{
     eyebrow: "Install",
     title: "Get the source and install dependencies.",
     body:
-      "DataFoundry is an npm workspaces monorepo. You'll need Node 22+ and npm 10+. The install is local — no Docker required for development.",
+      "AgentX is an npm workspaces monorepo. You'll need Node 22+ and npm 10+. The install is local — no Docker required for development.",
     bullets: [
       { k: "Clone", v: "git clone https://github.com/sjkncs/agentx and cd into the workspace root." },
       { k: "Install", v: "npm install at the root. ~600 MB of disk; first run takes 1–3 minutes." },
@@ -91,7 +91,7 @@ export default function DocsPage() {
       <section className={styles.hero}>
         <span className={styles.eyebrow}>Docs</span>
         <h1 className={styles.heroTitle}>
-          How to run DataFoundry from a clean checkout.
+          How to run AgentX from a clean checkout.
         </h1>
         <p className={styles.heroSubtitle}>
           Every command / path on this page is a real file in the

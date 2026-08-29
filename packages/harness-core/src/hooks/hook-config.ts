@@ -123,8 +123,8 @@ export function loadHookConfig(configPath: string): HookConfig {
  */
 export function findHookConfig(searchPaths?: string[]): string | null {
   const defaultPaths = [
-    ".datafoundry/hooks.json",
-    ".datafoundry/hooks.config.json",
+    ".agentx/hooks.json",
+    ".agentx/hooks.config.json",
     "hooks.json",
     "hooks.config.json",
     ".hooks.json",
@@ -146,7 +146,7 @@ export function findHookConfig(searchPaths?: string[]): string | null {
  * 从环境变量加载Hook配置
  */
 export function loadHookConfigFromEnv(): HookConfig | null {
-  const envConfig = process.env.DATAFOUNDRY_HOOKS_CONFIG;
+  const envConfig = process.env.AGENTX_HOOKS_CONFIG;
   
   if (!envConfig) {
     return null;

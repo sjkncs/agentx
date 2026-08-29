@@ -1,4 +1,4 @@
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
 import type { ConfigApiResponse } from "./types.js";
 
 const CAPABILITIES = {

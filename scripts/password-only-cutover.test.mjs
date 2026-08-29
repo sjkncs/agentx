@@ -11,8 +11,8 @@ import { loadPasswordAuthConfig } from "../apps/api/dist/auth/config.js";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 const FORBIDDEN = [
-  "DATAFOUNDRY_AUTH_MODE",
-  "NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE",
+  "AGENTX_AUTH_MODE",
+  "NEXT_PUBLIC_AGENTX_AUTH_MODE",
   "X-Dev-Token",
   "dev-token",
   "DEFAULT_DEV_USER",
@@ -109,15 +109,15 @@ test("product code and scripts have no runnable development auth bypasses", () =
   assert.deepEqual(violations, [], `Forbidden development auth tokens remain:\n${violations.join("\n")}`);
 });
 
-test("CI workflow does not set DATAFOUNDRY_AUTH_MODE", () => {
+test("CI workflow does not set AGENTX_AUTH_MODE", () => {
   const ci = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
-  assert.equal(ci.includes("DATAFOUNDRY_AUTH_MODE"), false);
+  assert.equal(ci.includes("AGENTX_AUTH_MODE"), false);
 });
 
 test("loadPasswordAuthConfig rejects removed auth modes and requires password settings", () => {
   assert.doesNotThrow(() =>
     loadPasswordAuthConfig({
-      DATAFOUNDRY_AUTH_MODE: "password",
+      AGENTX_AUTH_MODE: "password",
       AUTH_SESSION_SECRET: "x".repeat(32),
       AUTH_PUBLIC_BASE_URL: "http://127.0.0.1:3000",
       AUTH_REGISTRATION_MODE: "open",
@@ -127,13 +127,13 @@ test("loadPasswordAuthConfig rejects removed auth modes and requires password se
   assert.throws(
     () =>
       loadPasswordAuthConfig({
-        DATAFOUNDRY_AUTH_MODE: "dev",
+        AGENTX_AUTH_MODE: "dev",
         AUTH_SESSION_SECRET: "x".repeat(32),
         AUTH_PUBLIC_BASE_URL: "http://127.0.0.1:3000",
         AUTH_REGISTRATION_MODE: "open",
         AUTH_EMAIL_DELIVERY: "test",
       }),
-    /DATAFOUNDRY_AUTH_MODE/
+    /AGENTX_AUTH_MODE/
   );
   assert.throws(
     () =>
@@ -173,7 +173,7 @@ function walkMarkdownFiles(dir, out = []) {
   return out;
 }
 
-test("markdown fenced blocks omit runnable DATAFOUNDRY_AUTH_MODE examples", () => {
+test("markdown fenced blocks omit runnable AGENTX_AUTH_MODE examples", () => {
   const violations = [];
   const files = [join(ROOT, "README.md"), join(ROOT, "README_zh.md")];
   walkMarkdownFiles(join(ROOT, "docs"), files);
@@ -181,7 +181,7 @@ test("markdown fenced blocks omit runnable DATAFOUNDRY_AUTH_MODE examples", () =
     const rel = relative(ROOT, full);
     const source = readFileSync(full, "utf8");
     for (const block of extractFencedBlocks(source)) {
-      if (block.includes("DATAFOUNDRY_AUTH_MODE") || block.includes("NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE")) {
+      if (block.includes("AGENTX_AUTH_MODE") || block.includes("NEXT_PUBLIC_AGENTX_AUTH_MODE")) {
         violations.push(rel);
         break;
       }

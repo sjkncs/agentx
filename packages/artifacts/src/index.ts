@@ -6,9 +6,9 @@ import type {
   ChartPreviewSeries,
   ChartPreviewType,
   Citation
-} from "@datafoundry/contracts";
-import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@datafoundry/files";
-import { artifactRecordToSummary, type MetadataStore } from "@datafoundry/metadata";
+} from "@agentx/contracts";
+import { type FileAssetService, fileAssetRefDto, mimeTypeForFilename } from "@agentx/files";
+import { artifactRecordToSummary, type MetadataStore } from "@agentx/metadata";
 import { randomUUID } from "node:crypto";
 import { basename } from "node:path";
 

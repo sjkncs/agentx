@@ -1,6 +1,6 @@
 # Product overview
 
-DataFoundry is a local-first data analysis workbench. An AI agent connects the full flow from asking questions, understanding data, running read-only queries, explaining results, to preserving deliverables.
+AgentX is a local-first data analysis workbench. An AI agent connects the full flow from asking questions, understanding data, running read-only queries, explaining results, to preserving deliverables.
 
 It fits teams that need to understand data quickly, validate metrics, and explore business questions. Users describe problems in natural language; the agent inspects table structure, generates and runs read-only SQL, and surfaces the analysis process and results.
 
@@ -13,7 +13,7 @@ Common friction in traditional data analysis:
 - Opaque analysis processes that make conclusions hard to trust.
 - Results scattered across chat, SQL, tables, and screenshots, making review and export difficult.
 
-DataFoundry puts these steps in one workbench: the user asks a question, the agent understands the data structure, runs queries within read-only boundaries, and shows tool calls, SQL, result tables, charts, or reports as traceable outputs.
+AgentX puts these steps in one workbench: the user asks a question, the agent understands the data structure, runs queries within read-only boundaries, and shows tool calls, SQL, result tables, charts, or reports as traceable outputs.
 
 ## Core workflow
 
@@ -28,7 +28,7 @@ Choose data source and model
 
 ## Entry points
 
-DataFoundry currently offers two main entry points:
+AgentX currently offers two main entry points:
 
 | Entry | Best for | Notes |
 | --- | --- | --- |
@@ -39,7 +39,7 @@ The backend also exposes REST API and CopilotKit / AG-UI runtime endpoints for W
 
 ## Capability boundaries
 
-DataFoundry emphasizes data safety and traceability by default:
+AgentX emphasizes data safety and traceability by default:
 
 - Data queries run through controlled tools; there is no arbitrary SQL REST passthrough.
 - The agent must inspect table structure before executing SQL.

@@ -286,7 +286,7 @@ function buildWorkOrderBody(
 
   // 元信息
   lines.push(`---`);
-  lines.push(`*由 DataFoundry 食安系统自动生成 | ${new Date().toLocaleString("zh-CN")}*`);
+  lines.push(`*由 AgentX 食安系统自动生成 | ${new Date().toLocaleString("zh-CN")}*`);
 
   return lines.join("\n");
 }
@@ -311,7 +311,7 @@ async function sendToInngest(payload: WorkOrderPayload): Promise<{ success: bool
     });
 
     // 实际实现示例:
-    // const inngest = new InngestClient({ id: "datafoundry-food-safety" });
+    // const inngest = new InngestClient({ id: "agentx-food-safety" });
     // await inngest.send({
     //   name: "fsf/work-order-created",
     //   data: payload,

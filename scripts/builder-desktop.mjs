@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * datafoundry-desktop incremental builder
+ * agentx-desktop incremental builder
  *
  * Wraps `electron-builder` with a content-addressed fingerprint so a
  * `./dist` rebuild is fast when nothing in the desktop bundle's input
@@ -18,8 +18,8 @@
  *   - electron-builder version (package.json devDependencies)
  *
  * Outputs:
- *   - apps/desktop/dist/DataFoundry Desktop-0.1.0-x64.exe      (NSIS)
- *   - apps/desktop/dist/DataFoundry Desktop-0.1.0-portable.exe (portable)
+ *   - apps/desktop/dist/AgentX Desktop-0.1.0-x64.exe      (NSIS)
+ *   - apps/desktop/dist/AgentX Desktop-0.1.0-portable.exe (portable)
  *   - apps/desktop/dist/win-unpacked/                         (unpacked)
  *   - .cache/desktop-builder/fingerprint.json                  (cache state)
  *   - .cache/desktop-builder/last-snapshot/                    (previous dist)

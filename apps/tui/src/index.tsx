@@ -71,7 +71,7 @@ async function renderAuthenticatedApp(options: {
         {
           exitOnCtrlC: false,
           incrementalRendering:
-            process.env.DATAFOUNDRY_TUI_INCREMENTAL_RENDERING !== "0",
+            process.env.AGENTX_TUI_INCREMENTAL_RENDERING !== "0",
           maxFps: 30,
           patchConsole: false,
         },
@@ -96,10 +96,10 @@ async function renderAuthenticatedApp(options: {
 
 function printHelp(): void {
   console.log(`
-DataFoundry TUI - Terminal User Interface for DataFoundry
+AgentX TUI - Terminal User Interface for AgentX
 
 Usage:
-  datafoundry-tui [options]
+  agentx-tui [options]
 
 Options:
   --runtime-url <url>     CopilotKit runtime URL
@@ -107,21 +107,21 @@ Options:
   --datasource-id <id>    Datasource ID
                           (default: backend run-defaults)
   --agent <name>          Agent name
-                          (default: dataFoundry)
+                          (default: agentX)
   --theme <name>          TUI color theme
-                          (mist-dark or legacy-dark; env: DATAFOUNDRY_TUI_THEME)
+                          (mist-dark or legacy-dark; env: AGENTX_TUI_THEME)
   --resume [sessionId]    Resume the latest server session, or a specific session
   --no-auto-login         Ignore cached session and show the login menu
   --help, -h              Show this help message
 
 Examples:
-  datafoundry-tui
-  datafoundry-tui --runtime-url http://localhost:8787/api/copilotkit
-  datafoundry-tui --datasource-id my-database
-  datafoundry-tui --theme mist-dark
-  datafoundry-tui --resume
-  datafoundry-tui --resume thread-001
-  datafoundry-tui --no-auto-login
+  agentx-tui
+  agentx-tui --runtime-url http://localhost:8787/api/copilotkit
+  agentx-tui --datasource-id my-database
+  agentx-tui --theme mist-dark
+  agentx-tui --resume
+  agentx-tui --resume thread-001
+  agentx-tui --no-auto-login
 
 Notes:
   Session cache keys treat localhost, 127.0.0.1, and ::1 as different API endpoints.
@@ -179,7 +179,7 @@ export async function runTui(options: RunTuiOptions = {}): Promise<number> {
     return 1;
   }
 
-  const requestedTheme = getOptionalArg(args, "--theme") ?? process.env.DATAFOUNDRY_TUI_THEME;
+  const requestedTheme = getOptionalArg(args, "--theme") ?? process.env.AGENTX_TUI_THEME;
   if (requestedTheme && !themeManager.setActiveTheme(requestedTheme)) {
     const availableThemes = themeManager.getAvailableThemes().map((theme) => theme.name).join(", ");
     console.error(`Unknown TUI theme "${requestedTheme}". Available themes: ${availableThemes}.`);
@@ -196,7 +196,7 @@ export async function runTui(options: RunTuiOptions = {}): Promise<number> {
   let runtimeUrl = initialRuntime.url;
   let configBaseUrl = configBaseUrlFromRuntime(runtimeUrl);
   const explicitDatasourceId = getOptionalArg(args, "--datasource-id");
-  const agent = getArg(args, "--agent", "dataFoundry");
+  const agent = getArg(args, "--agent", "agentX");
   const cliNoAutoLogin = args.includes("--no-auto-login");
   let forceInteractiveLogin = cliNoAutoLogin;
   const initialResume = resolveResumeRequest(args);

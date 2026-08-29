@@ -2,7 +2,7 @@ import type {
   EvidenceRef,
   EvidenceResolutionDiagnostics,
   EvidenceResolutionIssue,
-} from "@datafoundry/contracts";
+} from "@agentx/contracts";
 import type {
   ArtifactDetail,
   DataArtifact,

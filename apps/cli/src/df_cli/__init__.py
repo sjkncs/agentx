@@ -1,4 +1,4 @@
-"""`df` — DataFoundry CLI.
+"""`df` — AgentX CLI.
 
 The package exposes a single entry point in `app.main`. Subcommands live in
 `df_cli.commands.*` so they can also be invoked programmatically via

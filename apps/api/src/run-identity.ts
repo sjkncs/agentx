@@ -1,5 +1,5 @@
 import type { BaseEvent, RunAgentInput } from "@ag-ui/client";
-import { type MetadataStore, type RunEventWriter, type RunRecord } from "@datafoundry/metadata";
+import { type MetadataStore, type RunEventWriter, type RunRecord } from "@agentx/metadata";
 import { createHash } from "node:crypto";
 import {
   isRunVisibleInSessionLineage,

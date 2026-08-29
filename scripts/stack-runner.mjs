@@ -38,22 +38,22 @@ export async function runStack({ mode, args = [] }) {
   if (startApi) {
     const command =
       mode === "development"
-        ? ["--workspace", "@datafoundry/api", "run", "dev"]
+        ? ["--workspace", "@agentx/api", "run", "dev"]
         : ["--prefix", "apps/api", "run", "start"];
-    children.push(spawnProcess("DataFoundry API", "npm", command, { ...process.env, ...runtimeConfig }));
+    children.push(spawnProcess("AgentX API", "npm", command, { ...process.env, ...runtimeConfig }));
   }
   if (startWeb) {
     const webScript = mode === "development" ? "dev" : "start";
     const command =
       mode === "development"
-        ? ["--workspace", "@datafoundry/web", "run", webScript]
+        ? ["--workspace", "@agentx/web", "run", webScript]
         : ["--prefix", "apps/web", "run", webScript];
     const webEnv = {
       ...process.env,
       ...runtimeConfig,
       ...webProcessEnvironment(runtimeConfig),
     };
-    children.push(spawnProcess("DataFoundry Web", "npm", command, webEnv));
+    children.push(spawnProcess("AgentX Web", "npm", command, webEnv));
   }
 
   if (children.length === 0) {

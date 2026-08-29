@@ -236,7 +236,7 @@
     "chineseShort": "中"
   },
   "sidebar": {
-    "brand": "DataFoundry",
+    "brand": "AgentX",
     "sessionCount": "{{count}} sessions",
     "workspaceResources": "Workspace Resources",
     "newTask": "New data task",
@@ -408,7 +408,7 @@
     "metricOutputs": "Outputs",
     "metricItems": "{{count}} items",
     "currentQuestion": "Current question",
-    "startPrompt": "Send a question to start dataFoundry.",
+    "startPrompt": "Send a question to start agentX.",
     "steps": "Steps",
     "stepsSession": "Steps (session)",
     "successRate": "Success rate",
@@ -665,7 +665,7 @@
     "mcpNotesRemote": "Remote services commonly use SSE / Streamable HTTP URLs, for example https://host/mcp",
     "mcpNotesPersist": "Configuration is persisted through POST /api/v1/mcp-servers; tokens are stored in secretRef",
     "mcpNotesRuns": "Runs use run_config.enabledMcpServerIds to mount MCP tools",
-    "llmNotesTitle": "AG-UI / dataFoundry alignment notes",
+    "llmNotesTitle": "AG-UI / agentX alignment notes",
     "llmNotesEnv": "Server env: LLM_PROVIDER, LLM_BASE_URL, LLM_API_KEY, LLM_MODEL",
     "llmNotesPersist": "Model profiles are managed through POST /api/v1/model-profiles; API keys are stored in secretRef",
     "llmNotesRuns": "Runs switch models through run_config.activeLlmProfileId",
@@ -737,7 +737,7 @@
     "openModelConfig": "Open model config",
     "persona": {
       "title": "Welcome — pick your role",
-      "body": "DataFoundry tailors the workspace to how you actually work. Choose the role that fits you best; you can switch anytime from the top bar.",
+      "body": "AgentX tailors the workspace to how you actually work. Choose the role that fits you best; you can switch anytime from the top bar.",
       "cta": "Start as this role",
       "data-scientist": {
         "label": "Data scientist",
@@ -1448,7 +1448,7 @@
     },
     "metrics": {
       "title": "System metrics",
-      "subtitle": "Prometheus-style metrics from DataFoundry services.",
+      "subtitle": "Prometheus-style metrics from AgentX services.",
       "uptime": "Uptime",
       "lastUpdate": "Updated",
       "gauges": "Gauges",

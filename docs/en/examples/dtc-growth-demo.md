@@ -1,6 +1,6 @@
 # DTC growth operating review case
 
-This case shows how DataFoundry supports a realistic operating review for a direct-to-consumer ecommerce brand. It is written as a public scenario case: a team turns a growth spike into a traceable data task by inspecting the data model, running read-only analysis, connecting business signals, and preserving the evidence behind each conclusion.
+This case shows how AgentX supports a realistic operating review for a direct-to-consumer ecommerce brand. It is written as a public scenario case: a team turns a growth spike into a traceable data task by inspecting the data model, running read-only analysis, connecting business signals, and preserving the evidence behind each conclusion.
 
 ## Scenario
 
@@ -112,4 +112,4 @@ The growth is real, but the quality of growth is mixed. Douyin contributes the l
 
 ## Boundaries
 
-This is a small local dataset designed for product evaluation and workflow validation. The exact results are deterministic, but they are not a benchmark for model accuracy or a substitute for your own data-governance review. In production, connect DataFoundry to your own datasource, verify generated SQL in the trace, and apply your organization's access control and approval policy.
+This is a small local dataset designed for product evaluation and workflow validation. The exact results are deterministic, but they are not a benchmark for model accuracy or a substitute for your own data-governance review. In production, connect AgentX to your own datasource, verify generated SQL in the trace, and apply your organization's access control and approval policy.

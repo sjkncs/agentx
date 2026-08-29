@@ -6,22 +6,22 @@
  *   2. SupabaseRunSink        — tracks agent run lifecycle
  *
  * Also registers the human-approval-queue interrupt bridge so that
- * approval requests from @datafoundry/metadata are visible to the admin panel.
+ * approval requests from @agentx/metadata are visible to the admin panel.
  *
  * Run after metadataStore is created; safe to call with `void` — logs warnings
  * if Supabase is not configured (no credentials / disabled).
  */
 import type { BaseEvent } from "@ag-ui/client";
 import { EventType } from "@ag-ui/client";
-import { createCustomEvent } from "@datafoundry/agent-runtime";
-import type { MetadataStore } from "@datafoundry/metadata";
+import { createCustomEvent } from "@agentx/agent-runtime";
+import type { MetadataStore } from "@agentx/metadata";
 import {
   SupabaseEventLogSink,
   SupabaseRunSink,
-} from "@datafoundry/supabase-bridge";
+} from "@agentx/supabase-bridge";
 import { registerSink } from "./event-bus.js";
 import { enqueueFromInterrupt } from "./human-approval-queue.js";
-import { supabase } from "@datafoundry/supabase-bridge";
+import { supabase } from "@agentx/supabase-bridge";
 
 function buildEventLogSink(metadataStore: MetadataStore): SupabaseEventLogSink {
   const client = supabase();
@@ -130,7 +130,7 @@ function registerHumanApprovalSink(_metadataStore: MetadataStore): void {
         run_id: e._runId ?? "",
         session_id: e._sessionId ?? "",
         user_id: userId,
-        user_email: `user-${userId}@datafoundry.local`,
+        user_email: `user-${userId}@agentx.local`,
         tool_name: (e.tool_name as "ask_user" | "submit_plan") ?? "ask_user",
         suspendPayload: payload,
       });

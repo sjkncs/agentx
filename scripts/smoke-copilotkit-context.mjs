@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { EventType } from "@ag-ui/core";
 import { extractDatasourceId, extractEffectiveRunConfig, extractLastUserText } from "../apps/api/dist/run-input.js";
-import { createDataFoundry, createDataFoundryRunContext, DATA_AGENT_TOOL_NAMES } from "../packages/agent-runtime/dist/index.js";
+import { createAgentX, createAgentXRunContext, DATA_AGENT_TOOL_NAMES } from "../packages/agent-runtime/dist/index.js";
 import { TaskPlanProjector } from "../apps/api/dist/task-plan-projector.js";
 
 const userId = randomUUID();
@@ -166,7 +166,7 @@ assert(
 );
 
 assert(
-  createDataFoundryRunContext({
+  createAgentXRunContext({
     user_id: userId,
     session_id: "thread-smoke",
     run_id: "run-smoke",
@@ -176,12 +176,12 @@ assert(
   "no enabled datasources should omit enabled_datasource_ids from run context"
 );
 
-const noDatasourceAgent = await createDataFoundry({
+const noDatasourceAgent = await createAgentX({
   dataGateway: { listDataSources: async () => ({ datasources: [] }) },
   emitter: { emit: () => undefined },
   messages: [],
   modelProvider: { kind: "mastra-router", model: "openai/smoke", model_name: "smoke-model" },
-  runContext: createDataFoundryRunContext({
+  runContext: createAgentXRunContext({
     user_id: userId,
     session_id: "thread-smoke",
     run_id: "run-smoke",

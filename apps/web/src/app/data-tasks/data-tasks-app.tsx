@@ -16,7 +16,7 @@ import {
   useFrontendTool,
   useRenderTool,
 } from "@copilotkit/react-core/v2";
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 import nextDynamic from "next/dynamic";
 import { Children, cloneElement, isValidElement, useCallback, createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ComponentProps, ComponentType, MouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
@@ -232,7 +232,7 @@ import {
   LiveRunProvider,
   useConversationRestoreGate,
   useLiveRun,
-} from "./use-data-foundry-run";
+} from "./use-agentx-run";
 import {
   DataTaskIdentityProvider,
   DataTaskUserBar,
@@ -339,7 +339,7 @@ import {
   isResourcePanelSupported,
 } from "../../lib/config-api";
 
-const runtimeAgentId = "dataFoundry";
+const runtimeAgentId = "agentX";
 const sessionAgentIdPrefix = `${runtimeAgentId}:session:`;
 const runtimeUrl = getAgentRuntimeUrl();
 
@@ -363,7 +363,7 @@ function threadIdFromDataTaskSessionAgentId(agentId: unknown): string | null {
   }
 }
 
-function reportDataFoundryRunError(
+function reportAgentXRunError(
   error: unknown,
   threadId?: string | null,
   options?: { source?: "client" | "runtime" },
@@ -373,7 +373,7 @@ function reportDataFoundryRunError(
     return;
   }
   window.dispatchEvent(
-    new CustomEvent("datafoundry-run-error", {
+    new CustomEvent("agentx-run-error", {
       detail: {
         message,
         threadId: threadId ?? null,
@@ -512,7 +512,7 @@ function StableDataTaskChatInput({
       onUploadFailed: ({ message }) => {
         const error = new Error(message);
         setSubmitError(formatRunErrorMessage(message));
-        reportDataFoundryRunError(error, bindings.activeThreadId, { source: "client" });
+        reportAgentXRunError(error, bindings.activeThreadId, { source: "client" });
       },
     },
   });
@@ -522,7 +522,7 @@ function StableDataTaskChatInput({
     queuedRunSawActiveRef.current = false;
     const message = error instanceof Error ? error.message : String(error);
     setSubmitError(formatRunErrorMessage(message));
-    reportDataFoundryRunError(error, bindings.activeThreadId, { source: "client" });
+    reportAgentXRunError(error, bindings.activeThreadId, { source: "client" });
   }, [bindings.activeThreadId]);
 
   const fetchForeignActiveRun = useCallback(async (): Promise<SessionActiveRunDto | null> => {
@@ -1015,7 +1015,7 @@ function DataTasksCopilotShell() {
         }
         console.error("[data-tasks]", event);
         window.dispatchEvent(
-          new CustomEvent("datafoundry-run-error", {
+          new CustomEvent("agentx-run-error", {
             detail: {
               message,
               threadId: threadIdFromDataTaskSessionAgentId(contextAgentId),
@@ -2734,7 +2734,7 @@ function ToolResultMissingCard({ name }: { name: string }) {
          tool observation has not reached the frontend thread. If the right-side Trace already has SQL audit or step
          status, this usually means the AG-UI{" "}
         <code className="text-[11px]">TOOL_CALL_RESULT</code>{" "}
-         terminal event is missing. Refresh and retry, or inspect the dataFoundry runtime bridge.
+         terminal event is missing. Refresh and retry, or inspect the agentX runtime bridge.
       </p>
     </div>
   );
@@ -3194,12 +3194,12 @@ function StepUserMessage(props: CopilotChatUserMessageProps) {
         agent.setState(buildAgentRunStatePatch(forwardedProps, agent.state));
         agent.addMessage({ id: createClientId("msg"), role: "user", content: text });
         void copilotkit.runAgent({ agent, forwardedProps }).catch((error) => {
-          reportDataFoundryRunError(error, chatConfig?.threadId);
+          reportAgentXRunError(error, chatConfig?.threadId);
         });
       }
       setEditing(false);
     } catch (error) {
-      reportDataFoundryRunError(error, chatConfig?.threadId);
+      reportAgentXRunError(error, chatConfig?.threadId);
     } finally {
       setBusy(false);
     }
@@ -7623,7 +7623,7 @@ function PendingBranchRunDispatcher({
       agent.addMessage({ id: createClientId("msg"), role: "user", content: pending.text });
       onDispatched();
       void copilotkit.runAgent({ agent, forwardedProps }).catch((error) => {
-        reportDataFoundryRunError(error, chatConfig?.threadId);
+        reportAgentXRunError(error, chatConfig?.threadId);
       });
     }, 0);
     return () => window.clearTimeout(timeout);

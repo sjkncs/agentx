@@ -97,7 +97,7 @@ export function overlayProcessEnv(text, processEnv = {}, options = {}) {
   const parsed = parseDeploymentEnvironment(text ?? "");
   const allowSecretOverlay =
     options.allowProcessSecretOverlay === true ||
-    envFlagEnabled(processEnv.DATAFOUNDRY_ALLOW_PROCESS_SECRET_OVERLAY);
+    envFlagEnabled(processEnv.AGENTX_ALLOW_PROCESS_SECRET_OVERLAY);
 
   for (const key of SECRET_OVERLAY_KEYS) {
     if (processEnv[key] == null || String(processEnv[key]).trim() === "") continue;
@@ -429,7 +429,7 @@ function createRealDeps(context) {
     async loadConfiguration() {
       const sourceText = await loadRootEnvText(root);
       const overlaid = overlayProcessEnv(sourceText, process.env, {
-        allowProcessSecretOverlay: envFlagEnabled(process.env.DATAFOUNDRY_ALLOW_PROCESS_SECRET_OVERLAY)
+        allowProcessSecretOverlay: envFlagEnabled(process.env.AGENTX_ALLOW_PROCESS_SECRET_OVERLAY)
       });
       const generateSecrets = parsed.command === "deploy";
       const ensured = ensureDeploymentEnvironment(overlaid, { generateSecrets });
@@ -586,7 +586,7 @@ function createRealDeps(context) {
       }
       await writeDeploymentState(root, { ...inspection.state, status: "healthy" });
       if (deployLog) await deployLog.finalize();
-      print(`DataFoundry is healthy at ${current.env.AUTH_PUBLIC_BASE_URL}`);
+      print(`AgentX is healthy at ${current.env.AUTH_PUBLIC_BASE_URL}`);
       print("Next: open Web, register/login, then create and enable a model profile.");
       print("TUI is built and ready. Start it in another terminal (foreground client, not a background service):");
       print("  ./deploy.sh tui");

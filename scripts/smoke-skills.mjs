@@ -19,7 +19,7 @@ import { createRunWorkspace } from "../packages/agent-runtime/dist/tools/workspa
 import { createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createVerifiedTestIdentity } from "./lib/metadata-test-identity.mjs";
 
-const root = mkdtempSync(join(tmpdir(), "open-data-foundry-skills-smoke-"));
+const root = mkdtempSync(join(tmpdir(), "open-agentx-skills-smoke-"));
 const metadataStore = createMetadataStore({ database_path: join(root, "metadata.sqlite") });
 const __testIdentity = createVerifiedTestIdentity(metadataStore);
 const userId = __testIdentity.userId;

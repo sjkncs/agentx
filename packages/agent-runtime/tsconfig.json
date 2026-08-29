@@ -4,8 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "paths": {
-      "@datafoundry/agent-runtime": ["./src/index.ts"],
-      "@datafoundry/agent-runtime/*": ["./src/*"]
+      "@agentx/agent-runtime": ["./src/index.ts"],
+      "@agentx/agent-runtime/*": ["./src/*"]
     }
   },
   "references": [

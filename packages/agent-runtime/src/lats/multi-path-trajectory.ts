@@ -13,7 +13,7 @@
  * 
  * References:
  * - LATS paper arXiv 2310.04406 "Language Agent Tree Search"
- * - DataFoundry protocol-runtime event emission pattern (protocol.phase.entered)
+ * - AgentX protocol-runtime event emission pattern (protocol.phase.entered)
  */
 
 /**

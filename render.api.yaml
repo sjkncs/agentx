@@ -1,6 +1,6 @@
 {
-  "name": "datafoundry-api",
-  "description": "DataFoundry API server — CopilotKit agent runtime, REST API, AG-UI events",
+  "name": "agentx-api",
+  "description": "AgentX API server — CopilotKit agent runtime, REST API, AG-UI events",
   "runtime": "node",
   "version": "1",
   "features": {
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "preinstall": "node scripts/postinstall.mjs",
-    "build": "npm --workspace @datafoundry/api run build",
+    "build": "npm --workspace @agentx/api run build",
     "start": "node --import tsx apps/api/dist/index.js"
   },
   "env": {

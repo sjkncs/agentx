@@ -1,4 +1,4 @@
-# Deploy DataFoundry to production.
+# Deploy AgentX to production.
 #
 # Two artifacts are produced:
 #   1. apps/web       → Vercel (Next.js, serverless). Marketing pages, app routes,

@@ -1,4 +1,4 @@
-"""DataFoundry PyQt6 desktop client — 3D trajectory + lineage visualisation."""
+"""AgentX PyQt6 desktop client — 3D trajectory + lineage visualisation."""
 
 from __future__ import annotations
 

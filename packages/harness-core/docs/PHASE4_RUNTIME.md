@@ -1,6 +1,6 @@
 # Phase 4: Multi-Runtime Support
 
-This document describes Phase 4 of the DataFoundry Harness upgrade.
+This document describes Phase 4 of the AgentX Harness upgrade.
 
 ## Overview
 
@@ -42,7 +42,7 @@ Phase 4 adds comprehensive multi-runtime support:
 ## Runtime Interface
 
 ```typescript
-import type { RuntimeInstance, ExecutionRequest } from "@datafoundry/harness-core";
+import type { RuntimeInstance, ExecutionRequest } from "@agentx/harness-core";
 
 interface RuntimeInstance<Config> {
   readonly id: string;
@@ -62,7 +62,7 @@ interface RuntimeInstance<Config> {
 ## Local Runtime
 
 ```typescript
-import { LocalRuntime, createLocalRuntime, createSecureLocalRuntime } from "@datafoundry/harness-core";
+import { LocalRuntime, createLocalRuntime, createSecureLocalRuntime } from "@agentx/harness-core";
 
 // Basic usage
 const runtime = createLocalRuntime("my-local", {
@@ -88,7 +88,7 @@ const secureRuntime = createSecureLocalRuntime("secure-1");
 ## Remote Runtime
 
 ```typescript
-import { RemoteRuntime, createDataFoundryCloudRuntime } from "@datafoundry/harness-core";
+import { RemoteRuntime, createAgentXCloudRuntime } from "@agentx/harness-core";
 
 // Custom endpoint
 const runtime = new RemoteRuntime("remote-1", {
@@ -98,8 +98,8 @@ const runtime = new RemoteRuntime("remote-1", {
   retries: 3,
 });
 
-// DataFoundry Cloud
-const cloudRuntime = createDataFoundryCloudRuntime(
+// AgentX Cloud
+const cloudRuntime = createAgentXCloudRuntime(
   "cloud-1",
   process.env.DF_API_KEY!,
   "us-east-1"
@@ -117,7 +117,7 @@ const result = await runtime.execute({
 ## Runtime Manager
 
 ```typescript
-import { RuntimeManager, createRuntimeManager, DefaultRoutingRules } from "@datafoundry/harness-core";
+import { RuntimeManager, createRuntimeManager, DefaultRoutingRules } from "@agentx/harness-core";
 
 // Create manager
 const manager = createRuntimeManager({
@@ -157,7 +157,7 @@ if (runtime) {
 ## Routing Rules
 
 ```typescript
-import type { RoutingRule } from "@datafoundry/harness-core";
+import type { RoutingRule } from "@agentx/harness-core";
 
 // Custom rule
 const customRule: RoutingRule = {
@@ -224,7 +224,7 @@ import {
   RuntimeInitError,
   RuntimeExecutionError,
   RuntimeTimeoutError,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 
 try {
   await runtime.execute({ code: "...", language: "javascript" });
@@ -245,9 +245,9 @@ try {
 import {
   createRuntimeManager,
   createLocalRuntime,
-  createDataFoundryCloudRuntime,
+  createAgentXCloudRuntime,
   DefaultRoutingRules,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 
 async function main() {
   // 1. Create manager
@@ -259,7 +259,7 @@ async function main() {
   // 2. Register runtimes
   manager.register(createLocalRuntime("fast-local"));
   manager.register(createLocalRuntime("slow-local"));
-  manager.register(createDataFoundryCloudRuntime("cloud", process.env.API_KEY!));
+  manager.register(createAgentXCloudRuntime("cloud", process.env.API_KEY!));
 
   // 3. Configure routing
   manager.setStrategy("least-loaded");

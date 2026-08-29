@@ -8,8 +8,8 @@ import { MastraAgent } from "@ag-ui/mastra";
 import { EventType } from "@ag-ui/client";
 import { ToolCallResultBridge } from "../apps/api/dist/tool-call-result-bridge.js";
 import {
-  createDataFoundry,
-  createDataFoundryRunContext,
+  createAgentX,
+  createAgentXRunContext,
 } from "../packages/agent-runtime/dist/index.js";
 import { LocalDataGateway } from "../packages/data-gateway/dist/index.js";
 import { createMetadataStore } from "../packages/metadata/dist/index.js";
@@ -33,7 +33,7 @@ try {
 
 const modelProvider = createModelProviderFromEnv(process.env);
 if (modelProvider.kind === "mock") {
-  console.error("LLM_API_KEY missing — set it in datafoundry/.env to run this diagnostic.");
+  console.error("LLM_API_KEY missing — set it in agentx/.env to run this diagnostic.");
   process.exit(1);
 }
 
@@ -42,11 +42,11 @@ const metadataPath = `storage/diagnose-tool-result/${stamp}/metadata.sqlite`;
 const store = createMetadataStore({ database_path: metadataPath });
 const gateway = new LocalDataGateway(store);
 
-const user_id = process.env.DATAFOUNDRY_USER_ID;
-if (!user_id || !process.env.DATAFOUNDRY_WORKSPACE_ID) {
-  throw new Error("diagnose-tool-result-events requires DATAFOUNDRY_USER_ID and DATAFOUNDRY_WORKSPACE_ID");
+const user_id = process.env.AGENTX_USER_ID;
+if (!user_id || !process.env.AGENTX_WORKSPACE_ID) {
+  throw new Error("diagnose-tool-result-events requires AGENTX_USER_ID and AGENTX_WORKSPACE_ID");
 }
-const workspace_id = process.env.DATAFOUNDRY_WORKSPACE_ID;
+const workspace_id = process.env.AGENTX_WORKSPACE_ID;
 const session_id = `diag-session-${stamp}`;
 const run_id = `diag-run-${stamp}`;
 const datasource_id = "api-duckdb-demo";
@@ -73,7 +73,7 @@ store.runs.create({
   datasource_id,
 });
 
-const runContext = createDataFoundryRunContext({
+const runContext = createAgentXRunContext({
   user_id,
   session_id,
   run_id,
@@ -147,7 +147,7 @@ const deliverEvent = (event, source = "stream") => {
   }
 };
 
-const { agent } = createDataFoundry({
+const { agent } = createAgentX({
   dataGateway: gateway,
   emitter: {
     emit: (event) => deliverEvent(event, "activity"),

@@ -291,7 +291,7 @@ describe('End-to-End Integration Tests', () => {
   });
 
   describe('Compatibility & Backwards Compatibility', () => {
-    it('should support legacy datafoundry types', () => {
+    it('should support legacy agentx types', () => {
       const manager = createSubagentManager({
         maxConcurrent: 10,
         defaultTimeout: 30000,

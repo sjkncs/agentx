@@ -1,5 +1,5 @@
-import type { AgUiEventEmitter } from "@datafoundry/agent-runtime";
-import { createCustomEvent } from "@datafoundry/agent-runtime";
+import type { AgUiEventEmitter } from "@agentx/agent-runtime";
+import { createCustomEvent } from "@agentx/agent-runtime";
 import { createSupabaseClient, type SupabaseScheduledTaskRow } from "./supabase.js";
 
 const supabase = createSupabaseClient();
@@ -42,7 +42,7 @@ export async function ensureTasksLoaded(userId: string): Promise<void> {
 }
 
 /**
- * Lightweight scheduled-task (cron) system for DataFoundry.
+ * Lightweight scheduled-task (cron) system for AgentX.
  *
  * Tasks run on a fixed interval (minutes). A background scheduler checks for due
  * tasks and emits a `scheduled.task.due` AG-UI custom event (observable by the

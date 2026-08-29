@@ -35,7 +35,7 @@ const DEFAULTS = {
 
 const SECRET_KEYS = ["AUTH_SESSION_SECRET", "SECRET_MASTER_KEY"];
 /** Removed by password-only cutover; strip on ensure so upgraded .env can boot. */
-const REMOVED_LEGACY_AUTH_KEYS = ["DATAFOUNDRY_AUTH_MODE", "NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE"];
+const REMOVED_LEGACY_AUTH_KEYS = ["AGENTX_AUTH_MODE", "NEXT_PUBLIC_AGENTX_AUTH_MODE"];
 const PLACEHOLDER_SECRETS = new Set(["", "change-me", "replace-me"]);
 const SENSITIVE_KEY_PATTERN = /KEY|SECRET|TOKEN|PASSWORD|COOKIE|AUTHORIZATION/i;
 const SENSITIVE_JSON_KEY_PATTERN = /^(?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|secret|token|password|authorization|auth)$/i;
@@ -156,8 +156,8 @@ export function ensureDeploymentEnvironment(sourceText, options = {}) {
       : `${workingText}\n`;
 
   const env = { ...parseDeploymentEnvironment(text) };
-  delete env.DATAFOUNDRY_AUTH_MODE;
-  delete env.NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE;
+  delete env.AGENTX_AUTH_MODE;
+  delete env.NEXT_PUBLIC_AGENTX_AUTH_MODE;
   return { text, env, generatedKeys, removedKeys };
 }
 

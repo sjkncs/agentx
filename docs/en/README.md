@@ -1,6 +1,6 @@
-# DataFoundry Documentation
+# AgentX Documentation
 
-DataFoundry is an AI workbench for data analysis. It brings natural-language questions, data source management, read-only SQL execution, analysis traceability, and result delivery into a single workflow—so you can move through exploratory data analysis faster.
+AgentX is an AI workbench for data analysis. It brings natural-language questions, data source management, read-only SQL execution, analysis traceability, and result delivery into a single workflow—so you can move through exploratory data analysis faster.
 
 These docs are for product trials, customer demos, open-source visitors, and integration developers. Public documentation is available in English and Chinese.
 

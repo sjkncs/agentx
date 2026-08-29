@@ -55,7 +55,7 @@ export async function runInteractiveLogin(options: {
   try {
     while (true) {
       writeLine(stdout, "");
-      writeLine(stdout, "DataFoundry TUI login");
+      writeLine(stdout, "AgentX TUI login");
       writeLine(stdout, "  [1] Sign in with email and password");
       if (options.status.registrationEnabled) {
         writeLine(stdout, "  [2] Open web registration");

@@ -15,7 +15,7 @@ export class ToolPlugin implements Plugin {
     name: "Example Tool Plugin",
     version: "1.0.0",
     description: "Example plugin that adds custom tools",
-    author: "DataFoundry Team",
+    author: "AgentX Team",
   };
   
   async onMount(context: PluginContext): Promise<void> {

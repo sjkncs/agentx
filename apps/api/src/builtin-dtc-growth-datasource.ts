@@ -10,8 +10,8 @@ import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { resolveWorkspaceDir } from "@datafoundry/agent-runtime";
-import type { MetadataStore } from "@datafoundry/metadata";
+import { resolveWorkspaceDir } from "@agentx/agent-runtime";
+import type { MetadataStore } from "@agentx/metadata";
 
 export const DTC_GROWTH_DATASOURCE_ID = "dtc-growth-demo";
 export const DTC_GROWTH_DATASOURCE_NAME = "DTC Growth Review";

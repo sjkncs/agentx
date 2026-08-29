@@ -1,4 +1,4 @@
-import type { ArtifactType } from "@datafoundry/contracts";
+import type { ArtifactType } from "@agentx/contracts";
 
 const ALLOWED_EXTENSIONS = new Set([
   ".csv",

@@ -1,6 +1,6 @@
 # Phase 5: Subagent Orchestration
 
-This document describes Phase 5 of the DataFoundry Harness upgrade.
+This document describes Phase 5 of the AgentX Harness upgrade.
 
 ## Overview
 
@@ -86,7 +86,7 @@ type SubagentIsolation =
 ### Creating a Subagent
 
 ```typescript
-import { createSubagent } from '@datafoundry/harness-core';
+import { createSubagent } from '@agentx/harness-core';
 
 const subagent = createSubagent('session-1', {
   role: 'researcher',
@@ -105,7 +105,7 @@ subagent.complete({ success: true, data: { findings: [] } });
 ### Subagent Manager
 
 ```typescript
-import { createSubagentManager } from '@datafoundry/harness-core';
+import { createSubagentManager } from '@agentx/harness-core';
 
 const manager = createSubagentManager({
   maxConcurrent: 10,
@@ -137,7 +137,7 @@ const children = manager.getChildren(parent.id);
 ### Orchestrator
 
 ```typescript
-import { createOrchestrator, createSubagentManager } from '@datafoundry/harness-core';
+import { createOrchestrator, createSubagentManager } from '@agentx/harness-core';
 
 const manager = createSubagentManager();
 const orchestrator = createOrchestrator(manager);
@@ -288,7 +288,7 @@ import {
   createSubagentManager,
   createOrchestrator,
   type Orchestration,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 async function multiAgentWorkflow() {
   // 1. Create manager

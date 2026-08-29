@@ -1,11 +1,11 @@
 /**
- * Hook Adapter - 桥接 DataFoundry/Mastra 事件到 Hook系统
+ * Hook Adapter - 桥接 AgentX/Mastra 事件到 Hook系统
  *
  * 将现有的 Mastra Agent 事件转换为 Hook 事件
  */
 
-import type { AgUiEventEmitter } from "@datafoundry/agent-runtime";
-import { createCustomEvent } from "@datafoundry/agent-runtime";
+import type { AgUiEventEmitter } from "@agentx/agent-runtime";
+import { createCustomEvent } from "@agentx/agent-runtime";
 import type { HookEvent, HookContext } from "../hooks/hook-types.js";
 import { HookBus } from "../hooks/hook-bus.js";
 import { type CompatibleEmitter, wrapAgUiEmitter, AGENT_EVENTS } from "./event-log-adapter.js";
@@ -43,7 +43,7 @@ export class HookAdapter {
   ) {
     this.sessionId = config.sessionId || "unknown";
     this.runId = config.runId || "unknown";
-    this.agentName = config.agentName || "datafoundry";
+    this.agentName = config.agentName || "agentx";
     this.enabled = config.enabled ?? true;
     // 将 AgUiEventEmitter 包装为兼容 EventEmitter 的接口
     if (typeof (emitter as { on?: unknown }).on === "function") {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * dev-isolated.mjs — process-isolated launcher for any DataFoundry script.
+ * dev-isolated.mjs — process-isolated launcher for any AgentX script.
  *
  * Usage:
  *   node scripts/dev-isolated.mjs -- <command> [args...]
@@ -55,7 +55,7 @@ const env = {
   ...Object.fromEntries(
     Object.entries(portBlock.ports).map(([k, v]) => [`PORT_${k.toUpperCase()}`, String(v)]),
   ),
-  DATA_FOUNDRY_TEST_NAME: name,
+  AGENTX_TEST_NAME: name,
 };
 
 const logDir = path.join(RUN_DIR, name);

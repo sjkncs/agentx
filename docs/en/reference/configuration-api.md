@@ -10,7 +10,7 @@ http://127.0.0.1:8787
 
 ## Design boundaries
 
-DataFoundry separates resource management from agent runs:
+AgentX separates resource management from agent runs:
 
 | Type | Entry | Purpose |
 | --- | --- | --- |

@@ -48,7 +48,7 @@ describe("resolveTuiAuthStorePath", () => {
         env: { APPDATA: "C:\\Users\\me\\AppData\\Roaming" },
         homedir: () => "C:\\Users\\me",
       }),
-      join("C:\\Users\\me\\AppData\\Roaming", "DataFoundry", "tui-auth.json"),
+      join("C:\\Users\\me\\AppData\\Roaming", "AgentX", "tui-auth.json"),
     );
   });
 
@@ -59,7 +59,7 @@ describe("resolveTuiAuthStorePath", () => {
         env: { XDG_CONFIG_HOME: "/tmp/xdg" },
         homedir: () => "/home/me",
       }),
-      join("/tmp/xdg", "datafoundry", "tui-auth.json"),
+      join("/tmp/xdg", "agentx", "tui-auth.json"),
     );
   });
 
@@ -70,7 +70,7 @@ describe("resolveTuiAuthStorePath", () => {
         env: {},
         homedir: () => "/Users/me",
       }),
-      join("/Users/me", "Library", "Application Support", "DataFoundry", "tui-auth.json"),
+      join("/Users/me", "Library", "Application Support", "AgentX", "tui-auth.json"),
     );
   });
 });

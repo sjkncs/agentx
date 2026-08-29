@@ -63,7 +63,7 @@ export const createMastraStreamNormalizerHooks = (
       if (type === "data-workspace-metadata") {
         emitter.emit(createCustomEvent("workspace.metadata", chunk.data));
         void Promise.resolve(options.onWorkspaceMetadata?.(chunk.data)).catch((error) => {
-          console.warn("[data-foundry] workspace_metadata_hook_failed", error);
+          console.warn("[agentx] workspace_metadata_hook_failed", error);
         });
         return;
       }

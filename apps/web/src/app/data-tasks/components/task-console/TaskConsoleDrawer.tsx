@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 import type { DataArtifact, TimelineEvent, WorkspaceConfigItem } from "../../data-task-state";
 import type { JobDto } from "../../../../lib/config-api";
 import type { LiveRun, SessionUsageStats } from "../../live-run-state";

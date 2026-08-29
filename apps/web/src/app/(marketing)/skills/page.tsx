@@ -187,7 +187,7 @@ const CATEGORY_ORDER = [
 ];
 
 export default async function SkillsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_DATAFOUNDRY_API_BASE ?? "http://127.0.0.1:8787";
+  const apiBase = process.env.NEXT_PUBLIC_AGENTX_API_BASE ?? "http://127.0.0.1:8787";
   const { online, entries: liveEntries } = await fetchCatalog(apiBase);
   const entries = online && liveEntries.length > 0 ? liveEntries : FALLBACK_ENTRIES;
   const source = online ? "live" : "fallback";

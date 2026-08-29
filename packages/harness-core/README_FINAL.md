@@ -1,8 +1,8 @@
-# DataFoundry Harness Core - Final Documentation
+# AgentX Harness Core - Final Documentation
 
 ## Project Overview
 
-DataFoundry Harness Core 是一个完整的 AI Agent 编排框架，基于 Cursor/DeepSeek/Cordis 设计理念实现。
+AgentX Harness Core 是一个完整的 AI Agent 编排框架，基于 Cursor/DeepSeek/Cordis 设计理念实现。
 
 ## 10-Phase Implementation Complete
 
@@ -40,7 +40,7 @@ Cursor IDE 集成（Local + Cloud）。
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    DataFoundry Harness Core                                    │
+│                    AgentX Harness Core                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  �─────────────────────────────────────────────────────────────────────┐    │
@@ -253,7 +253,7 @@ import {
   GateManager,
   LocalCursorSdkAdapter,
   createIdeResidentWorkflow,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 async function completeWorkflow() {
   // 1. Setup foundation
@@ -352,7 +352,7 @@ import {
   HookExecutor,
   createHookBus,
   type Hook,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Event Log
@@ -363,7 +363,7 @@ import {
   EventLogAdapter,
   TimelineRecorder,
   EventAnalytics,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Plugin System
@@ -375,7 +375,7 @@ import {
   Profile,
   Bundle,
   createPlugin,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Multi-Runtime
@@ -387,7 +387,7 @@ import {
   RuntimeManager,
   createLocalRuntime,
   createRemoteRuntime,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Subagent
@@ -398,7 +398,7 @@ import {
   Orchestrator,
   createSubagentManager,
   createOrchestrator,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### MCP
@@ -410,7 +410,7 @@ import {
   McpBridge,
   createMcpClient,
   createMcpServer,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Sandbox
@@ -423,7 +423,7 @@ import {
   SandboxManager,
   createSandbox,
   createSandboxManager,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Gates
@@ -438,7 +438,7 @@ import {
   buildGateExecutor,
   formatGateExecutor,
   coverageGateExecutor,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ### Cursor SDK
@@ -450,7 +450,7 @@ import {
   IdeResidentWorkflow,
   createCursorSdkAdapter,
   createIdeResidentWorkflow,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 ```
 
 ## License
@@ -459,7 +459,7 @@ MIT
 
 ## Authors
 
-DataFoundry Team
+AgentX Team
 
 ## Acknowledgments
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# entrypoint.sh — Docker entrypoint for datafoundry/python-sandbox container.
+# entrypoint.sh — Docker entrypoint for agentx/python-sandbox container.
 #
 # Responsibilities:
 #   1. Apply network isolation (drop all outbound)

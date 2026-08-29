@@ -2,7 +2,7 @@
  * Command Parser Module
  *
  * Provides command parsing, validation, registration, and help generation
- * for the DataFoundry TUI command system.
+ * for the AgentX TUI command system.
  */
 
 import { z } from 'zod';

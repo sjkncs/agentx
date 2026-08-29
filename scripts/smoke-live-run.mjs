@@ -6,7 +6,7 @@ const API_PORT = process.env.API_PORT ?? 8787;
 const API_URL = `http://127.0.0.1:${API_PORT}`;
 
 // Start dev:api in background
-const child = spawn("npm", ["--workspace", "@datafoundry/api", "run", "dev"], {
+const child = spawn("npm", ["--workspace", "@agentx/api", "run", "dev"], {
   env: { ...process.env },
   stdio: ["ignore", "pipe", "pipe"]
 });
@@ -94,7 +94,7 @@ async function getSessionCookies(url) {
   const res = await fetch(loginUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "dev2@local.test", password: "datafoundry123" })
+    body: JSON.stringify({ email: "dev2@local.test", password: "agentx123" })
   });
   const cookie = res.headers.get("set-cookie")?.split(";")[0];
   if (!cookie) throw new Error("Login failed: no set-cookie");

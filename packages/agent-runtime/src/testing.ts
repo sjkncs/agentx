@@ -1,12 +1,12 @@
 export {
   CONVERSATION_WORKING_MEMORY_CONFIG,
   createAgentMemoryRuntime,
-  createDataFoundry,
-  createDataFoundryRunContext,
+  createAgentX,
+  createAgentXRunContext,
   createCustomEvent,
   normalizeIngressMessages
 } from "./index.js";
-export { createDataFoundryToolRegistry } from "./tools/data-tools.js";
+export { createAgentXToolRegistry } from "./tools/data-tools.js";
 export { GovernedToolFactory } from "./tools/governed-tool-factory.js";
 export { ActionRouter } from "./capabilities/action-router.js";
 export { CapabilityRegistry } from "./capabilities/capability-registry.js";

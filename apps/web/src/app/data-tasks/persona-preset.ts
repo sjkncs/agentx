@@ -35,7 +35,7 @@ export const PERSONA_PRESETS: Record<PersonaId, PersonaPreset> = {
     defaultLeftPanelTab: "assets",
     openRightPanel: null,
     welcomeMessage:
-      "Hi. Ask a question in plain English; DataFoundry will surface the answer as a chart or table.",
+      "Hi. Ask a question in plain English; AgentX will surface the answer as a chart or table.",
     exampleQuery: "How many new customers signed up this month vs last month?",
     showTraceDag: false,
     showKnowledgePanel: false,

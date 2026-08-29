@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from ..client import ApiError, DataFoundryClient
+from ..client import ApiError, AgentXClient
 from ..config import load_config, save_config
 from ..ui import print_error, print_info, print_success, render_json, render_table
 
@@ -73,7 +73,7 @@ def _dispatch(args: argparse.Namespace) -> int:
 def _list(args: argparse.Namespace) -> int:
     cfg = load_config()
     try:
-        items = DataFoundryClient(cfg).list_dashboards()
+        items = AgentXClient(cfg).list_dashboards()
     except ApiError as err:
         print_error(str(err))
         return 1
@@ -92,7 +92,7 @@ def _list(args: argparse.Namespace) -> int:
 
 def _show(args: argparse.Namespace) -> int:
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     try:
         doc = client.get_dashboard(args.dashboard_id)
     except ApiError as err:
@@ -105,7 +105,7 @@ def _show(args: argparse.Namespace) -> int:
 def _apply(args: argparse.Namespace) -> int:
     cfg = load_config()
     try:
-        result = DataFoundryClient(cfg).apply_dashboard_template(args.template_id)
+        result = AgentXClient(cfg).apply_dashboard_template(args.template_id)
     except ApiError as err:
         print_error(str(err))
         return 1
@@ -128,7 +128,7 @@ def _templates(args: argparse.Namespace) -> int:
 def _refresh(args: argparse.Namespace) -> int:
     """Trigger server-side widget refresh and print the resulting cache state."""
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     widget_ids = list(args.widget) if args.widget else None
     try:
         result = client.refresh_dashboard(

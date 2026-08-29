@@ -74,7 +74,7 @@ export function LinuxDistroHint() {
 function readLastHintTs(): number {
   if (typeof window === "undefined") return 0;
   try {
-    const raw = window.localStorage.getItem("datafoundry-linux-distro-flag-hint-ts");
+    const raw = window.localStorage.getItem("agentx-linux-distro-flag-hint-ts");
     return raw ? parseInt(raw, 10) || 0 : 0;
   } catch {
     return 0;

@@ -1,9 +1,9 @@
 import { MastraAgent } from "@ag-ui/mastra";
 import type { RunAgentInput } from "@ag-ui/client";
-import type { ArtifactService, SessionOutputService } from "@datafoundry/artifacts";
+import type { ArtifactService, SessionOutputService } from "@agentx/artifacts";
 import {
-  createDataFoundry,
-  createDataFoundryRunContext,
+  createAgentX,
+  createAgentXRunContext,
   type AgentRunContext,
   type AgentContextItem,
   type AgUiEventEmitter,
@@ -15,12 +15,12 @@ import {
   type ProtocolStateStore,
   type TaskStateRuntime,
   type WorkspaceAttachment
-} from "@datafoundry/agent-runtime";
-import type { DataGateway } from "@datafoundry/data-gateway";
-import type { FileAssetService } from "@datafoundry/files";
-import type { KnowledgeService } from "@datafoundry/knowledge";
-import type { LongTermMemoryRecord } from "@datafoundry/metadata";
-import type { SkillRecord, SkillSelectionResult } from "@datafoundry/skills";
+} from "@agentx/agent-runtime";
+import type { DataGateway } from "@agentx/data-gateway";
+import type { FileAssetService } from "@agentx/files";
+import type { KnowledgeService } from "@agentx/knowledge";
+import type { LongTermMemoryRecord } from "@agentx/metadata";
+import type { SkillRecord, SkillSelectionResult } from "@agentx/skills";
 
 import type { InteractionResume } from "./interaction-runtime-adapter.js";
 import { createLatsLlmApi } from "./lats-llm-adapter.js";
@@ -89,7 +89,7 @@ type CreateRunAgentAssemblyInput = {
 
 /** Create the canonical agent run context used by Mastra tools, projections, and metadata. */
 export const createRunAgentContext = (input: CreateRunAgentContextInput): AgentRunContext =>
-  createDataFoundryRunContext({
+  createAgentXRunContext({
     user_id: input.userId,
     workspace_id: input.workspaceId,
     session_id: input.sessionId,
@@ -147,7 +147,7 @@ export const createRunAgentAssembly = async (
     protocol,
     workspaceDir,
     sessionDir
-  } = await createDataFoundry({
+  } = await createAgentX({
     ...(input.abortSignal ? { abortSignal: input.abortSignal } : {}),
     artifactService: input.artifactService,
     ...(input.contextPackageRecorder ? { contextPackageRecorder: input.contextPackageRecorder } : {}),
@@ -160,7 +160,7 @@ export const createRunAgentAssembly = async (
     ...(Object.keys(mcpTools).length > 0 ? { mcpTools } : {}),
     emitter: input.emitter,
     ...(input.effectiveRunConfig.protocol ? { explicitProtocol: input.effectiveRunConfig.protocol } : {}),
-    messages: input.messages as Parameters<typeof createDataFoundry>[0]["messages"],
+    messages: input.messages as Parameters<typeof createAgentX>[0]["messages"],
     ...(input.modelContextProfile ? { modelContextProfile: input.modelContextProfile } : {}),
     modelProvider: input.modelProvider,
     ...(isLatsEnabled()
@@ -225,7 +225,7 @@ const resolveWorkspaceAttachments = (input: CreateRunAgentAssemblyInput): Worksp
 
 /** Whether LATS tree-search tracking is enabled. On by default (opt-out). */
 const isLatsEnabled = (): boolean => {
-  const raw = (process.env.DATAFOUNDRY_LATS_ENABLED ?? "").trim().toLowerCase();
+  const raw = (process.env.AGENTX_LATS_ENABLED ?? "").trim().toLowerCase();
   if (raw === "0" || raw === "false" || raw === "no" || raw === "off") return false;
   return true;
 };

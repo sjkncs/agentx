@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    DataFoundry CLI bootstrap installer (install.ps1).
+    AgentX CLI bootstrap installer (install.ps1).
 
 .DESCRIPTION
     Installs df-cli via pip into a user-owned virtual environment,
@@ -117,7 +117,7 @@ function Register-Path {
 # ── main ──────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "=== DataFoundry CLI Installer ===" -ForegroundColor Cyan
+Write-Host "=== AgentX CLI Installer ===" -ForegroundColor Cyan
 Write-Host "Scope: $InstallScope" -ForegroundColor DarkGray
 Write-Host ""
 

@@ -1,5 +1,5 @@
 {
-  "name": "@datafoundry/inngest-bridge",
+  "name": "@agentx/inngest-bridge",
   "version": "0.1.0",
   "private": true,
   "description": "Worker: worker.js (A8 dispatch) + subscribe_loop.js (A9 subscription match/deliver).",

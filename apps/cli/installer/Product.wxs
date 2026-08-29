@@ -28,8 +28,8 @@
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define UpgradeCode = "REPLACE_WITH_YOUR_UPGRADE_CODE_GUID" ?>
-  <?define ProductName = "DataFoundry CLI" ?>
-  <?define Manufacturer  = "DataFoundry" ?>
+  <?define ProductName = "AgentX CLI" ?>
+  <?define Manufacturer  = "AgentX" ?>
   <?define Version       = "$(var.Version)" ?>
   <?define InstallDir    = "df-cli" ?>
   <?define ResourcesDir = "$(var.SourceDir)\..\resources" ?>
@@ -75,7 +75,7 @@
 
     <Icon Id="dfcli.ico" SourceFile="$(ResourcesDir)\dfcli.ico" />
     <Property Id="ARPPRODUCTICON" Value="dfcli.ico" />
-    <Property Id="ARPHELPLINK" Value="https://datafoundry.dev/docs/cli" />
+    <Property Id="ARPHELPLINK" Value="https://agentx.dev/docs/cli" />
 
     <!-- Default silent install to per-machine so PATH edits apply without admin prompt -->
     <Property Id="ALLUSERS" Value="1" />
@@ -157,7 +157,7 @@
       <Shortcut
           Id="DesktopShortcut"
           Name="$(var.ProductName)"
-          Description="DataFoundry command-line interface"
+          Description="AgentX command-line interface"
           Target="[WindowsFolder]System32\cmd.exe"
           Arguments="/k df --version"
           WorkingDirectory="[INSTALLFOLDER]" />
@@ -173,7 +173,7 @@
           <Shortcut
               Id="StartMenuShortcut"
               Name="$(var.ProductName)"
-              Description="Open DataFoundry CLI"
+              Description="Open AgentX CLI"
               Target="[WindowsFolder]System32\cmd.exe"
               Arguments="/k df --version"
               WorkingDirectory="[INSTALLFOLDER]" />
@@ -197,12 +197,12 @@
           <InternetShortcut
               Id="DocsLink"
               Name="Online Documentation"
-              Target="https://datafoundry.dev/docs/cli" />
+              Target="https://agentx.dev/docs/cli" />
           <RegistryValue
               Root="HKCU"
               Key="Software\$(var.Manufacturer)\$(var.ProductName)\Documentation"
               Type="string"
-              Value="https://datafoundry.dev/docs/cli"
+              Value="https://agentx.dev/docs/cli"
               KeyPath="yes" />
         </Component>
       </Directory>

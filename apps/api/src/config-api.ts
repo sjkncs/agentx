@@ -5,7 +5,7 @@ import {
   type AppErrorCode,
   type EvidenceKind,
   type EvidenceRef
-} from "@datafoundry/contracts";
+} from "@agentx/contracts";
 import {
   createModelProviderFromEnv,
   createModelProviderFromProfile,
@@ -14,14 +14,14 @@ import {
   resolveSessionWorkspaceDir,
   resolveWorkspaceDir,
   STATIC_AGENT_TOOL_NAMES
-} from "@datafoundry/agent-runtime";
-import { fileAssetRefDto, type FileAssetService, mimeTypeForFilename, safeFilename } from "@datafoundry/files";
+} from "@agentx/agent-runtime";
+import { fileAssetRefDto, type FileAssetService, mimeTypeForFilename, safeFilename } from "@agentx/files";
 import {
   buildSkillResourcePayload,
   materializeSkillPackages,
   parseSkillPackage,
   selectSkillsForRun
-} from "@datafoundry/skills";
+} from "@agentx/skills";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -47,7 +47,7 @@ import {
   type SessionBranchRecord,
   type SessionRecord,
   type UserRecord
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import type { IncomingMessage } from "node:http";
@@ -4180,7 +4180,7 @@ const listMcpTools = async (
   const token = stringValue(secret.token) ?? stringValue(secret.apiKey);
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
   const requestOptions = headers ? { requestInit: { headers } } : undefined;
-  const client = new Client({ name: "datafoundry-config", version: "0.2.0" });
+  const client = new Client({ name: "agentx-config", version: "0.2.0" });
   try {
     const clientTransport = transport === "stdio"
       ? new StdioClientTransport({

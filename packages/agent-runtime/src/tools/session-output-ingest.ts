@@ -1,4 +1,4 @@
-import type { SessionOutputService } from "@datafoundry/artifacts";
+import type { SessionOutputService } from "@agentx/artifacts";
 import { resolve, sep } from "node:path";
 
 import { createArtifactEvent } from "../events.js";
@@ -102,7 +102,7 @@ const ingestSessionFilePath = async (input: {
       input.emitter.emit(createArtifactEvent(result.artifact));
     }
   } catch (error) {
-    console.warn("[data-foundry] session_output_ingest_failed", error);
+    console.warn("[agentx] session_output_ingest_failed", error);
   }
 };
 

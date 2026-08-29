@@ -1,4 +1,4 @@
-# DataFoundry — Minimal Viable Deployment Guide
+# AgentX — Minimal Viable Deployment Guide
 
 > **TL;DR**: Frontend on Vercel · API on Fly.io · SQLite file on a persistent volume · Supabase (free) for pgvector + event log.
 > **Time to first deploy**: ~30 minutes.
@@ -48,8 +48,8 @@ You have **one** requirement: a stable domain. Choose one of these:
 
 | Approach | Setup | Cost |
 |----------|-------|------|
-| **Vercel subdomain only** | `https://datafoundry-<your-name>.vercel.app` for web + `https://datafoundry-<your-name>.fly.dev` for API (CORS works because Vercel supports any Origin with the right header) | **$0** |
-| **Custom domain** | Buy `datafoundry.dev` on Cloudflare Registrar, point `app.` to Vercel, `api.` to Fly.io | ~$10/yr |
+| **Vercel subdomain only** | `https://agentx-<your-name>.vercel.app` for web + `https://agentx-<your-name>.fly.dev` for API (CORS works because Vercel supports any Origin with the right header) | **$0** |
+| **Custom domain** | Buy `agentx.dev` on Cloudflare Registrar, point `app.` to Vercel, `api.` to Fly.io | ~$10/yr |
 
 **Recommendation**: start with the free `*.vercel.app` + `*.fly.dev` pair. Both are HTTPS by default, no CORS trouble.
 
@@ -78,7 +78,7 @@ brew install flyctl        # or scoop install flyctl on Windows
 fly auth signup
 
 # Per project
-cd datafoundry-enhanced
+cd agentx-enhanced
 fly launch --no-deploy --copy-config --name df-api-<your-name>
 #   When prompted: choose a region close to your Supabase project.
 #   Say NO to "Do you want to deploy now?" — we'll set secrets first.
@@ -98,7 +98,7 @@ fly secrets set \
   EMBEDDING_API_KEY=sk-... \
   SUPABASE_URL=https://xxx.supabase.co \
   SUPABASE_SERVICE_KEY=eyJh... \
-  CORS_ALLOWED_ORIGINS="https://datafoundry-<your-name>.vercel.app"
+  CORS_ALLOWED_ORIGINS="https://agentx-<your-name>.vercel.app"
 
 # Deploy
 fly deploy -c fly.api.toml
@@ -116,7 +116,7 @@ curl https://df-api-<your-name>.fly.dev/api/v1/capabilities
 1. Push this repo to GitHub (if you haven't already).
 2. Open <https://vercel.com/new> → import the repo.
 3. **Override these settings**:
-   - **Project name**: `datafoundry-<your-name>`
+   - **Project name**: `agentx-<your-name>`
    - **Root directory**: `apps/web`
    - **Framework preset**: Next.js (auto-detected)
 4. Add **Environment Variables** for the **Production** environment:
@@ -129,7 +129,7 @@ curl https://df-api-<your-name>.fly.dev/api/v1/capabilities
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (your Supabase anon key) |
 
 5. Click **Deploy**. First build takes 3-5 minutes (workspace install + Next.js build).
-6. Open the URL Vercel gives you (e.g. `https://datafoundry-<your-name>.vercel.app`).
+6. Open the URL Vercel gives you (e.g. `https://agentx-<your-name>.vercel.app`).
 
 ### Step 4 — Verify end-to-end (5 min)
 
@@ -152,12 +152,12 @@ If all 10 pass, your deployment is fully functional.
 
 ## 4. Custom domain (optional)
 
-If you bought `datafoundry.dev` on Cloudflare:
+If you bought `agentx.dev` on Cloudflare:
 
-1. **Vercel** → Project → Settings → Domains → add `app.datafoundry.dev`. Vercel will give you a CNAME; add it to Cloudflare DNS (orange-cloud off, proxy off).
-2. **Fly.io** → `fly certs add api.datafoundry.dev` → follow the ACME DNS-01 instructions.
-3. Update `CORS_ALLOWED_ORIGINS` on Fly to include `https://app.datafoundry.dev`.
-4. Update Vercel env vars to point at `https://api.datafoundry.dev`.
+1. **Vercel** → Project → Settings → Domains → add `app.agentx.dev`. Vercel will give you a CNAME; add it to Cloudflare DNS (orange-cloud off, proxy off).
+2. **Fly.io** → `fly certs add api.agentx.dev` → follow the ACME DNS-01 instructions.
+3. Update `CORS_ALLOWED_ORIGINS` on Fly to include `https://app.agentx.dev`.
+4. Update Vercel env vars to point at `https://api.agentx.dev`.
 
 ---
 
@@ -230,7 +230,7 @@ Switch the frontend to a CDN-fronted origin:
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| Vercel build fails: "Cannot find module @datafoundry/..." | Workspace install order | The `installCommand` in `apps/web/vercel.json` already handles this. If you still see it, run `npm install` locally and commit `package-lock.json`. |
+| Vercel build fails: "Cannot find module @agentx/..." | Workspace install order | The `installCommand` in `apps/web/vercel.json` already handles this. If you still see it, run `npm install` locally and commit `package-lock.json`. |
 | Login fails with CORS error | `CORS_ALLOWED_ORIGINS` not set on API | `fly secrets set CORS_ALLOWED_ORIGINS="https://<your-vercel-domain>"` |
 | Agent run never finishes | SSE buffered by a proxy | The API sets `X-Accel-Buffering: no` on `/api/copilotkit`. If behind Cloudflare, enable "WebSockets" in the proxy. |
 | Memory search returns nothing | pgvector mismatch | Ensure the `EMBEDDING_MODEL` in `.env` matches the dimension in `001_init.sql` (default 1024). If you switched to `text-embedding-3-small` (1536-d), update the column. |

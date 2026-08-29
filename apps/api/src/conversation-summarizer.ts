@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import type { ConversationMessageRecord, ConversationSummaryRecord } from "@datafoundry/metadata";
+import type { ConversationMessageRecord, ConversationSummaryRecord } from "@agentx/metadata";
 
 import { type ConversationSummarizer, type ConversationSummarizerInput } from "./conversation-memory.js";
 

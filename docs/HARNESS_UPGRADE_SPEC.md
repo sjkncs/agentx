@@ -1,7 +1,7 @@
-# DataFoundry Agent Harness 增量升级技术规格
+# AgentX Agent Harness 增量升级技术规格
 **版本**: v1.1 | **日期**: 2026-08-14 | **状态**: 设计阶段
 
-> **核心原则**: 不破坏现有 `@datafoundry/agent-runtime` 工程结构，通过独立新包+适配器实现渐进增强
+> **核心原则**: 不破坏现有 `@agentx/agent-runtime` 工程结构，通过独立新包+适配器实现渐进增强
 
 ---
 
@@ -16,7 +16,7 @@
 │                                                                         │
 │  现有系统 (保持不变)                    新增系统 (独立演进)                  │
 │  ┌─────────────────────────┐        ┌─────────────────────────┐       │
-│  │ @datafoundry/           │        │ @datafoundry/           │       │
+│  │ @agentx/           │        │ @agentx/           │       │
 │  │   agent-runtime         │◄───────►│   harness-core          │       │
 │  │                         │ 适配器  │                         │       │
 │  │ - Mastra Agent          │        │ - Plugin System         │       │
@@ -27,7 +27,7 @@
 │                                          │                            │
 │                                          ▼                            │
 │                              ┌─────────────────────────┐              │
-│                              │ @datafoundry/           │              │
+│                              │ @agentx/           │              │
 │                              │   harness-extensions     │              │
 │                              │                         │              │
 │                              │ - Subagent System       │              │
@@ -40,7 +40,7 @@
 ### 1.2 新包结构
 
 ```
-datafoundry-enhanced/packages/
+agentx-enhanced/packages/
 ├── agent-runtime/              # 现有包 (不变)
 │   └── src/
 │
@@ -63,7 +63,7 @@ datafoundry-enhanced/packages/
 
 | 功能 | 当前 | 升级后 | 兼容模式 |
 |------|------|--------|----------|
-| createDataFoundry() | ✅ | ✅ | 完全兼容 |
+| createAgentX() | ✅ | ✅ | 完全兼容 |
 | Protocol FSM | ✅ | ✅ | 完全兼容 |
 | LATS | ✅ | ✅ | 完全兼容 |
 | Hook系统 | ❌ | ✅ 可选 | 新增API |
@@ -127,7 +127,7 @@ export const EVENT_SOURCE_MAP = {
 ### 2.4 使用示例
 
 ```typescript
-// 用户配置文件: .datafoundry/hooks.json
+// 用户配置文件: .agentx/hooks.json
 {
   "hooks": [
     {
@@ -152,11 +152,11 @@ export const EVENT_SOURCE_MAP = {
 }
 ```
 
-### 2.5 集成到现有createDataFoundry
+### 2.5 集成到现有createAgentX
 
 ```typescript
 // packages/harness-core/src/adapters/hook-adapter.ts
-import { createCustomEvent } from "@datafoundry/agent-runtime";
+import { createCustomEvent } from "@agentx/agent-runtime";
 
 export interface HookAdapter {
   attach(emitter: AgUiEventEmitter): void;
@@ -288,7 +288,7 @@ export function deriveSessionSummary(events: SessionEvent[]): SessionSummary {
 
 ### 4.1 设计原则
 - **完全可选**: 默认不启用
-- **向后兼容**: 不影响现有createDataFoundry行为
+- **向后兼容**: 不影响现有createAgentX行为
 - **分层叠加**: 在现有系统上叠加新能力
 
 ### 4.2 实现位置
@@ -367,7 +367,7 @@ export function createMastraBridge(
 ## 五、文件结构 (最终)
 
 ```
-datafoundry-enhanced/
+agentx-enhanced/
 ├── packages/
 │   ├── agent-runtime/              # 现有 (不变)
 │   │   └── src/
@@ -432,7 +432,7 @@ datafoundry-enhanced/
 
 ### 7.1 向后兼容策略
 - 所有新API都是可选的
-- 现有 `createDataFoundry()` 完全不变
+- 现有 `createAgentX()` 完全不变
 - 新功能通过 `options` 参数启用
 
 ### 7.2 性能考虑
@@ -450,11 +450,11 @@ datafoundry-enhanced/
 ## 八、API扩展示例
 
 ```typescript
-// 扩展后的 createDataFoundry (向后兼容)
-import { createDataFoundry as originalCreateDataFoundry } from "@datafoundry/agent-runtime";
-import { createHookAdapter } from "@datafoundry/harness-core/hooks";
+// 扩展后的 createAgentX (向后兼容)
+import { createAgentX as originalCreateAgentX } from "@agentx/agent-runtime";
+import { createHookAdapter } from "@agentx/harness-core/hooks";
 
-export interface EnhancedCreateDataFoundryInput extends CreateDataFoundryInput {
+export interface EnhancedCreateAgentXInput extends CreateAgentXInput {
   // 新增选项 (可选)
   enableHooks?: boolean;
   enableEventLog?: boolean;
@@ -463,11 +463,11 @@ export interface EnhancedCreateDataFoundryInput extends CreateDataFoundryInput {
   pluginProfile?: string;
 }
 
-export async function createEnhancedDataFoundry(
-  input: EnhancedCreateDataFoundryInput
+export async function createEnhancedAgentX(
+  input: EnhancedCreateAgentXInput
 ): Promise<EnhancedResult> {
   // 1. 调用原有函数
-  const result = await originalCreateDataFoundry(input);
+  const result = await originalCreateAgentX(input);
   
   // 2. 如果启用了Hook，附加Hook适配器
   if (input.enableHooks && input.hooksConfig) {
@@ -511,7 +511,7 @@ export async function createEnhancedDataFoundry(
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           DataFoundry Agent                             │
+│                           AgentX Agent                             │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                      Plugin Container (Cordis-style)               │   │
@@ -1030,7 +1030,7 @@ export interface HookContext {
 
 ### 3.2 Hook 配置示例
 ```typescript
-// .datafoundry/hooks.json
+// .agentx/hooks.json
 {
   "hooks": [
     {
@@ -1429,7 +1429,7 @@ export class CuratorSkillGenerator {
 ## 九、文件结构
 
 ```
-datafoundry-enhanced/
+agentx-enhanced/
 ├── packages/
 │   ├── harness-core/                    # 核心包
 │   │   ├── src/
@@ -1496,7 +1496,7 @@ datafoundry-enhanced/
 ## 十、关键设计决策
 
 ### 10.1 向后兼容
-- 保留现有 `@datafoundry/agent-runtime` 接口
+- 保留现有 `@agentx/agent-runtime` 接口
 - 通过 `LegacyBridge` 适配旧版调用
 - 渐进式迁移策略
 

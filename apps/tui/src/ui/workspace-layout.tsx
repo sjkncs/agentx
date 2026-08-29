@@ -73,7 +73,7 @@ export function WorkspaceFrame({
       <Box flexDirection="column" height={rows} width={safeColumns}>
         <Box paddingX={1} flexDirection="column">
           <Text color={inkColors.warning} bold>Terminal too small</Text>
-          <Text dimColor>Resize to at least 80x20 for the DataFoundry TUI.</Text>
+          <Text dimColor>Resize to at least 80x20 for the AgentX TUI.</Text>
         </Box>
       </Box>
     );

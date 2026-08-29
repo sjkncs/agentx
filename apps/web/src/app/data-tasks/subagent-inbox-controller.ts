@@ -52,7 +52,7 @@ async function patchJson(path: string, body: unknown): Promise<boolean> {
  * `BrowserSubagent` (an EventEmitter with the minimal state machine we need).
  * A real harness-core Subagent can be swapped in by replacing the
  * `BrowserSubagent` factory with `createSubagent` from
- * `@datafoundry/harness-core/src/subagent` once the package exposes a
+ * `@agentx/harness-core/src/subagent` once the package exposes a
  * browser-safe entry point.
  */
 

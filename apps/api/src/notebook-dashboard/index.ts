@@ -5,7 +5,7 @@
  * so consumers can import from a single path:
  *
  *   import { NotebookDashboardRepository, executeCell, handleDashboardRequest }
- *     from "@datafoundry/api/notebook-dashboard";
+ *     from "@agentx/api/notebook-dashboard";
  *
  * Module structure:
  *

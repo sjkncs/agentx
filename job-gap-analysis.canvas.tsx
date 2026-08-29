@@ -1,7 +1,7 @@
 /**
  * job-gap-analysis.canvas.tsx
  *
- * DataFoundry 功能差距分析 — 匹配岗位职责技术要求
+ * AgentX 功能差距分析 — 匹配岗位职责技术要求
  * 分析日期: 2026-08-23
  *
  * 岗位职责:
@@ -30,10 +30,10 @@ export default function JobGapAnalysis() {
       {/* Header */}
       <header style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: 24, marginBottom: 40 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 8px' }}>
-          DataFoundry 功能差距分析
+          AgentX 功能差距分析
         </h1>
         <p style={{ color: '#6b7280', fontSize: 15, margin: 0 }}>
-          匹配岗位职责 1-3 的技术要求 × DataFoundry 当前能力
+          匹配岗位职责 1-3 的技术要求 × AgentX 当前能力
         </p>
         <p style={{ color: '#9ca3af', fontSize: 13, marginTop: 8 }}>
           分析日期: 2026-08-23 · 关键文件: agent-eval.ts, goal-runner.ts, agent-runtime/src/index.ts
@@ -54,7 +54,7 @@ export default function JobGapAnalysis() {
           <thead>
             <tr style={{ background: '#f9fafb' }}>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>技术要求</th>
-              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>DataFoundry 现状</th>
+              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>AgentX 现状</th>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>状态</th>
             </tr>
           </thead>
@@ -113,7 +113,7 @@ export default function JobGapAnalysis() {
           <thead>
             <tr style={{ background: '#f9fafb' }}>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>技术要求</th>
-              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>DataFoundry 现状</th>
+              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>AgentX 现状</th>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>状态</th>
             </tr>
           </thead>
@@ -193,7 +193,7 @@ export default function JobGapAnalysis() {
           <thead>
             <tr style={{ background: '#f9fafb' }}>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>技术要求</th>
-              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>DataFoundry 现状</th>
+              <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>AgentX 现状</th>
               <th style={{ textAlign: 'left', padding: '10px 12px', border: '1px solid #e5e7eb' }}>状态</th>
             </tr>
           </thead>
@@ -251,12 +251,12 @@ export default function JobGapAnalysis() {
 
       {/* ── 岗位要求技术能力映射 ─────────────────────────────── */}
       <section style={{ marginBottom: 48 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>岗位要求 → DataFoundry 功能映射</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>岗位要求 → AgentX 功能映射</h2>
 
         <div style={{ display: 'grid', gap: 12 }}>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '14px 16px' }}>
             <strong style={{ color: '#166534' }}>精通提示词工程(PE)</strong>
-            <span style={{ color: '#374151', marginLeft: 8 }}>→ DataFoundry 有 agent-instructions.ts(buildAgentInstructions)；
+            <span style={{ color: '#374151', marginLeft: 8 }}>→ AgentX 有 agent-instructions.ts(buildAgentInstructions)；
             skills/SKILL.md 为 prompt 模板格式；无独立 PE 编辑器/版本管理/AB 测试 → </span>
             <strong style={{ color: '#dc2626' }}>需补充</strong>
           </div>
@@ -367,7 +367,7 @@ export default function JobGapAnalysis() {
             <tr style={{ background: '#f9fafb' }}>
               <th style={{ textAlign: 'left', padding: '8px 12px', border: '1px solid #e5e7eb' }}>组件层</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', border: '1px solid #e5e7eb' }}>Coze/LangChain 类比</th>
-              <th style={{ textAlign: 'left', padding: '8px 12px', border: '1px solid #e5e7eb' }}>DataFoundry 现状</th>
+              <th style={{ textAlign: 'left', padding: '8px 12px', border: '1px solid #e5e7eb' }}>AgentX 现状</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', border: '1px solid #e5e7eb' }}>差距</th>
             </tr>
           </thead>
@@ -428,7 +428,7 @@ export default function JobGapAnalysis() {
       <section style={{ background: '#f9fafb', borderRadius: 10, padding: '20px 24px', border: '1px solid #e5e7eb' }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>总结</h2>
         <p style={{ color: '#374151', margin: '0 0 12px', fontSize: 14 }}>
-          DataFoundry 的 <strong>Agent Runtime 基础设施</strong>(Orchestrator/SubAgent/GoalRunner/HITL/MCP) 已相对完善，核心缺失在于<strong>上层应用层</strong>。
+          AgentX 的 <strong>Agent Runtime 基础设施</strong>(Orchestrator/SubAgent/GoalRunner/HITL/MCP) 已相对完善，核心缺失在于<strong>上层应用层</strong>。
         </p>
         <ul style={{ color: '#6b7280', fontSize: 14, margin: 0, paddingLeft: 20 }}>
           <li>职责 1(数据策略): 完全缺失，无 UI + 无 SOP 管理</li>

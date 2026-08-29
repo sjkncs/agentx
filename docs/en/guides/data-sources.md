@@ -2,7 +2,7 @@
 
 This guide is for users preparing to connect data sources. After reading it, you can register, test, and select sources in Web or REST API, and understand how the TUI uses configured sources.
 
-DataFoundry manages data sources through Data Gateway. Sources can be registered and tested in the Web workbench or REST API; the TUI can list and select configured sources. Analysis still runs through controlled agent tools.
+AgentX manages data sources through Data Gateway. Sources can be registered and tested in the Web workbench or REST API; the TUI can list and select configured sources. Analysis still runs through controlled agent tools.
 
 ## Core principles
 

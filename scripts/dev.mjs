@@ -37,10 +37,10 @@ for (const port of [8787, 3000]) {
 const children = [];
 
 if (startApi) {
-  children.push(spawnNpm(["--workspace", "@datafoundry/api", "run", "dev"]));
+  children.push(spawnNpm(["--workspace", "@agentx/api", "run", "dev"]));
 }
 if (startWeb) {
-  children.push(spawnNpm(["--workspace", "@datafoundry/web", "run", "dev"]));
+  children.push(spawnNpm(["--workspace", "@agentx/web", "run", "dev"]));
 }
 
 if (children.length === 0) {

@@ -32,7 +32,7 @@ export async function handleEmail(
       `优先级: ${payload.priority ?? "normal"}`,
       `发送时间: ${new Date().toLocaleString("zh-CN")}`,
       "",
-      "— DataFoundry",
+      "— AgentX",
     ].join("\n"),
   };
 

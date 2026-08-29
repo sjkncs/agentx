@@ -4,7 +4,7 @@ import {
   LEFT_PANEL_DEFAULT_WIDTH,
   RIGHT_PANEL_DEFAULT_WIDTH,
 } from "./workspace-layout";
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 import type { TranslateFn } from "../../i18n/types";
 
 export type ArtifactKind = "chart" | "csv" | "memo" | "dashboard" | "file";
@@ -250,7 +250,7 @@ export function emptyStepPayload(kind: DataStepKind): DataStepPayload {
 
 /**
  * Client-side chat session. Each session owns a `threadId`; the UI registers a
- * session-local CopilotKit agent id for that thread and routes it to dataFoundry.
+ * session-local CopilotKit agent id for that thread and routes it to agentX.
  */
 /** Per-session disabled resource ids (store "off" list; default = all enabled). */
 export type SessionDisabledMap = Record<

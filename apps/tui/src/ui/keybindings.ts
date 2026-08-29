@@ -1,5 +1,5 @@
 /**
- * Keyboard shortcuts system for DataFoundry TUI
+ * Keyboard shortcuts system for AgentX TUI
  * Provides centralized keybinding management with history, completion, and navigation
  */
 

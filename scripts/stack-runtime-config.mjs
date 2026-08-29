@@ -20,7 +20,7 @@ export function webProcessEnvironment(config) {
 }
 
 export function formatStackEndpoints(config, enabled) {
-  const lines = ["DataFoundry endpoints:"];
+  const lines = ["AgentX endpoints:"];
   if (enabled.startWeb) lines.push(`  Web: http://127.0.0.1:${config.WEB_PORT}`);
   if (enabled.startApi) lines.push(`  API: http://${config.API_HOST}:${config.API_PORT}`);
   return lines.join("\n");

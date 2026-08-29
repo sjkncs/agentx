@@ -1,13 +1,13 @@
 {
-  "name": "@datafoundry/tui",
+  "name": "@agentx/tui",
   "version": "0.2.0",
-  "description": "Terminal UI for DataFoundry - CopilotKit protocol client",
+  "description": "Terminal UI for AgentX - CopilotKit protocol client",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "datafoundry-tui": "./dist/index.js"
+    "agentx-tui": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,7 @@
     "clean": "rm -rf dist"
   },
   "keywords": [
-    "datafoundry",
+    "agentx",
     "tui",
     "copilotkit",
     "terminal",

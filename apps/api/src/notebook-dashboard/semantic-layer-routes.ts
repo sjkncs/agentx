@@ -13,7 +13,7 @@
  *   GET /api/v1/semantic/resolve?query=...
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
 import { SemanticLayerRepository } from "./semantic-layer.js";
 
 export interface SemanticLayerDeps {

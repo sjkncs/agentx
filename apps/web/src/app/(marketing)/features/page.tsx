@@ -28,7 +28,7 @@ const SECTIONS: ReadonlyArray<{
     eyebrow: "Multi-agent task graph",
     title: "Run multiple agents in one workspace.",
     body:
-      "DataFoundry spawns an orchestrator that delegates to typed worker agents — inspect, query, transform, visualise, fetch, reason — every step recorded with its own trace. You watch the work product land instead of a wall of stream-of-consciousness tokens.",
+      "AgentX spawns an orchestrator that delegates to typed worker agents — inspect, query, transform, visualise, fetch, reason — every step recorded with its own trace. You watch the work product land instead of a wall of stream-of-consciousness tokens.",
     bullets: [
       { k: "Typed steps", v: "Each agent run is anchored to a step type so the runtime can bound side-effects (no surprise writes)." },
       { k: "Live trace", v: "Per-step token counts, latencies, tool calls, and approval points. Hover any step for the model's reasoning summary." },

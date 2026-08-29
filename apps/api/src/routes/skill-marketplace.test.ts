@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 
-import { createMetadataStore } from "@datafoundry/metadata";
-import { LocalFileAssetService } from "@datafoundry/files";
+import { createMetadataStore } from "@agentx/metadata";
+import { LocalFileAssetService } from "@agentx/files";
 
 import { handleSkillMarketplaceRequest, setSkillCatalog } from "../routes/skill-marketplace.js";
 

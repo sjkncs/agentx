@@ -9,7 +9,7 @@ import { LocalKnowledgeService } from "../packages/knowledge/dist/index.js";
 import { createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createVerifiedTestIdentity } from "./lib/metadata-test-identity.mjs";
 
-const root = mkdtempSync(join(tmpdir(), "open-data-foundry-files-smoke-"));
+const root = mkdtempSync(join(tmpdir(), "open-agentx-files-smoke-"));
 const store = createMetadataStore({
   database_path: join(root, "metadata.sqlite")
 });

@@ -6,8 +6,8 @@ import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-  createDataFoundry,
-  createDataFoundryRunContext,
+  createAgentX,
+  createAgentXRunContext,
 } from "../../packages/agent-runtime/dist/index.js";
 import { LocalDataGateway } from "../../packages/data-gateway/dist/index.js";
 import { LocalKnowledgeService } from "../../packages/knowledge/dist/index.js";
@@ -159,13 +159,13 @@ let configuredNoKb;
 let configuredE2e;
 
 try {
-  configuredWithKb = await createDataFoundry({
+  configuredWithKb = await createAgentX({
     dataGateway: gateway,
     emitter: { emit: () => undefined },
     knowledgeService,
     messages: [],
     modelProvider: fakeModelProvider,
-    runContext: createDataFoundryRunContext({
+    runContext: createAgentXRunContext({
       ...runContextInput,
       enabled_knowledge_ids: [],
     }),
@@ -179,12 +179,12 @@ try {
     report.notes.push("retrieve_knowledge missing when knowledgeService is provided");
   }
 
-  configuredNoKb = await createDataFoundry({
+  configuredNoKb = await createAgentX({
     dataGateway: gateway,
     emitter: { emit: () => undefined },
     messages: [],
     modelProvider: fakeModelProvider,
-    runContext: createDataFoundryRunContext({
+    runContext: createAgentXRunContext({
       ...runContextInput,
       enabled_knowledge_ids: [],
     }),
@@ -250,13 +250,13 @@ try {
       content: "Customer churn rate measures subscription cancellations over time.",
     });
 
-    configuredE2e = await createDataFoundry({
+    configuredE2e = await createAgentX({
       dataGateway: gateway,
       emitter: { emit: () => undefined },
       knowledgeService,
       messages: [],
       modelProvider: fakeModelProvider,
-      runContext: createDataFoundryRunContext({
+      runContext: createAgentXRunContext({
         ...runContextInput,
         enabled_knowledge_ids: [collection_id],
       }),

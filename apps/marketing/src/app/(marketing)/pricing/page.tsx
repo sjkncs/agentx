@@ -55,7 +55,7 @@ const TIERS: ReadonlyArray<Tier> = [
       "Email support (24h SLA)",
     ],
     ctaLabel: "Get a Pro license key",
-    ctaHref: "mailto:sjkncs@example.com?subject=DataFoundry%20Pro%20inquiry",
+    ctaHref: "mailto:sjkncs@example.com?subject=AgentX%20Pro%20inquiry",
   },
   {
     id: "enterprise",
@@ -72,7 +72,7 @@ const TIERS: ReadonlyArray<Tier> = [
       "Dedicated support engineer + named CSM",
     ],
     ctaLabel: "Talk to us",
-    ctaHref: "mailto:sjkncs@example.com?subject=DataFoundry%20Enterprise%20inquiry",
+    ctaHref: "mailto:sjkncs@example.com?subject=AgentX%20Enterprise%20inquiry",
   },
 ];
 
@@ -134,7 +134,7 @@ export default function PricingPage() {
           Self-hosted today. Cloud and Enterprise when you ask for them.
         </h1>
         <p className={styles.heroSubtitle}>
-          DataFoundry ships as a single-machine install you control. The
+          AgentX ships as a single-machine install you control. The
           Community tier is free. Pro adds a commercial license and
           priority security updates. Enterprise adds SSO, audit, and the
           data-policy controls an org needs.
@@ -284,7 +284,7 @@ export default function PricingPage() {
             href="https://github.com/sjkncs/agentx#readme"
             className={styles.buttonPrimary}
           >
-            Install DataFoundry →
+            Install AgentX →
           </Link>
           <Link href="/skills" className={styles.buttonSecondary}>
             Browse the catalog first

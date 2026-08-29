@@ -5,7 +5,7 @@ import {
   type CopilotChatInputProps,
   type UseAttachmentsReturn,
 } from "@copilotkit/react-core/v2";
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type {
@@ -36,7 +36,7 @@ import { useDataTaskChatInputBindings } from "./DataTaskChatInputBindingsContext
 import type { ChatSession, WorkspaceConfigStore } from "../../data-task-state";
 import type { QueuedChatPrompt } from "./queued-chat-runs";
 import { createChatTextareaKeyDownCaptureHandler } from "../../chat-textarea-submit";
-import { useLiveRun } from "../../use-data-foundry-run";
+import { useLiveRun } from "../../use-agentx-run";
 import { ProtocolPhaseStepper } from "./protocol-phase-stepper";
 import { FollowUpSuggestionChips } from "./follow-up-suggestions";
 import { RunStatsBar } from "./RunStatsBar";

@@ -24,7 +24,7 @@ const response = await client.fetch("/api/copilotkit", {
   },
   body: JSON.stringify({
     method: "agent/run",
-    params: { agentId: "dataFoundry" },
+    params: { agentId: "agentX" },
     body: {
       threadId,
       runId,

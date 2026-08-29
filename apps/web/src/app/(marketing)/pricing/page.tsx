@@ -3,7 +3,7 @@
  *
  * Three-tier pricing + feature-comparison matrix. Server component.
  *
- * Honest about the current state: DataFoundry v1 is a self-hosted,
+ * Honest about the current state: AgentX v1 is a self-hosted,
  * single-machine install. There is no hosted SaaS tier yet — and
  * saying so is what stops the page from being a broken promise.
  * The three tiers reflect the deployment / support options that
@@ -148,7 +148,7 @@ export default function PricingPage() {
           Self-hosted today. Cloud and Enterprise when you ask for them.
         </h1>
         <p className={styles.heroSubtitle}>
-          DataFoundry ships as a single-machine install you control. The
+          AgentX ships as a single-machine install you control. The
           Community tier is free. Pro adds a commercial license and
           priority security updates. Enterprise adds SSO, audit, and the
           data-policy controls an org needs.

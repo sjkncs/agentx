@@ -230,7 +230,7 @@ export class HookBus {
   }
 
   /**
-   * 从DataFoundry/Mastra事件触发Hook
+   * 从AgentX/Mastra事件触发Hook
    */
   async emitFromSource(
     sourceEvent: string,

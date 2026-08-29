@@ -1,4 +1,4 @@
-import type { MetadataStore } from "@datafoundry/metadata";
+import type { MetadataStore } from "@agentx/metadata";
 import { randomUUID } from "node:crypto";
 import type {
   DocumentRecord,

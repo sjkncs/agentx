@@ -1,4 +1,4 @@
-import type { SkillRecord } from "@datafoundry/skills";
+import type { SkillRecord } from "@agentx/skills";
 import type { AgentRunContext } from "./types.js";
 import type { AnalysisRequirement } from "./protocol/analysis-requirements.js";
 import { AGENT_MAX_STEPS, SQL_MAX_EXECUTION_COUNT } from "./runtime-limits.js";

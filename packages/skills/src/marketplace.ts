@@ -44,7 +44,7 @@ export type SkillCatalogEntry = {
   license?: string;
   /** Emoji for the card. */
   icon?: string;
-  /** Marks entries that ship with DataFoundry itself. */
+  /** Marks entries that ship with AgentX itself. */
   builtin?: boolean;
 };
 

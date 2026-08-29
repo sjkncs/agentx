@@ -315,16 +315,16 @@ export function createRemoteRuntime(
 }
 
 /**
- * 创建 DataFoundry Cloud Runtime
+ * 创建 AgentX Cloud Runtime
  */
-export function createDataFoundryCloudRuntime(
+export function createAgentXCloudRuntime(
   id: string,
   apiKey: string,
   region?: string
 ): RemoteRuntime {
   const endpoint = region 
-    ? `https://api-${region}.datafoundry.ai/runtime`
-    : "https://api.datafoundry.ai/runtime";
+    ? `https://api-${region}.agentx.ai/runtime`
+    : "https://api.agentx.ai/runtime";
   
   return new RemoteRuntime(id, {
     endpoint,

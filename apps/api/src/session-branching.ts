@@ -6,7 +6,7 @@ import type {
   RunRecord,
   SessionBranchRecord,
   SessionRecord
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 import { randomUUID } from "node:crypto";
 
 const BRANCHABLE_RUN_STATUSES = new Set<RunRecord["status"]>(["completed", "failed", "canceled"]);

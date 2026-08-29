@@ -1,6 +1,6 @@
 # df-desktop
 
-PyQt6 desktop client for DataFoundry — a focused, scientific-grade 3D browser
+PyQt6 desktop client for AgentX — a focused, scientific-grade 3D browser
 for agent trajectories and data lineage.
 
 > **Why a separate desktop app?** The web workbench is optimised for
@@ -17,7 +17,7 @@ for agent trajectories and data lineage.
   rendered in the same GL widget.
 - **Run Timeline** — playback control for the AG-UI event stream; scrub
   through a run while the 3D view re-animates.
-- **Workspace picker** — connect to any DataFoundry API instance (local,
+- **Workspace picker** — connect to any AgentX API instance (local,
   LAN, or remote), with secure credential storage via `keyring`.
 - **Theme aware** — follows the same neutral / dark / deepseek / soft palette
   as the web app.
@@ -48,7 +48,7 @@ apps/desktop-pyqt/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── app.py               # QApplication bootstrap
-│   ├── api/                 # thin httpx wrapper around the DataFoundry REST API
+│   ├── api/                 # thin httpx wrapper around the AgentX REST API
 │   │   ├── client.py
 │   │   └── schemas.py
 │   ├── config/              # paths, settings, keyring helpers

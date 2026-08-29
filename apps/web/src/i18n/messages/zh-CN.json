@@ -236,7 +236,7 @@
     "chineseShort": "中"
   },
   "sidebar": {
-    "brand": "DataFoundry",
+    "brand": "AgentX",
     "sessionCount": "{{count}} 个会话",
     "workspaceResources": "工作区资源",
     "newTask": "新建数据任务",
@@ -408,7 +408,7 @@
     "metricOutputs": "输出",
     "metricItems": "{{count}} 项",
     "currentQuestion": "当前问题",
-    "startPrompt": "发送问题以启动 DataFoundry。",
+    "startPrompt": "发送问题以启动 AgentX。",
     "steps": "步骤",
     "stepsSession": "步骤（会话）",
     "successRate": "成功率",
@@ -665,7 +665,7 @@
     "mcpNotesRemote": "远程服务通常使用 SSE / Streamable HTTP URL，例如 https://host/mcp",
     "mcpNotesPersist": "配置通过 POST /api/v1/mcp-servers 持久化；令牌保存在 secretRef",
     "mcpNotesRuns": "运行时通过 run_config.enabledMcpServerIds 挂载 MCP 工具",
-    "llmNotesTitle": "AG-UI / dataFoundry 对齐说明",
+    "llmNotesTitle": "AG-UI / agentX 对齐说明",
     "llmNotesEnv": "服务端环境变量：LLM_PROVIDER、LLM_BASE_URL、LLM_API_KEY、LLM_MODEL",
     "llmNotesPersist": "模型配置通过 POST /api/v1/model-profiles 管理；API Key 保存在 secretRef",
     "llmNotesRuns": "运行时通过 run_config.activeLlmProfileId 切换模型",
@@ -737,7 +737,7 @@
     "openModelConfig": "打开模型配置",
     "persona": {
       "title": "欢迎 — 请选择你的角色",
-      "body": "DataFoundry 会按你的工作方式调整工作台。选一个最贴近你的角色即可；后续可随时在顶栏切换。",
+      "body": "AgentX 会按你的工作方式调整工作台。选一个最贴近你的角色即可；后续可随时在顶栏切换。",
       "cta": "以此角色开始",
       "data-scientist": {
         "label": "数据科学家",
@@ -1448,7 +1448,7 @@
     },
     "metrics": {
       "title": "系统指标",
-      "subtitle": "来自 DataFoundry 服务的 Prometheus 风格指标。",
+      "subtitle": "来自 AgentX 服务的 Prometheus 风格指标。",
       "uptime": "运行时长",
       "lastUpdate": "更新于",
       "gauges": "仪表盘指标",

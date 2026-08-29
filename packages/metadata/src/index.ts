@@ -1,5 +1,5 @@
 import { EventType, type BaseEvent } from "@ag-ui/core";
-import type { ArtifactSummary, ArtifactType, RunEventEnvelope } from "@datafoundry/contracts";
+import type { ArtifactSummary, ArtifactType, RunEventEnvelope } from "@agentx/contracts";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";

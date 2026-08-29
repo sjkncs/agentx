@@ -1,6 +1,6 @@
 # Phase 6: MCP Server Integration
 
-This document describes Phase 6 of the DataFoundry Harness upgrade.
+This document describes Phase 6 of the AgentX Harness upgrade.
 
 ## Overview
 
@@ -62,7 +62,7 @@ Phase 6 adds Model Context Protocol (MCP) integration:
 ### MCP Server
 
 ```typescript
-import { createMcpServer, textResult } from '@datafoundry/harness-core';
+import { createMcpServer, textResult } from '@agentx/harness-core';
 
 const server = createMcpServer({
   name: 'my-mcp-server',
@@ -131,7 +131,7 @@ await server.start();
 ### MCP Client
 
 ```typescript
-import { createMcpClient } from '@datafoundry/harness-core';
+import { createMcpClient } from '@agentx/harness-core';
 
 // Connect to stdio MCP server
 const client = createMcpClient({
@@ -189,7 +189,7 @@ const prompt = await client.getPrompt('filesystem', {
 Bridge MCP tools to Harness tools for unified access.
 
 ```typescript
-import { createMcpClient, createMcpBridge } from '@datafoundry/harness-core';
+import { createMcpClient, createMcpBridge } from '@agentx/harness-core';
 
 const client = createMcpClient({ /* ... */ });
 await client.connect('filesystem');
@@ -222,7 +222,7 @@ if (tool) {
 ### Convert Harness Tools to MCP
 
 ```typescript
-import { createMcpServer, registerHarnessToolsToMcpServer } from '@datafoundry/harness-core';
+import { createMcpServer, registerHarnessToolsToMcpServer } from '@agentx/harness-core';
 
 const server = createMcpServer({ /* ... */ });
 
@@ -302,7 +302,7 @@ const transport = {
 ### Tool Annotations
 
 ```typescript
-import type { ToolAnnotations } from '@datafoundry/harness-core';
+import type { ToolAnnotations } from '@agentx/harness-core';
 
 const annotations: ToolAnnotations = {
   title: 'Read File',
@@ -351,7 +351,7 @@ import {
   createMcpServer,
   createMcpBridge,
   textResult,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 async function main() {
   // 1. Create MCP server

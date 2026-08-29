@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { createMetadataStore, createVerifiedTestIdentity } from "@datafoundry/metadata";
+import { createMetadataStore, createVerifiedTestIdentity } from "@agentx/metadata";
 import { MetadataProtocolStateStore } from "./protocol-state-store.js";
 
 describe("MetadataProtocolStateStore", () => {

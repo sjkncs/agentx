@@ -67,13 +67,13 @@ export function validateAuthPublicUrl(raw: string): {
 }
 
 export function loadPasswordAuthConfig(env: Record<string, string | undefined>): PasswordAuthConfig {
-  // Upgrade shim: previous .env.example / deploy defaults set DATAFOUNDRY_AUTH_MODE=password.
+  // Upgrade shim: previous .env.example / deploy defaults set AGENTX_AUTH_MODE=password.
   // Ignore empty/password leftovers; reject removed modes (especially dev).
-  if (env.DATAFOUNDRY_AUTH_MODE !== undefined) {
-    const legacyMode = String(env.DATAFOUNDRY_AUTH_MODE).trim();
+  if (env.AGENTX_AUTH_MODE !== undefined) {
+    const legacyMode = String(env.AGENTX_AUTH_MODE).trim();
     if (legacyMode !== "" && legacyMode !== "password") {
       throw new Error(
-        "AUTH_CONFIG_INVALID:DATAFOUNDRY_AUTH_MODE is no longer supported; remove it from the environment (dev mode has been removed)."
+        "AUTH_CONFIG_INVALID:AGENTX_AUTH_MODE is no longer supported; remove it from the environment (dev mode has been removed)."
       );
     }
   }

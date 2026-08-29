@@ -1,7 +1,7 @@
 /**
  * Hook System - 导出
  * 
- * DataFoundry Harness Core Hook系统
+ * AgentX Harness Core Hook系统
  */
 
 // Types

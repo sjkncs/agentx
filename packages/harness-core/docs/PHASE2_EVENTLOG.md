@@ -1,6 +1,6 @@
 # Phase 2: Session Event Log & Analytics
 
-This document describes Phase 2 of the DataFoundry Harness upgrade.
+This document describes Phase 2 of the AgentX Harness upgrade.
 
 ## Overview
 
@@ -14,7 +14,7 @@ Phase 2 adds comprehensive session event logging and analytics capabilities:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        DataFoundry Agent                             │
+│                        AgentX Agent                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐         │
@@ -45,7 +45,7 @@ Bridges Mastra/Agent events to Session Event Log:
 ```typescript
 // packages/harness-core/src/adapters/event-log-adapter.ts
 
-import { EventLogAdapter, createEventLogAdapter } from "@datafoundry/harness-core";
+import { EventLogAdapter, createEventLogAdapter } from "@agentx/harness-core";
 
 const adapter = createEventLogAdapter(emitter, eventLog, {
   sessionId: "my-session",
@@ -68,7 +68,7 @@ adapter.detach();
 Fine-grained timeline for agent operations:
 
 ```typescript
-import { TimelineRecorder, recordToolCall } from "@datafoundry/harness-core";
+import { TimelineRecorder, recordToolCall } from "@agentx/harness-core";
 
 // Start a step
 const stepId = recorder.startEntry("step", { input: userMessage });
@@ -92,7 +92,7 @@ recorder.endEntry(stepId);
 Advanced analytics on session events:
 
 ```typescript
-import { EventAnalytics, generateAnalyticsReport } from "@datafoundry/harness-core";
+import { EventAnalytics, generateAnalyticsReport } from "@agentx/harness-core";
 
 // Analyze events
 const analytics = EventAnalytics.analyze(eventLog.getEvents());
@@ -109,13 +109,13 @@ analytics.toolUsage.slice(0, 5).forEach(tool => {
 console.log(generateAnalyticsReport(analytics));
 ```
 
-## Usage with createEnhancedDataFoundry
+## Usage with createEnhancedAgentX
 
 ```typescript
-import { createEnhancedDataFoundry } from "@datafoundry/harness-core";
+import { createEnhancedAgentX } from "@agentx/harness-core";
 
-const result = await createEnhancedDataFoundry({
-  dataFoundryInput: {
+const result = await createEnhancedAgentX({
+  agentXInput: {
     modelProvider: myProvider,
     runContext: myContext,
     // ...

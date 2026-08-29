@@ -7,7 +7,7 @@
  */
 
 export const HARNESS_VERSION = "0.1.0";
-export const HARNESS_NAME = "@datafoundry/harness-core";
+export const HARNESS_NAME = "@agentx/harness-core";
 
 const TIPS_BULLETS = `
 - 用 \`createGoalRunner({...}).run()\` 而不是手写 while + verify
@@ -17,7 +17,7 @@ const TIPS_BULLETS = `
 
 export const DEFAULT_HARNESS_CAPABILITIES = `# Harness Core Capabilities (auto-injected)
 
-你是 @datafoundry/harness-core (v${HARNESS_VERSION}) 驱动的 Coding Agent。
+你是 @agentx/harness-core (v${HARNESS_VERSION}) 驱动的 Coding Agent。
 以下是当前 harness 已暴露的能力，供你直接调用，无需每次询问用户：
 
 ## Goal Mode \`/goal\`

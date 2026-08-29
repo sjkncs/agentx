@@ -53,7 +53,7 @@ let callbackIdCounter = 0;
 /** Discover the API base URL (port allocated by port-allocator). Falls
  *  back to env or to localhost:8787 when running headless. */
 const resolveApiBaseUrl = async () => {
-  const envUrl = process.env.DATAFOUNDRY_API_URL;
+  const envUrl = process.env.AGENTX_API_URL;
   if (typeof envUrl === "string" && envUrl.length > 0) return envUrl;
   const filePath = path.join(app.getPath("userData"), "api-base-url");
   try {
@@ -236,7 +236,7 @@ export const registerPetIpc = async () => {
           emitter.emit("event", {
             type: "RUN_ERROR",
             message:
-              "DataFoundry API is not reachable. Start the API server or run in 'connected' mode.",
+              "AgentX API is not reachable. Start the API server or run in 'connected' mode.",
           });
           runEmitters.delete(runId);
         });

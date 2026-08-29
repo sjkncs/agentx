@@ -43,7 +43,7 @@
  * The grounding result shape matches what the data-analysis protocol's
  * `semantic.context.resolve` action expects.
  */
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
+import type { LocalDataGateway } from "@agentx/data-gateway";
 
 export interface PhysicalColumn {
   name: string;

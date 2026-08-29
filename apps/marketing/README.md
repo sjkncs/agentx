@@ -1,6 +1,6 @@
 # apps/marketing
 
-Standalone Next.js 15.5 project for the public DataFoundry marketing site.
+Standalone Next.js 15.5 project for the public AgentX marketing site.
 Built with `output: "export"` so it produces a static bundle deployed to
 **Vercel** (primary, via [`vercel.json`](./vercel.json)) and **GitHub
 Pages** (backup, via
@@ -61,7 +61,7 @@ is the one that applies `trailingSlash`.)
   `GET /api/v1/skill-marketplace/catalog` and falls back to a hard-coded
   list. This project uses the hard-coded list directly — there is no API
   runtime.
-- The home page used `process.env.NEXT_PUBLIC_DATAFOUNDRY_API_BASE` for
+- The home page used `process.env.NEXT_PUBLIC_AGENTX_API_BASE` for
   the same fetch. Replaced with a static 4-card spotlight filtered from
   `SKILL_CATALOG`.
 - `/register` and `/login` CTAs are repointed to the GitHub repo

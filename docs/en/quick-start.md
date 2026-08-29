@@ -1,6 +1,6 @@
 # Quick start
 
-This guide is for first-time DataFoundry deployers. Formal mode has two paths; **both** start the Web workbench with `password` auth (do **not** run `npm run dev`):
+This guide is for first-time AgentX deployers. Formal mode has two paths; **both** start the Web workbench with `password` auth (do **not** run `npm run dev`):
 
 | Path | Hosts | Entry |
 | --- | --- | --- |
@@ -23,11 +23,11 @@ Install and run the project in the same environment. On Windows, do not share `n
 
 ```bash
 git clone https://github.com/datagallery-lab/datafoundry.git
-cd datafoundry
+cd agentx
 ./deploy.sh
 ```
 
-On success Web + API keep running in the background (detached process group). Closing the terminal or pressing `Ctrl+C` in `./deploy.sh logs` does **not** stop DataFoundry — use `./deploy.sh stop`. One-click deploy also builds the TUI, but the TUI does **not** stay running with the stack; start it in another terminal when needed (see “Start the TUI” below).
+On success Web + API keep running in the background (detached process group). Closing the terminal or pressing `Ctrl+C` in `./deploy.sh logs` does **not** stop AgentX — use `./deploy.sh stop`. One-click deploy also builds the TUI, but the TUI does **not** stay running with the stack; start it in another terminal when needed (see “Start the TUI” below).
 
 Open `http://127.0.0.1:3000/login` (or the Web URL printed by the script if the port differs), register and sign in, create/test/enable an OpenAI-compatible model profile, then go to `/data-tasks`.
 
@@ -139,7 +139,7 @@ AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
 AUTH_PUBLIC_BASE_URL=http://127.0.0.1:3000
 AUTH_REGISTRATION_MODE=open
 AUTH_EMAIL_DELIVERY=test
-AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
+AUTH_EMAIL_FROM=AgentX <no-reply@example.com>
 # SMTP settings can stay empty for now
 ```
 
@@ -160,10 +160,10 @@ Start from the formal-test settings, then change to:
 
 ```bash
 AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
-AUTH_PUBLIC_BASE_URL=https://datafoundry.example.com
+AUTH_PUBLIC_BASE_URL=https://agentx.example.com
 AUTH_REGISTRATION_MODE=closed
 AUTH_EMAIL_DELIVERY=smtp
-AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
+AUTH_EMAIL_FROM=AgentX <no-reply@example.com>
 AUTH_SMTP_HOST=smtp.example.com
 AUTH_SMTP_PORT=587
 AUTH_SMTP_SECURE=false

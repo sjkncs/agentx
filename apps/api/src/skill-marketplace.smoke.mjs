@@ -11,7 +11,7 @@
  *
  * Usage:
  *   node apps/api/dist/skill-marketplace.smoke.mjs
- *   (run after `pnpm -F @datafoundry/api build`)
+ *   (run after `pnpm -F @agentx/api build`)
  */
 
 import { mkdtempSync, rmSync } from "node:fs";

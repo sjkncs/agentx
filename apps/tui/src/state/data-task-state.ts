@@ -898,7 +898,7 @@ export const WORKSPACE_CONFIG_FIELDS: Record<
       inputType: "password",
       placeholder: "sk-...",
       helpText:
-        "对应 LLM_API_KEY。仅保存在浏览器 localStorage，不经 AG-UI 协议外发；当前 dataFoundry 仍读取服务端环境变量，后端接入后由 secretRef 解析。",
+        "对应 LLM_API_KEY。仅保存在浏览器 localStorage，不经 AG-UI 协议外发；当前 agentX 仍读取服务端环境变量，后端接入后由 secretRef 解析。",
       readOnly: (item) => !!item.builtin,
       fullWidth: true,
     },
@@ -1044,7 +1044,7 @@ function defaultWorkspaceConfig(): WorkspaceConfigStore {
       {
         id: "server-default",
         name: "default",
-        description: "使用 dataFoundry 服务端 .env 中的 LLM_PROVIDER / LLM_BASE_URL / LLM_MODEL",
+        description: "使用 agentX 服务端 .env 中的 LLM_PROVIDER / LLM_BASE_URL / LLM_MODEL",
         enabled: true,
         builtin: true,
         settings: {

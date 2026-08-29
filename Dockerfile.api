@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-# Multi-stage build for the DataFoundry API server.
+# Multi-stage build for the AgentX API server.
 # Builds TypeScript, then runs the Node.js HTTP server on a slim base.
 
 FROM node:22.21-bookworm-slim AS builder
@@ -15,7 +15,7 @@ COPY . .
 
 # Build the API and the workspace packages it depends on.
 RUN npm install --no-audit --no-fund --legacy-peer-deps \
-  && npm --workspace @datafoundry/api run build \
+  && npm --workspace @agentx/api run build \
   && npm prune --omit=dev
 
 FROM node:22.21-bookworm-slim AS runtime

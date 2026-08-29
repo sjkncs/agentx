@@ -1,4 +1,4 @@
-"""Async-friendly DataFoundry API client.
+"""Async-friendly AgentX API client.
 
 A thin httpx wrapper around the same `/api/v1/*` surface used by the web
 workbench. Sessions and CSRF tokens are managed transparently so the UI
@@ -38,7 +38,7 @@ ROLE_LABELS = {
 
 
 class ApiError(RuntimeError):
-    """A non-2xx response from the DataFoundry API."""
+    """A non-2xx response from the AgentX API."""
 
     def __init__(self, status: int, code: str, message: str) -> None:
         super().__init__(f"[{status} {code}] {message}")
@@ -51,7 +51,7 @@ class ApiError(RuntimeError):
 class AuthState:
     """Mutable per-session auth state.
 
-    Held by `DataFoundryClient` and updated by every call so the UI can show
+    Held by `AgentXClient` and updated by every call so the UI can show
     the live role badge without an extra round trip.
     """
 
@@ -62,8 +62,8 @@ class AuthState:
 
 
 @dataclass
-class DataFoundryClient:
-    """Wraps the DataFoundry REST API with cookie-aware httpx."""
+class AgentXClient:
+    """Wraps the AgentX REST API with cookie-aware httpx."""
 
     base_url: str
     timeout: httpx.Timeout = field(default_factory=lambda: DEFAULT_TIMEOUT)
@@ -89,7 +89,7 @@ class DataFoundryClient:
     async def aclose(self) -> None:
         await self._client.aclose()
 
-    async def __aenter__(self) -> "DataFoundryClient":
+    async def __aenter__(self) -> "AgentXClient":
         return self
 
     async def __aexit__(self, *exc: Any) -> None:
@@ -248,9 +248,9 @@ def run_async(coro_factory: Callable[[], Awaitable[Any]]) -> Any:
 
 
 @asynccontextmanager
-async def live_client(base_url: str) -> AsyncIterator[DataFoundryClient]:
-    """Open a `DataFoundryClient` for the lifetime of a `with` block."""
-    client = DataFoundryClient(base_url=base_url)
+async def live_client(base_url: str) -> AsyncIterator[AgentXClient]:
+    """Open a `AgentXClient` for the lifetime of a `with` block."""
+    client = AgentXClient(base_url=base_url)
     try:
         yield client
     finally:
@@ -260,7 +260,7 @@ async def live_client(base_url: str) -> AsyncIterator[DataFoundryClient]:
 __all__ = [
     "ApiError",
     "AuthState",
-    "DataFoundryClient",
+    "AgentXClient",
     "ROLE_LABELS",
     "live_client",
     "run_async",

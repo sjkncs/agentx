@@ -1,5 +1,5 @@
 {
-  "name": "@datafoundry/metadata",
+  "name": "@agentx/metadata",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ag-ui/core": "^0.0.57",
-    "@datafoundry/contracts": "0.2.0",
+    "@agentx/contracts": "0.2.0",
     "better-sqlite3": "^11.3.0"
   }
 }

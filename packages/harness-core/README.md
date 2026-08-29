@@ -1,6 +1,6 @@
-# @datafoundry/harness-core
+# @agentx/harness-core
 
-DataFoundry Agent Harness Core - 增量式增强包
+AgentX Agent Harness Core - 增量式增强包
 
 ## 特性
 
@@ -8,7 +8,7 @@ DataFoundry Agent Harness Core - 增量式增强包
 - **生命周期 Hook**: 在 Agent 的各个生命周期阶段注入自定义逻辑
 - **事件驱动**: 支持 20+ 种事件类型 (agent.*, turn.*, step.*, tool.*, llm.*)
 - **多种执行方式**: Shell 命令、HTTP 请求、MCP 工具、Prompt 模板
-- **向后兼容**: 完全不影响现有 `createDataFoundry()` 的行为
+- **向后兼容**: 完全不影响现有 `createAgentX()` 的行为
 
 ### Session Event Log (Phase 2)
 - **Append-only**: 追加写入的事件流，支持持久化
@@ -33,14 +33,14 @@ DataFoundry Agent Harness Core - 增量式增强包
 - **并行编排**: Sequential/Parallel/Pipeline/Fan-out 模式
 
 ### 向后兼容
-- 100% 兼容现有 `@datafoundry/agent-runtime`
+- 100% 兼容现有 `@agentx/agent-runtime`
 - 新功能完全可选启用
 - 不修改任何现有代码
 
 ## 安装
 
 ```bash
-npm install @datafoundry/harness-core
+npm install @agentx/harness-core
 ```
 
 ## 快速开始
@@ -48,11 +48,11 @@ npm install @datafoundry/harness-core
 ### 方式 1: 使用增强工厂函数
 
 ```typescript
-import { createEnhancedDataFoundry } from "@datafoundry/harness-core";
+import { createEnhancedAgentX } from "@agentx/harness-core";
 
-// 创建增强的 DataFoundry 实例
-const result = await createEnhancedDataFoundry({
-  dataFoundryInput: {
+// 创建增强的 AgentX 实例
+const result = await createEnhancedAgentX({
+  agentXInput: {
     // ... 原有配置
     modelProvider: myModelProvider,
     runContext: myRunContext,
@@ -63,7 +63,7 @@ const result = await createEnhancedDataFoundry({
 });
 
 // 使用原有功能
-const { agent, protocol } = result.dataFoundry;
+const { agent, protocol } = result.agentX;
 
 // 使用 Hook 系统 (可选)
 result.hookRegistry?.emit("custom", context);
@@ -72,7 +72,7 @@ result.hookRegistry?.emit("custom", context);
 ### 方式 2: 直接使用 Hook 系统
 
 ```typescript
-import { HookRegistry, loadHookConfig } from "@datafoundry/harness-core";
+import { HookRegistry, loadHookConfig } from "@agentx/harness-core";
 
 // 创建 Hook Registry
 const registry = new HookRegistry({ enabled: true });
@@ -98,7 +98,7 @@ await registry.emit("tool.post-execute", {
 ### 方式 3: Session Event Log
 
 ```typescript
-import { SessionEventLog, deriveMessages, deriveToolTrajectory } from "@datafoundry/harness-core";
+import { SessionEventLog, deriveMessages, deriveToolTrajectory } from "@agentx/harness-core";
 
 // 创建 Event Log
 const eventLog = new SessionEventLog({

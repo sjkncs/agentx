@@ -1,5 +1,5 @@
 /**
- * Alerting system for DataFoundry commercial monitoring.
+ * Alerting system for AgentX commercial monitoring.
  *
  * Alert rules evaluate on every metrics snapshot.
  * Active alerts are stored in-memory (production should use Redis/DB).
@@ -331,13 +331,13 @@ export function prometheusAlerts(): PrometheusAlert[] {
   const active = getActiveAlerts();
   if (active.length === 0) {
     return [{
-      name: "DataFoundryHealth",
+      name: "AgentXHealth",
       state: "resolved",
       severity: "info",
-      summary: "All DataFoundry alerts resolved",
+      summary: "All AgentX alerts resolved",
       description: "No active alerts.",
       startsAt: new Date().toISOString(),
-      labels: { service: "datafoundry" },
+      labels: { service: "agentx" },
     }];
   }
   return active.map((a) => ({

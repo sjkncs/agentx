@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import type { ModelProvider } from "@datafoundry/providers";
+import type { ModelProvider } from "@agentx/providers";
 import { z } from "zod";
 
 import { AGENT_RUNTIME_LIMITS } from "../config/agent-runtime-limits.js";

@@ -21,7 +21,7 @@ import type { IncomingMessage } from "node:http";
 
 import { handleEvalDatasetsRequest } from "./eval-datasets.js";
 import { handleEvalRunsRequest } from "./eval-runs.js";
-import { createMetadataStore } from "@datafoundry/metadata";
+import { createMetadataStore } from "@agentx/metadata";
 import type { ConfigApiContext, ConfigApiResponse } from "./types.js";
 
 const freshDbPath = (): string => {

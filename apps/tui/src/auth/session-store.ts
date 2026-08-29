@@ -49,18 +49,18 @@ export function resolveTuiAuthStorePath(env: SessionStorePlatformEnv = {}): stri
     if (!appData) {
       throw new Error("APPDATA is required to locate the TUI auth store on Windows.");
     }
-    return join(appData, "DataFoundry", "tui-auth.json");
+    return join(appData, "AgentX", "tui-auth.json");
   }
 
   if (osPlatform === "darwin") {
-    return join(home, "Library", "Application Support", "DataFoundry", "tui-auth.json");
+    return join(home, "Library", "Application Support", "AgentX", "tui-auth.json");
   }
 
   const xdg = processEnv.XDG_CONFIG_HOME?.trim();
   if (xdg) {
-    return join(xdg, "datafoundry", "tui-auth.json");
+    return join(xdg, "agentx", "tui-auth.json");
   }
-  return join(home, ".config", "datafoundry", "tui-auth.json");
+  return join(home, ".config", "agentx", "tui-auth.json");
 }
 
 export class TuiSessionStore {

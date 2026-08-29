@@ -1,11 +1,11 @@
 /**
- * EventLog Adapter - 桥接 DataFoundry/Mastra 事件到 Session Event Log
+ * EventLog Adapter - 桥接 AgentX/Mastra 事件到 Session Event Log
  *
  * 将 Agent 的事件转换为结构化的 Session Event
  */
 
 import { EventEmitter } from "node:events";
-import type { AgUiEventEmitter } from "@datafoundry/agent-runtime";
+import type { AgUiEventEmitter } from "@agentx/agent-runtime";
 import {
   SessionEventLog,
   type SessionEvent,
@@ -207,7 +207,7 @@ export class EventLogAdapter {
     this.emitter.on(AGENT_EVENTS.AGENT_START, () => {
       this.eventLog.append({
         type: "session/title",
-        title: "DataFoundry Agent Session",
+        title: "AgentX Agent Session",
       });
     });
 

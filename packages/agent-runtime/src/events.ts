@@ -1,5 +1,5 @@
 import { EventType, type BaseEvent } from "@ag-ui/core";
-import type { ArtifactSummary } from "@datafoundry/contracts";
+import type { ArtifactSummary } from "@agentx/contracts";
 import { randomUUID } from "node:crypto";
 
 import type { AgentRunContext } from "./types.js";

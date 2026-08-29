@@ -22,7 +22,7 @@ import {
   findPendingCollaborationToolCall,
 } from "../../collaboration-recap";
 import { buildAgentRunStatePatch, mergeRunForwardedPropsWithCommand } from "../../data-task-state";
-import { useLiveRun } from "../../use-data-foundry-run";
+import { useLiveRun } from "../../use-agentx-run";
 import { useDataTaskChatInputBindings } from "./DataTaskChatInputBindingsContext";
 import {
   clearPendingCollaborationInterrupt,

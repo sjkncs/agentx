@@ -3,7 +3,7 @@
  *
  * Endpoints:
  *   GET  /api/v1/skill-marketplace/catalog
- *     Returns the curated catalog bundled with DataFoundry. Pure read.
+ *     Returns the curated catalog bundled with AgentX. Pure read.
  *
  *   POST /api/v1/skill-marketplace/install
  *     Body: { id?: string, repo?: string, ref?: string, skillPath?: string,
@@ -34,7 +34,7 @@
  * into a SSRF or a fetch of malicious bytes.
  */
 
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
 import {
   buildSkillRawUrl,
   buildSkillResourcePayload,
@@ -45,8 +45,8 @@ import {
   parseSkillPackage,
   type SkillCatalogEntry,
   type ParsedSkillPackage,
-} from "@datafoundry/skills";
-import { supabase } from "@datafoundry/supabase-bridge";
+} from "@agentx/skills";
+import { supabase } from "@agentx/supabase-bridge";
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 
@@ -181,7 +181,7 @@ const fetchSkillFromGithub = async (
     response = await Promise.race([
       fetcher(url, {
         headers: {
-          "User-Agent": "DataFoundry-Skill-Marketplace/1.0",
+          "User-Agent": "AgentX-Skill-Marketplace/1.0",
           Accept: "text/plain,text/markdown"
         },
         redirect: "follow"

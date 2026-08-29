@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Production-grade sandboxed Python runtime for DataFoundry notebook cells.
+# Production-grade sandboxed Python runtime for AgentX notebook cells.
 #
 # Isolation layers:
 #   1. Linux namespace isolation (pid, mount, network, uts, ipc)
@@ -12,7 +12,7 @@
 #   7. CPU + memory cgroup limits
 #
 # Build:
-#   docker build -t datafoundry/python-sandbox:latest -f Dockerfile ..
+#   docker build -t agentx/python-sandbox:latest -f Dockerfile ..
 #
 # Security note: even if a user escapes the Python sandbox, they cannot:
 #   - reach the network (all outbound dropped)

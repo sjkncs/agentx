@@ -22,7 +22,7 @@ def tmp_config_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 @pytest.fixture
 def fake_client(monkeypatch: pytest.MonkeyPatch) -> Any:
-    """Replace `DataFoundryClient` with a stub that returns canned payloads."""
+    """Replace `AgentXClient` with a stub that returns canned payloads."""
 
     from df_cli import client as client_mod
     from df_cli.commands import (
@@ -158,7 +158,7 @@ def fake_client(monkeypatch: pytest.MonkeyPatch) -> Any:
     # Patch the class on every module that imported it so the binding in each
     # subcommand's namespace resolves to the fake.
     for mod in (client_mod, dash_mod, nb_mod, run_mod, status_mod):
-        monkeypatch.setattr(mod, "DataFoundryClient", FakeClient)
+        monkeypatch.setattr(mod, "AgentXClient", FakeClient)
         # The commands import `ApiError` only for re-raise; harmless to leave.
     return FakeClient
 

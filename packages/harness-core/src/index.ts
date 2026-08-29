@@ -1,17 +1,17 @@
 /**
- * DataFoundry Harness Core - 主导出
+ * AgentX Harness Core - 主导出
  * 
  * 提供增强的 Hook 系统、Session Event Log 和 Plugin 系统
- * 保持与现有 @datafoundry/agent-runtime 的向后兼容
+ * 保持与现有 @agentx/agent-runtime 的向后兼容
  */
 
 // Re-export from agent-runtime for convenience
 export {
-  createDataFoundry,
-  type CreateDataFoundryInput,
+  createAgentX,
+  type CreateAgentXInput,
   type AgentRunContext,
   type AgentRunContextInput,
-} from "@datafoundry/agent-runtime";
+} from "@agentx/agent-runtime";
 
 // Hook System
 export {
@@ -158,7 +158,7 @@ export {
   
   RemoteRuntime,
   createRemoteRuntime,
-  createDataFoundryCloudRuntime,
+  createAgentXCloudRuntime,
   
   RuntimeManager,
   createRuntimeManager,
@@ -475,7 +475,7 @@ export {
 // Enhanced Factory Function
 // ============================================================================
 
-import { createDataFoundry } from "@datafoundry/agent-runtime";
+import { createAgentX } from "@agentx/agent-runtime";
 import {
   HookRegistry,
   loadHookConfig,
@@ -497,11 +497,11 @@ import type { HookConfig } from "./hooks/hook-types.js";
 import type { TimelineRecorderConfig } from "./session/timeline-recorder.js";
 
 /**
- * 增强的 createDataFoundry 选项
+ * 增强的 createAgentX 选项
  */
-export interface CreateEnhancedDataFoundryInput {
-  /** DataFoundry 输入 */
-  dataFoundryInput: Parameters<typeof createDataFoundry>[0];
+export interface CreateEnhancedAgentXInput {
+  /** AgentX 输入 */
+  agentXInput: Parameters<typeof createAgentX>[0];
   
   /** 是否启用 Hook 系统 */
   enableHooks?: boolean;
@@ -523,11 +523,11 @@ export interface CreateEnhancedDataFoundryInput {
 }
 
 /**
- * 增强的 createDataFoundry 结果
+ * 增强的 createAgentX 结果
  */
-export interface CreateEnhancedDataFoundryResult {
-  /** 原始 DataFoundry 结果 */
-  dataFoundry: Awaited<ReturnType<typeof createDataFoundry>>;
+export interface CreateEnhancedAgentXResult {
+  /** 原始 AgentX 结果 */
+  agentX: Awaited<ReturnType<typeof createAgentX>>;
   
   /** Event Log (如果启用) */
   eventLog?: SessionEventLog;
@@ -555,13 +555,13 @@ export interface CreateEnhancedDataFoundryResult {
 }
 
 /**
- * 创建增强的 DataFoundry 实例
+ * 创建增强的 AgentX 实例
  */
-export async function createEnhancedDataFoundry(
-  input: CreateEnhancedDataFoundryInput
-): Promise<CreateEnhancedDataFoundryResult> {
+export async function createEnhancedAgentX(
+  input: CreateEnhancedAgentXInput
+): Promise<CreateEnhancedAgentXResult> {
   const {
-    dataFoundryInput,
+    agentXInput,
     enableHooks = false,
     hooksConfigPath,
     hooksConfig,
@@ -570,8 +570,8 @@ export async function createEnhancedDataFoundry(
     enableTimeline = false,
   } = input;
   
-  // 1. 创建原始 DataFoundry 实例
-  const dataFoundry = await createDataFoundry(dataFoundryInput);
+  // 1. 创建原始 AgentX 实例
+  const agentX = await createAgentX(agentXInput);
   
   // 2. 创建 Event Log
   let eventLog: SessionEventLog | undefined;
@@ -579,18 +579,18 @@ export async function createEnhancedDataFoundry(
   
   if (enableEventLog) {
     eventLog = new SessionEventLog({
-      sessionId: dataFoundryInput.runContext.session_id,
-      runId: dataFoundryInput.runContext.run_id,
+      sessionId: agentXInput.runContext.session_id,
+      runId: agentXInput.runContext.run_id,
       persist: Boolean(eventLogPath),
       logPath: eventLogPath,
     });
     
     eventLogAdapter = createEventLogAdapter(
-      dataFoundryInput.emitter,
+      agentXInput.emitter,
       eventLog,
       {
-        sessionId: dataFoundryInput.runContext.session_id,
-        runId: dataFoundryInput.runContext.run_id,
+        sessionId: agentXInput.runContext.session_id,
+        runId: agentXInput.runContext.run_id,
       }
     );
     eventLogAdapter.attach();
@@ -601,8 +601,8 @@ export async function createEnhancedDataFoundry(
   
   if (enableTimeline && eventLog) {
     const timelineConfig: TimelineRecorderConfig = {
-      sessionId: dataFoundryInput.runContext.session_id,
-      runId: dataFoundryInput.runContext.run_id,
+      sessionId: agentXInput.runContext.session_id,
+      runId: agentXInput.runContext.run_id,
       enabled: true,
       syncToEventLog: true,
     };
@@ -636,20 +636,20 @@ export async function createEnhancedDataFoundry(
     await hookRegistry.initialize();
     
     hookAdapter = createHookAdapter(
-      dataFoundryInput.emitter,
+      agentXInput.emitter,
       hookRegistry.getBus(),
       {
         enabled: true,
-        sessionId: dataFoundryInput.runContext.session_id,
-        runId: dataFoundryInput.runContext.run_id,
+        sessionId: agentXInput.runContext.session_id,
+        runId: agentXInput.runContext.run_id,
       }
     );
     hookAdapter.attach();
   }
   
   // 5. 构建结果
-  const result: CreateEnhancedDataFoundryResult = {
-    dataFoundry,
+  const result: CreateEnhancedAgentXResult = {
+    agentX,
     eventLog,
     timeline,
     hookRegistry,
@@ -679,7 +679,7 @@ export async function createEnhancedDataFoundry(
       eventLogAdapter?.detach();
       timeline?.dispose();
       eventLog?.dispose();
-      dataFoundry.destroyWorkspace();
+      agentX.destroyWorkspace();
     },
   };
   

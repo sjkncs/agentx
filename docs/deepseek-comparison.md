@@ -1,8 +1,8 @@
-# DeepSeek / Cursor / OpenAI Codex CLI — Comparison with DataFoundry
+# DeepSeek / Cursor / OpenAI Codex CLI — Comparison with AgentX
 
 > Generated: 2026-08-19. Scope: comparison of three open-source AI coding agent ecosystems
-> against the **DataFoundry** project at `e:\FFD-Downloader-Windows\datafoundry-enhanced\`.
-> All claims about DataFoundry are grounded in source under `packages/agent-runtime/src/`,
+> against the **AgentX** project at `e:\FFD-Downloader-Windows\agentx-enhanced\`.
+> All claims about AgentX are grounded in source under `packages/agent-runtime/src/`,
 > `packages/harness-core/src/`, and the surrounding `packages/`, `apps/`, `docker/`,
 > `services/` trees.
 
@@ -12,7 +12,7 @@
 
 ### 1.1 DeepSeek model family (DeepSeek-V3, DeepSeek-R1, DeepSeek-Coder-V2)
 DeepSeek-AI is an open-weights model family, not an "agent runtime" per se. It is the
-**base layer** that an agent harness like DataFoundry would wrap. Recent and current
+**base layer** that an agent harness like AgentX would wrap. Recent and current
 specs as of 2026:
 
 - **DeepSeek-V3** — 671B sparse Mixture-of-Experts, 37B activated per token, 128K
@@ -43,7 +43,7 @@ specs as of 2026:
 **Architectural limits relevant to agentic use**
 - No native agent loop, no native tool-use protocol, no built-in sandboxing, no
   state persistence beyond what the application layer (Aider / Cursor / Codex /
-  DataFoundry) adds.
+  AgentX) adds.
 - MoE routing makes tool-call JSON constraints fragile on the base model; most
   harnesses feed DeepSeek with function-calling schemas only via SGLang or
   LiteLLM-rewritten prompts, never the raw Hugging Face checkpoint.
@@ -101,13 +101,13 @@ Key ideas:
 - Approval modes (`suggest`, `auto-edit`, `full-auto`) gate what the agent may touch
   before review.
 
-### 1.4 DataFoundry (the project under review)
-DataFoundry is a data-analysis-oriented agent harness: `Mastra`-based agent
+### 1.4 AgentX (the project under review)
+AgentX is a data-analysis-oriented agent harness: `Mastra`-based agent
 runtime on top of a custom `harness-core` that exposes hooks, plugins, subagents,
 MCP, sandbox, gates, multi-runtime routing, IDE workflows, and a deterministic
 session event log. The full code is split into:
 
-- `packages/agent-runtime/` — the `createDataFoundry` factory. Implements the ReAct
+- `packages/agent-runtime/` — the `createAgentX` factory. Implements the ReAct
   loop over Mastra tools, AG-UI stream normalisation, context budget processors,
   protocol-based dispatch (`general-task`, `data-analysis`), LATS tree-search
   (optional), long-term memory, working memory (read-only), token-usage correlation
@@ -163,9 +163,9 @@ approval at HITL checkpoints, and emits streaming events back to the UI
 inference + tool calls until completion. Cancellation interrupts the queue at any
 boundary ([DeepWiki Architecture Overview](https://deepwiki.com/openai/codex/1.3-architecture-overview)).
 
-**DataFoundry** — `createDataFoundry` builds a Mastra `Agent` with:
+**AgentX** — `createAgentX` builds a Mastra `Agent` with:
 - `maxSteps: AGENT_MAX_STEPS` (default 80, configurable via
-  `DATAFOUNDRY_AGENT_MAX_STEPS`, bounds [10, 500]).
+  `AGENTX_AGENT_MAX_STEPS`, bounds [10, 500]).
 - A `GovernedToolFactory` that wraps every tool call with a single dispatcher,
   feeding both `LatsRuntime` and `sessionOutput` ingest.
 - Two protocols registered: `general-task` and `data-analysis`. The active
@@ -183,18 +183,18 @@ boundary ([DeepWiki Architecture Overview](https://deepwiki.com/openai/codex/1.3
 - HITL tools (`ask_user`, `submit_plan`) suspend the run and resume on
   `interaction`.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength vs peers:* the LATS side-car is something none of the open-source
   peers ship out of the box. The protocol classifier + handoff coordinator is also
   more explicit than Aider's or Continue's ad-hoc mode switching.
 - *Gap vs Codex:* Codex's single queue with cancel-from-anywhere is a proven
-  pattern for streaming UIs. DataFoundry's protocol-event path already
+  pattern for streaming UIs. AgentX's protocol-event path already
   pre-buffers events into `deferredProtocolEvents` and flushes on
   `flushProtocolEvents()` — that is a synchronous handoff. Adding a true
   Submission/EventMsg queue (so an HTTP disconnect / SSE close can drop the run
   mid-turn) would harden cancellation parity with Codex.
 - *Recommendation:* tighten the public loop boundary (current
-  `createDataFoundry` returns an `agent: Agent` plus a
+  `createAgentX` returns an `agent: Agent` plus a
   `flushProtocolEvents()`; introduce an explicit `cancel(runId)` /
   `interrupt()` that tears down the queue and aborts in-flight tool calls,
   mirroring Codex). Promote LATS into a first-class peer to ReAct (currently
@@ -219,7 +219,7 @@ imports) at the level the LLM can absorb. Switched in/out with `/tokens`,
 summarises the conversation when it would overflow) plus heavy prompt caching.
 Conversation history can include many turns but the prompt stays small.
 
-**DataFoundry** — Multiple coordinated layers, the most thorough of any peer:
+**AgentX** — Multiple coordinated layers, the most thorough of any peer:
 1. `AgentModelContextProfile` declares per-model `contextWindow`,
    `outputReserve`, `safetyMargin`, `messageOverhead`,
    `toolSchemaOverhead`. Providers return a profile and the runtime respects it.
@@ -229,7 +229,7 @@ Conversation history can include many turns but the prompt stays small.
    `ContextPromptMaterializer` to emit the final `ContextPromptView`. Output
    side mirrors with `MastraContextProtocolAdapter`.
 3. `contextMaxTokens` (default 32 000, configurable via
-   `DATAFOUNDRY_CONTEXT_MAX_TOKENS`, max 1 000 000) and `contextMaxChars`
+   `AGENTX_CONTEXT_MAX_TOKENS`, max 1 000 000) and `contextMaxChars`
    (default 32 000, max 4 000 000) bound what enters the package.
 4. **Long-term memory** records (`AgentLongTermMemoryRecord`) are surfaced via a
    `longTermMemory` field and a `readOnlyWorkingMemoryProcessor` exposes
@@ -241,12 +241,12 @@ Conversation history can include many turns but the prompt stays small.
 6. `NonEmptyMessageContentCompatProcessor` fixes provider quirks where
    content comes back empty for compatibility.
 
-**Gap analysis & recommendations for DataFoundry**
-- *Strength:* DataFoundry is **ahead** of every peer here. The policy → planner →
+**Gap analysis & recommendations for AgentX**
+- *Strength:* AgentX is **ahead** of every peer here. The policy → planner →
   materializer pipeline is a real production-grade system, not a TODO. Aider's
-  repo-map is elegant but lossy by design; DataFoundry's package model keeps
+  repo-map is elegant but lossy by design; AgentX's package model keeps
   full provenance.
-- *Gap vs Codex:* Codex uses server-side compaction. DataFoundry could add a
+- *Gap vs Codex:* Codex uses server-side compaction. AgentX could add a
   similar in-runtime summarizer that fires when `contextMaxTokens` is breached,
   rather than dropping items.
 - *Recommendation:* expose `AgentModelContextProfile` as user-facing config
@@ -282,7 +282,7 @@ tools (with `ShellCommandHandler` + `FileSystemSandboxPolicy`) or external
 servers through `McpManager` + `NetworkProxy`. Network policy and FS policy are
 explicit.
 
-**DataFoundry** — Both native function-calling (via Mastra tools) **and** a
+**AgentX** — Both native function-calling (via Mastra tools) **and** a
 self-contained MCP implementation in `harness-core/src/mcp/`:
 - `mcp-types.ts` — full JSON-RPC types for requests, responses, notifications.
 - `mcp-transport.ts` — `StdioMcpTransport` (spawns child process), HTTP SSE,
@@ -290,7 +290,7 @@ self-contained MCP implementation in `harness-core/src/mcp/`:
 - `mcp-client.ts` — JSON-RPC client over any transport.
 - `mcp-server.ts` — server that exposes tools/resources/prompts to other
   clients.
-- `mcp-bridge.ts` — adapter into DataFoundry's runtime.
+- `mcp-bridge.ts` — adapter into AgentX's runtime.
 - In `agent-runtime/src/index.ts:533` MCP tools are accepted via
   `mcpTools?: Record<string, ToolAction>` and `mcpToolNames?: string[]` and
   merged into the final `selectedTools` object that the Mastra `Agent`
@@ -309,16 +309,16 @@ self-contained MCP implementation in `harness-core/src/mcp/`:
   an `alwaysAllowTools` set for platform-level guarantees
   (`selectToolsByPolicy`).
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* richer transport set than Cline (Cline has stdio/SSE/streamable-HTTP;
-  DataFoundry also has WebSocket + InProcess). The InProcess transport is a
+  AgentX also has WebSocket + InProcess). The InProcess transport is a
   nice embedded/test affordance.
 - *Gap vs Cline:* no marketplace integration or chokidar-style config
   hot-reload. No OAuth flows for remote MCP servers. No Zod-validated settings
   file.
 - *Gap vs Codex:* no built-in `NetworkProxy` for enforcing outbound policy at
   the transport layer.
-- *Recommendation:* add a Zod-validated `datafoundry-mcp.json` settings file
+- *Recommendation:* add a Zod-validated `agentx-mcp.json` settings file
   with chokidar watcher, plumb the OAuth flow used by Cline, expose the
   marketplace install path, and surface network policy as a first-class
   field on `StdioMcpTransport` / `HttpMcpTransport` config.
@@ -347,7 +347,7 @@ diff and revert any change.
 provides a local review agent (`codex review`) that diffs a PR-equivalent change
 set against the base.
 
-**DataFoundry** — Multi-file edits happen through Mastra workspace tools:
+**AgentX** — Multi-file edits happen through Mastra workspace tools:
 `write_file`, `edit_file`, `execute_command`, `mkdir`, `read_file`, `list_files`,
 `file_stat`, `grep`. Each successful write is **auto-ingested into session
 output** by `maybeIngestSessionFileOutput` / `maybeIngestSessionFileToolResult`
@@ -361,16 +361,16 @@ before it lands in the session. `Gates` provide deterministic verification:
 lint/test/typecheck/build/format/coverage through pluggable
 `GateExecutor`s.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* the **gating + quarantine + worktree** trio is unusual. Most
-  peers lean on user approval; DataFoundry can require automated verification
+  peers lean on user approval; AgentX can require automated verification
   before allowing an edit to leave the sandbox.
 - *Gap vs Aider:* no `apply_patch`-style parser. Models that emit Aider's
   SEARCH/REPLACE format won't be understood; models that emit V4A `*** Begin
   Patch` won't be understood. Right now the only edit formats are
   "Mastra tools + zod schemas".
 - *Gap vs Cline:* no built-in checkpoint system that snapshots the workspace
-  per turn (Cline ships Git-based checkpointing; DataFoundry has the
+  per turn (Cline ships Git-based checkpointing; AgentX has the
   primitives but no UI-driven checkpoint/revert).
 - *Recommendation:* add a small patch-format adapter (Aider-style
   SEARCH/REPLACE blocks, V4A `*** Begin Patch`, and Codex `apply_patch`)
@@ -398,7 +398,7 @@ decomposes work and dispatches it to parallel workers, each with a dedicated
 context window. This is the headline Codex parallel pattern
 ([Bhavishya Pandit substack](https://bhavishyapandit9.substack.com/p/everything-about-codex-the-complete)).
 
-**DataFoundry** — Two-tier subagent system:
+**AgentX** — Two-tier subagent system:
 1. **`harness-core/src/subagent/`** — `Subagent` + `SubagentManager` +
    `Orchestrator`. The orchestrator supports four execution modes
    (`sequential`, `parallel`, `pipeline`, `fan-out`), validates the DAG, and
@@ -412,14 +412,14 @@ context window. This is the headline Codex parallel pattern
 3. **LATS** is the third control surface — tree-search across branches of
    one task, with UCB selection and reflexion on failure.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* Three orthogonal control surfaces (subagent, goal, LATS)
   is genuinely richer than Codex's single subagent manager and far richer
   than Aider/Continue/Cline (which mostly lack this).
-- *Gap vs Codex:* subagents in DataFoundry share the same filesystem and
+- *Gap vs Codex:* subagents in AgentX share the same filesystem and
   context by default; Codex gives each subagent its own git worktree.
-  DataFoundry has `WorktreeHelper` but it is not wired into the orchestrator.
-- *Gap vs Cline:* no SDK to spawn DataFoundry subagents from external
+  AgentX has `WorktreeHelper` but it is not wired into the orchestrator.
+- *Gap vs Cline:* no SDK to spawn AgentX subagents from external
   processes.
 - *Recommendation:* wire `WorktreeHelper` into the `Orchestrator` so each
   parallel `subagent` gets an isolated working copy; expose a public
@@ -446,7 +446,7 @@ system for state snapshots. VS Code `GlobalState` for settings.
 server-side. `AGENTS.md` and `~/.agents/skills/` are the persistent knowledge
 channels.
 
-**DataFoundry** — Multi-layer memory:
+**AgentX** — Multi-layer memory:
 1. **Long-term memory records** (`AgentLongTermMemoryRecord`) scoped to
    `datasource | session | user` with `confidence`, `kind`, `source_run_id`,
    `datasource_id` — surfaced as `evidenceContextItems`.
@@ -467,12 +467,12 @@ channels.
 8. **Token-usage correlation store** — keeps step ↔ tool-call ↔ token
    alignment for UI display.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* clearly the richest memory model of any peer. Aider has
   almost none; Continue has IDE sessions; Cline has per-task files; Codex
-  has cloud sessions + AGENTS.md. DataFoundry spans long-term records,
+  has cloud sessions + AGENTS.md. AgentX spans long-term records,
   working memory, event log, file assets, and skill cache in one product.
-- *Gap vs Codex:* no `AGENTS.md` reader (DataFoundry has Skills via
+- *Gap vs Codex:* no `AGENTS.md` reader (AgentX has Skills via
   `packages/skills/` and `selectToolsByPolicy`, but the project-rule
   Markdown convention is different from Codex's `AGENTS.md` / Cursor's
   `CLAUDE.md` / Claude Code's `AGENTS.md`).
@@ -500,7 +500,7 @@ network policy at the tool boundary. Cloud tasks run on a sandboxed VM
 preloaded with the repo
 ([DeepWiki: Architecture Overview](https://deepwiki.com/openai/codex/1.3-architecture-overview)).
 
-**DataFoundry** — Multi-layer sandbox model in
+**AgentX** — Multi-layer sandbox model in
 `packages/harness-core/src/sandbox/` and `packages/agent-runtime/src/`:
 - **Five sandbox types** in `sandbox-types.ts`:
   - `process` (subprocess isolation)
@@ -531,11 +531,11 @@ preloaded with the repo
 - **Python sandbox** — `docker/python-sandbox/sandbox-bootstrap.py` (194
   lines) is a Docker-based Python sandbox image; resolves a Python runtime
   via `resolvePythonRuntime`.
-- **Isolation mode** — `createDataFoundry` returns `isolation: "bwrap" |
+- **Isolation mode** — `createAgentX` returns `isolation: "bwrap" |
   "none" | "seatbelt"` (Linux bubblewrap, none, macOS sandbox-exec). The
   Docker sandbox is wired separately.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* five sandbox types + a quarantine layer + a governed tool
   factory + abort signals is materially more thorough than Aider/Continue/
   Cline. Closer in spirit to Codex's `FileSystemSandboxPolicy`.
@@ -543,12 +543,12 @@ preloaded with the repo
   user picks up-front (`suggest | auto-edit | full-auto`). The closest
   thing is `commandExecutionEnabled` (a boolean on the workspace) and
   `HITL_TOOL_NAMES` (`ask_user`, `submit_plan`).
-- *Gap vs Codex:* cloud-side sandbox VM is not present; DataFoundry runs
+- *Gap vs Codex:* cloud-side sandbox VM is not present; AgentX runs
   everything on the user's box today. This is the single biggest UX gap
   with Codex Cloud.
 - *Recommendation:* introduce a `RunPolicy { approvalMode, fsPolicy,
   netPolicy }` that mirrors Codex's three-mode approval and pass it
-  through `createDataFoundry`. Add a `NetworkProxy` guard in
+  through `createAgentX`. Add a `NetworkProxy` guard in
   `McpTransport`. Document the `bwrap | seatbelt | none` isolation mode
   picker; consider a Windows-native alternative (AppContainer / WSL2) for
   parity with `bwrap` on Linux and `seatbelt` on macOS.
@@ -569,7 +569,7 @@ plumbing.
 **OpenAI Codex CLI** — OpenAI-side observability for cloud tasks;
 local-side session logging; AGENTS.md / SKILL.md logs.
 
-**DataFoundry** — Strongest observability story of any peer:
+**AgentX** — Strongest observability story of any peer:
 1. **AG-UI custom events** are emitted for everything: `goal.updated`,
    `tree.*`, `token_usage.correlation`, protocol events, context compiled
    events, custom events via `createCustomEvent`. The web app
@@ -590,7 +590,7 @@ local-side session logging; AGENTS.md / SKILL.md logs.
    `smoke-context-compilation.mjs`, `smoke-agent.log`, etc.) verify the
    trace sections and context compilation pipeline end-to-end.
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* **ahead of every peer** in this category.
 - *Gap:* no OpenTelemetry export. A grep for `opentelemetry`, `otel`,
   `tracing` finds no first-class OTEL exporter in the agent-runtime or
@@ -617,7 +617,7 @@ custom tools via SDK
 **OpenAI Codex CLI** — `AGENTS.md`, `~/.agents/skills/`, MCP servers,
 approval modes.
 
-**DataFoundry** — Most explicit of any peer:
+**AgentX** — Most explicit of any peer:
 - **Hook bus** (`harness-core/src/hooks/`) — typed `HookEvent`s, `HookBus`,
   `HookRegistry`, `HookExecutor`, `HookAdapter`. Listeners can `block`
   execution by returning `{ blocked: true }`. Filters on `toolName`,
@@ -639,7 +639,7 @@ approval modes.
 - **Gates** — pluggable `GateExecutor`s (lint, test, typecheck, build,
   format, coverage).
 
-**Gap analysis & recommendations for DataFoundry**
+**Gap analysis & recommendations for AgentX**
 - *Strength:* Cordis-style service registry + hook bus + pluggable gate
   executors + marketplace + skills is the most layered extension model
   of any project reviewed.
@@ -649,7 +649,7 @@ approval modes.
   the import/install story (`zip` + YAML manifest) is heavier than Codex's
   plain `SKILL.md`.
 - *Recommendation:* repackage the harness core + hook bus + plugin
-  registry as `@datafoundry/sdk`, document the hook event surface as a
+  registry as `@agentx/sdk`, document the hook event surface as a
   stable contract (deprecate fields with grace periods), and align the
   skills format with the cross-platform `SKILL.md` convention so a Codex/
   Claude/Cursor skill can be loaded unchanged.
@@ -658,32 +658,32 @@ approval modes.
 
 ## 3. Summary scorecard
 
-| Axis | DeepSeek family | Continue | Aider | Cline | OpenAI Codex CLI | DataFoundry | Lead |
+| Axis | DeepSeek family | Continue | Aider | Cline | OpenAI Codex CLI | AgentX | Lead |
 |------|------------------|----------|-------|-------|------------------|-------------|------|
-| Agent loop / ReAct | n/a | Solid | Coder-centric, Git-native | Controller + Task | Queue-based, interruptible | ReAct + LATS + Goal + Protocol | DataFoundry (control surfaces) / Codex (cancellable queue) |
-| Context / tokens | 128K + MLA | Index pipeline | Repo-map | On-demand gather | Compaction + caching | Policy → planner → materializer, profile-driven | DataFoundry |
-| Tool use | Function-call | config.yaml + MCP | Function-call + strategies | MCP-first (3 transports) | ToolRouter + McpManager + NetworkProxy | 4 MCP transports + governed tool factory | Cline / DataFoundry tie |
-| Multi-file edit | n/a | IDE diff | 5 strategies + Git commit | Per-file + checkpoints | apply_patch + review agent | Mastra tools + gating + quarantine + worktree | Aider (format richness) / DataFoundry (verification) |
-| Subagents | n/a | Mission Control (single) | Architect (1 split) | SDK multi-agent | Worktree-isolated parallel | Orchestrator + Goal + LATS | DataFoundry |
-| Memory / state | None | IDE sessions | Git history | Task storage | Cloud sessions + AGENTS.md | LTM + working memory + event log + files + skills | DataFoundry |
-| Permission / sandbox | None | IDE | Confirm-per-edit | Per-tool approval | `FileSystemSandboxPolicy`, 3 approval modes, NetworkProxy, cloud VM | 5 sandbox types + permissions + governed factory + quarantine | Codex (NetworkProxy, cloud VM) / DataFoundry (sandbox breadth) |
-| Telemetry / observability | None | Removed | Token counts | Task history | Cloud logging | AG-UI events + event log + token correlation + context-budget events + hooks | DataFoundry |
-| Extension points | None | config.yaml + MCP | `/commands` | Plugin SDK + MCP marketplace + `.clinerules` | AGENTS.md + skills + MCP | Hooks + plugins + marketplace + skills + gates + multi-runtime | DataFoundry |
+| Agent loop / ReAct | n/a | Solid | Coder-centric, Git-native | Controller + Task | Queue-based, interruptible | ReAct + LATS + Goal + Protocol | AgentX (control surfaces) / Codex (cancellable queue) |
+| Context / tokens | 128K + MLA | Index pipeline | Repo-map | On-demand gather | Compaction + caching | Policy → planner → materializer, profile-driven | AgentX |
+| Tool use | Function-call | config.yaml + MCP | Function-call + strategies | MCP-first (3 transports) | ToolRouter + McpManager + NetworkProxy | 4 MCP transports + governed tool factory | Cline / AgentX tie |
+| Multi-file edit | n/a | IDE diff | 5 strategies + Git commit | Per-file + checkpoints | apply_patch + review agent | Mastra tools + gating + quarantine + worktree | Aider (format richness) / AgentX (verification) |
+| Subagents | n/a | Mission Control (single) | Architect (1 split) | SDK multi-agent | Worktree-isolated parallel | Orchestrator + Goal + LATS | AgentX |
+| Memory / state | None | IDE sessions | Git history | Task storage | Cloud sessions + AGENTS.md | LTM + working memory + event log + files + skills | AgentX |
+| Permission / sandbox | None | IDE | Confirm-per-edit | Per-tool approval | `FileSystemSandboxPolicy`, 3 approval modes, NetworkProxy, cloud VM | 5 sandbox types + permissions + governed factory + quarantine | Codex (NetworkProxy, cloud VM) / AgentX (sandbox breadth) |
+| Telemetry / observability | None | Removed | Token counts | Task history | Cloud logging | AG-UI events + event log + token correlation + context-budget events + hooks | AgentX |
+| Extension points | None | config.yaml + MCP | `/commands` | Plugin SDK + MCP marketplace + `.clinerules` | AGENTS.md + skills + MCP | Hooks + plugins + marketplace + skills + gates + multi-runtime | AgentX |
 
 ---
 
-## 4. Recommendations — what DataFoundry should adopt
+## 4. Recommendations — what AgentX should adopt
 
 Ranked by expected leverage:
 
 1. **Adopt Codex's `FileSystemSandboxPolicy` + 3-mode approval pattern.**
    Introduce a `RunPolicy { approvalMode: "suggest" | "auto-edit" |
-   "full-auto", fsPolicy, netPolicy }` and pipe it through `createDataFoundry`.
-   This single change brings DataFoundry to parity with Codex's most-loved
+   "full-auto", fsPolicy, netPolicy }` and pipe it through `createAgentX`.
+   This single change brings AgentX to parity with Codex's most-loved
    safety feature while reusing the existing governed factory.
 
 2. **Add a `NetworkProxy` at the MCP / web-search boundary.** Codex and Cline
-   treat outbound network as a typed policy object; DataFoundry currently
+   treat outbound network as a typed policy object; AgentX currently
    doesn't. Add it to `StdioMcpTransport` and `HttpMcpTransport` config and
    surface it as a hook on `web_search` tool.
 
@@ -697,7 +697,7 @@ Ranked by expected leverage:
 
 5. **Patch-format adapters.** Add Aider-style SEARCH/REPLACE and Codex
    `apply_patch` adapters that translate to `edit_file` tool calls. Lets
-   DataFoundry use models that were tuned for those formats without
+   AgentX use models that were tuned for those formats without
    retraining.
 
 6. **OpenTelemetry exporter** for AG-UI custom events. One span per step,
@@ -709,15 +709,15 @@ Ranked by expected leverage:
    tool calls, tears down the governed factory, and emits a final event.
 
 8. **Context compaction summarizer** that fires when `contextMaxTokens` is
-   breached. Codex uses a server-side endpoint for this; DataFoundry can
+   breached. Codex uses a server-side endpoint for this; AgentX can
    do it client-side via a small model call or hookable strategy.
 
-9. **Publish `@datafoundry/sdk`** so external processes can spawn
-   DataFoundry subagents (parity with Cline SDK). The hook bus, plugin
+9. **Publish `@agentx/sdk`** so external processes can spawn
+   AgentX subagents (parity with Cline SDK). The hook bus, plugin
    registry, and runtime manager are already the right shape.
 
 10. **Stable skill format that cross-loads with Codex/Claude/Cursor.**
-    Today DataFoundry requires the zip + YAML manifest; a thin `SKILL.md`
+    Today AgentX requires the zip + YAML manifest; a thin `SKILL.md`
     import path lowers the friction for users migrating from other tools.
 
 ---
@@ -746,7 +746,7 @@ Ranked by expected leverage:
   [Bhavishya Pandit, Everything About Codex](https://bhavishyapandit9.substack.com/p/everything-about-codex-the-complete),
   [Techjack 2026 guide](https://techjacksolutions.com/ai-tools/openai-codex/),
   [Medium 2026 skills overview](https://medium.com/@unicodeveloper/9-must-have-skills-for-codex-in-2026-b5124b375eec)
-- DataFoundry — `packages/agent-runtime/src/index.ts`,
+- AgentX — `packages/agent-runtime/src/index.ts`,
   `packages/agent-runtime/src/runtime-limits.ts`,
   `packages/agent-runtime/src/config/agent-runtime-limits.ts`,
   `packages/agent-runtime/src/lats/lats-runtime.ts`,

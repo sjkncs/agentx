@@ -27,12 +27,12 @@ test("creates safe defaults without model settings", () => {
   assert.equal(result.env.AUTH_SESSION_SECRET, "generated-secret-value");
   assert.equal(result.env.SECRET_MASTER_KEY, "generated-secret-value");
   assert.equal(result.env.LLM_API_KEY, undefined);
-  assert.equal(result.env.DATAFOUNDRY_AUTH_MODE, undefined);
-  assert.doesNotMatch(result.text, /DATAFOUNDRY_AUTH_MODE|NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE/);
+  assert.equal(result.env.AGENTX_AUTH_MODE, undefined);
+  assert.doesNotMatch(result.text, /AGENTX_AUTH_MODE|NEXT_PUBLIC_AGENTX_AUTH_MODE/);
   assert.doesNotMatch(result.text, /DATALINK_/);
 });
 
-test("strips legacy DATAFOUNDRY_AUTH_MODE from upgraded env text", () => {
+test("strips legacy AGENTX_AUTH_MODE from upgraded env text", () => {
   const source = [
     "WEB_PORT=3000",
     "API_PORT=8787",
@@ -40,19 +40,19 @@ test("strips legacy DATAFOUNDRY_AUTH_MODE from upgraded env text", () => {
     "AUTH_SESSION_SECRET=existing-session-secret-value",
     "SECRET_MASTER_KEY=existing-master-secret-value",
     "AUTH_REGISTRATION_MODE=open",
-    "DATAFOUNDRY_AUTH_MODE=password",
-    "NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE=password",
+    "AGENTX_AUTH_MODE=password",
+    "NEXT_PUBLIC_AGENTX_AUTH_MODE=password",
     "CUSTOM_VALUE=keep-me"
   ].join("\n");
   const result = ensureDeploymentEnvironment(source, { generateSecrets: false });
-  assert.equal(result.env.DATAFOUNDRY_AUTH_MODE, undefined);
-  assert.equal(result.env.NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE, undefined);
+  assert.equal(result.env.AGENTX_AUTH_MODE, undefined);
+  assert.equal(result.env.NEXT_PUBLIC_AGENTX_AUTH_MODE, undefined);
   assert.equal(result.env.CUSTOM_VALUE, "keep-me");
-  assert.doesNotMatch(result.text, /DATAFOUNDRY_AUTH_MODE|NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE/);
+  assert.doesNotMatch(result.text, /AGENTX_AUTH_MODE|NEXT_PUBLIC_AGENTX_AUTH_MODE/);
   assert.match(result.text, /^CUSTOM_VALUE=keep-me$/m);
   assert.deepEqual(result.removedKeys.sort(), [
-    "DATAFOUNDRY_AUTH_MODE",
-    "NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE"
+    "AGENTX_AUTH_MODE",
+    "NEXT_PUBLIC_AGENTX_AUTH_MODE"
   ]);
 });
 
@@ -91,7 +91,7 @@ test("renders same-origin Web BFF configuration", () => {
   assert.match(text, /NEXT_PUBLIC_AGENT_RUNTIME_URL=$/m);
   assert.match(text, /NEXT_PUBLIC_CONFIG_API_URL=$/m);
   assert.match(text, /API_PROXY_TARGET=http:\/\/127\.0\.0\.1:8877/);
-  assert.doesNotMatch(text, /NEXT_PUBLIC_DATAFOUNDRY_AUTH_MODE/);
+  assert.doesNotMatch(text, /NEXT_PUBLIC_AGENTX_AUTH_MODE/);
 });
 
 test("rejects non-loopback HTTP public URLs and wildcard bind hosts", () => {
@@ -114,7 +114,7 @@ test("generates AUTH_PUBLIC_BASE_URL for a custom Web port", () => {
 });
 
 test("reconfigure creates a backup and atomically writes both files", async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "datafoundry-config-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "agentx-config-"));
   await mkdir(path.join(root, "apps/web"), { recursive: true });
   await writeFile(path.join(root, ".env"), "AUTH_SESSION_SECRET=old\nSECRET_MASTER_KEY=old-master\n");
   const result = ensureDeploymentEnvironment(await readFile(path.join(root, ".env"), "utf8"));
@@ -172,7 +172,7 @@ test("redactSensitiveText masks JSON keys, bearer tokens, URL userinfo, and toke
 });
 
 test("writeDeploymentConfiguration backs up existing secrets even without reconfigure", async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "datafoundry-config-secret-backup-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "agentx-config-secret-backup-"));
   await mkdir(path.join(root, "apps/web"), { recursive: true });
   const existing = [
     "AUTH_SESSION_SECRET=existing-session-secret-value",

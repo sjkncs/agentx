@@ -20,7 +20,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       datafoundry
+      POSTGRES_DB:       agentx
       POSTGRES_USER:     postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -29,7 +29,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d datafoundry"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agentx"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -60,7 +60,7 @@ services:
       sh -c "
         for f in 001_init.sql 002_schema.sql 003_rpcs.sql 004_seeds.sql; do
           echo '--- applying: '$$f;
-          psql -h postgres -U postgres -d datafoundry -f /sql/$$f || true;
+          psql -h postgres -U postgres -d agentx -f /sql/$$f || true;
         done;
         echo 'DB init done'
       "

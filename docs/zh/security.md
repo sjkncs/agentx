@@ -1,6 +1,6 @@
 # 安全说明
 
-这篇文档面向试用者、集成开发者和准备对外演示的维护者。读完后，你可以知道 DataFoundry 公开文档中的凭据写法、数据源连接边界和本地开发安全边界。
+这篇文档面向试用者、集成开发者和准备对外演示的维护者。读完后，你可以知道 AgentX 公开文档中的凭据写法、数据源连接边界和本地开发安全边界。
 
 ## 凭据写法
 
@@ -60,7 +60,7 @@ replace-with-your-key
 
 ## 身份与会话
 
-DataFoundry 仅支持基于 Cookie 的密码会话。开发 token、`/api/v1/dev/*` 与 `DATAFOUNDRY_AUTH_MODE` 已移除。
+AgentX 仅支持基于 Cookie 的密码会话。开发 token、`/api/v1/dev/*` 与 `AGENTX_AUTH_MODE` 已移除。
 
 必要配置：
 
@@ -69,7 +69,7 @@ AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
 AUTH_PUBLIC_BASE_URL=http://127.0.0.1:3000
 AUTH_REGISTRATION_MODE=open
 AUTH_EMAIL_DELIVERY=test
-AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
+AUTH_EMAIL_FROM=AgentX <no-reply@example.com>
 ```
 
 `AUTH_REGISTRATION_MODE` 必填（`open` = 开放自助注册，`closed` = 注册返回 `REGISTRATION_CLOSED`）。一键部署默认 `open`；对公网暴露且不接受公开注册时请设为 `closed`。`GET /api/v1/me` 读取当前用户；`GET /api/v1/auth/status` 仅暴露 `registrationEnabled`，不含密钥。
@@ -83,9 +83,9 @@ AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
 
 `/api/v1/auth/*` 提供注册、登录、邮箱验证、密码重置、退出登录、会话列表和修改密码。非安全方法需要 `X-CSRF-Token`（来自 `df_csrf` Cookie）。会话 Cookie 为 `df_session`。Cookie 的 `Path` / `Secure` 跟随 `AUTH_PUBLIC_BASE_URL`（HTTPS ⇒ `Secure`；pathname 前缀成为 cookie path）。非回环 `AUTH_PUBLIC_BASE_URL` 时禁止 `AUTH_EMAIL_DELIVERY=test`。
 
-前端请留空 `NEXT_PUBLIC_AGENT_RUNTIME_URL` / `NEXT_PUBLIC_CONFIG_API_URL`，让浏览器走同源 Next BFF；上游 API 用 `API_PROXY_TARGET`（写在 `apps/web/.env.local`）。启动命令：`npm run build && npm run build:web && npm run start:api && npm run start:web`。真实生产反代样例见 `deploy/nginx.datafoundry.conf.example`。
+前端请留空 `NEXT_PUBLIC_AGENT_RUNTIME_URL` / `NEXT_PUBLIC_CONFIG_API_URL`，让浏览器走同源 Next BFF；上游 API 用 `API_PROXY_TARGET`（写在 `apps/web/.env.local`）。启动命令：`npm run build && npm run build:web && npm run start:api && npm run start:web`。真实生产反代样例见 `deploy/nginx.agentx.conf.example`。
 
-若旧 `.env` 仍含 `DATAFOUNDRY_AUTH_MODE=password`，API 会忽略该值；`./deploy.sh deploy` 会把它从配置中剥离。`DATAFOUNDRY_AUTH_MODE=dev` 会直接导致启动失败。
+若旧 `.env` 仍含 `AGENTX_AUTH_MODE=password`，API 会忽略该值；`./deploy.sh deploy` 会把它从配置中剥离。`AGENTX_AUTH_MODE=dev` 会直接导致启动失败。
 
 password-only 切换**不会**迁移仍含 `users.dev_token` 的 Metadata 库。打开此类数据库会以 `METADATA_SCHEMA_INCOMPATIBLE` 失败。请停栈后重置 `STORAGE_ROOT_DIR` / `METADATA_DB_PATH` / `MASTRA_STORAGE_PATH` / `FILE_ASSET_STORAGE_ROOT` / `WORKSPACE_ROOT`（或改指向空目录），再启动并重新注册。本次切换不提供原地 schema 升级。
 

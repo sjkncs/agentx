@@ -1,4 +1,4 @@
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 
 export type ApiErrorCode =
   | "BAD_REQUEST"

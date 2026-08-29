@@ -370,7 +370,7 @@ export const exitCommand: Command = {
   execute: async () => {
     return {
       success: true,
-      message: 'Exiting DataFoundry TUI.',
+      message: 'Exiting AgentX TUI.',
       data: { action: 'exit_application' },
     };
   },

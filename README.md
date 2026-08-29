@@ -29,7 +29,7 @@
 
 ## 🤔 What Is AgentX
 
-AgentX is a **DeepSeek-native AI coding agent harness** built on the DataFoundry foundation. It leverages prefix-cache stability to minimize token costs across long coding sessions, combining the best practices from [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and [DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) with enterprise-grade workflow orchestration.
+AgentX is a **DeepSeek-native AI coding agent harness** built on the AgentX foundation. It leverages prefix-cache stability to minimize token costs across long coding sessions, combining the best practices from [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and [DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) with enterprise-grade workflow orchestration.
 
 ### Key Features
 

@@ -4,7 +4,7 @@ import type {
   WorkspaceMembershipRecord,
   WorkspaceRole,
   WorkspaceRecord,
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 import { RbacError, hasAtLeast } from "./roles.js";
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;

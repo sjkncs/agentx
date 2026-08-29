@@ -2,7 +2,7 @@
 
 /**
  * supabase-rpc.ts — 浏览器端轻量 RPC 客户端
- * 仅给 admin 面板用：直接调 datafoundry.* RPC，无 SDK 依赖。
+ * 仅给 admin 面板用：直接调 agentx.* RPC，无 SDK 依赖。
  */
 const URL_ENV_KEYS = [
   "NEXT_PUBLIC_SUPABASE_URL",

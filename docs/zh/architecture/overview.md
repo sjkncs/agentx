@@ -1,6 +1,6 @@
 # 架构概览
 
-DataFoundry 采用本地优先的工作台架构。Web 和 TUI 作为用户入口，后端统一负责 Agent Runtime、配置管理、数据源访问、知识检索、文件和产出管理。
+AgentX 采用本地优先的工作台架构。Web 和 TUI 作为用户入口，后端统一负责 Agent Runtime、配置管理、数据源访问、知识检索、文件和产出管理。
 
 ## 高层结构
 
@@ -23,7 +23,7 @@ Web 工作台 / TUI / 其他客户端
 | `apps/web`    | Web 数据任务工作台，负责图形化对话、资源管理、追溯和产出展示。              |
 | `apps/tui`    | 终端用户界面，负责命令行对话、数据源与 Skill 选择、统计和产出查看。          |
 | `apps/api`    | 后端 HTTP 服务，提供 `/api/copilotkit` 和 `/api/v1/*`。 |
-| Agent Runtime | 创建 DataFoundry，管理工具、运行上下文和 AG-UI 事件。            |
+| Agent Runtime | 创建 AgentX，管理工具、运行上下文和 AG-UI 事件。            |
 | Data Gateway  | 管理数据源、schema 检查、预览和只读 SQL 执行。                  |
 | Knowledge     | 管理知识库文档、分块、检索和引用边界。                            |
 | MCP           | 挂载外部工具服务，并执行工具 allowlist 和 timeout 策略。         |
@@ -95,7 +95,7 @@ workspace defaults
 
 ## 身份作用域
 
-DataFoundry 仅支持基于 Cookie 的密码会话。每个注册用户拥有个人 workspace；Web v1 不在界面中暴露 workspace 切换，并按用户隔离浏览器状态。REST 配置请求和 CopilotKit AG-UI run 必须使用同一已认证会话。
+AgentX 仅支持基于 Cookie 的密码会话。每个注册用户拥有个人 workspace；Web v1 不在界面中暴露 workspace 切换，并按用户隔离浏览器状态。REST 配置请求和 CopilotKit AG-UI run 必须使用同一已认证会话。
 
 `/api/v1/auth/*` 覆盖注册、登录、邮箱验证、密码重置、登出与会话注销；非安全方法需 CSRF 校验。
 

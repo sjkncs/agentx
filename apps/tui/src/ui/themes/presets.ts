@@ -1,7 +1,7 @@
 import type { TuiThemePreset } from './types.js';
 
 /**
- * DataFoundry 默认主题：蓝色负责结构，雾青负责操作和选择，冷灰负责说明。
+ * AgentX 默认主题：蓝色负责结构，雾青负责操作和选择，冷灰负责说明。
  */
 export const mistDarkTheme: TuiThemePreset = {
   name: 'mist-dark',

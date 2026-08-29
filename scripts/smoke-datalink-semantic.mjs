@@ -4,7 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const url = process.env.DATALINK_MCP_URL ?? "http://1.95.190.111:8080/mcp";
-const client = new Client({ name: "datafoundry-semantic-contract-smoke", version: "0.1.0" });
+const client = new Client({ name: "agentx-semantic-contract-smoke", version: "0.1.0" });
 
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(url)));

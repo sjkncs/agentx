@@ -9,7 +9,7 @@ import { RunFinalizer } from "../apps/api/dist/run-finalizer.js";
 import { createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createVerifiedTestIdentity } from "./lib/metadata-test-identity.mjs";
 
-const root = mkdtempSync(join(tmpdir(), "datafoundry-run-finalizer-"));
+const root = mkdtempSync(join(tmpdir(), "agentx-run-finalizer-"));
 
 
 try {

@@ -1,8 +1,8 @@
-import type { ApiResult } from "@datafoundry/contracts";
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
-import type { FileAssetService } from "@datafoundry/files";
-import type { LocalKnowledgeService } from "@datafoundry/knowledge";
-import type { MetadataStore } from "@datafoundry/metadata";
+import type { ApiResult } from "@agentx/contracts";
+import type { LocalDataGateway } from "@agentx/data-gateway";
+import type { FileAssetService } from "@agentx/files";
+import type { LocalKnowledgeService } from "@agentx/knowledge";
+import type { MetadataStore } from "@agentx/metadata";
 import type { RunCancelRegistry } from "../run-cancel-registry.js";
 
 export type ConfigApiContext = {

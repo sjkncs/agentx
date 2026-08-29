@@ -21,7 +21,7 @@
  *   const safeSql = guard.parameterize(result.normalizedSql, [userId]);
  */
 
-import type { SchemaSummary } from "@datafoundry/data-gateway";
+import type { SchemaSummary } from "@agentx/data-gateway";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

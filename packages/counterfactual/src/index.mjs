@@ -1,5 +1,5 @@
 /**
- * @datafoundry/counterfactual — public API
+ * @agentx/counterfactual — public API
  *
  * CDL = UnifiedSemanticLayer + CausalDAG + CounterfactualEngine + RegimeJoint
  */

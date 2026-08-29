@@ -43,11 +43,11 @@ vi.mock("@copilotkit/react-core/v2", () => ({
   useAgent: () => ({ agent: agentState }),
   useCopilotChatConfiguration: () => ({
     threadId: agentState.threadId,
-    agentId: "dataFoundry",
+    agentId: "agentX",
   }),
 }));
 
-vi.mock("../use-data-foundry-run", () => ({
+vi.mock("../use-agentx-run", () => ({
   useConversationRestoreGate: () => restoreGate,
 }));
 
@@ -116,7 +116,7 @@ describe("SessionConversationScrollRestore branch switch regression", () => {
     restoreGate.restoringThreadIds.add("thread-b");
 
     await act(async () => {
-      root!.render(createElement(SessionConversationScrollRestore, { agentId: "dataFoundry" }));
+      root!.render(createElement(SessionConversationScrollRestore, { agentId: "agentX" }));
     });
 
     // Still restoring: must not jump yet.
@@ -129,7 +129,7 @@ describe("SessionConversationScrollRestore branch switch regression", () => {
     ];
 
     await act(async () => {
-      root!.render(createElement(SessionConversationScrollRestore, { agentId: "dataFoundry" }));
+      root!.render(createElement(SessionConversationScrollRestore, { agentId: "agentX" }));
     });
     await flushEffects();
     await act(async () => {
@@ -147,12 +147,12 @@ describe("SessionConversationScrollRestore branch switch regression", () => {
     restoreGate.restoringThreadIds.add("thread-c");
 
     await act(async () => {
-      root!.render(createElement(SessionConversationScrollRestore, { agentId: "dataFoundry" }));
+      root!.render(createElement(SessionConversationScrollRestore, { agentId: "agentX" }));
     });
 
     restoreGate.restoringThreadIds.clear();
     await act(async () => {
-      root!.render(createElement(SessionConversationScrollRestore, { agentId: "dataFoundry" }));
+      root!.render(createElement(SessionConversationScrollRestore, { agentId: "agentX" }));
     });
     await flushEffects();
     await act(async () => {

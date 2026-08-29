@@ -1,4 +1,4 @@
-"""Pydantic schemas mirroring the DataFoundry `/api/v1/*` DTOs."""
+"""Pydantic schemas mirroring the AgentX `/api/v1/*` DTOs."""
 
 from __future__ import annotations
 

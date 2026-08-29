@@ -142,11 +142,11 @@ test("validateAuthPublicUrl allows loopback HTTP without secure cookies", () => 
 });
 
 test("validateAuthPublicUrl allows HTTPS with secure cookies and path", () => {
-  const result = validateAuthPublicUrl("https://example.com/datafoundry");
+  const result = validateAuthPublicUrl("https://example.com/agentx");
   assert.equal(result.loopback, false);
   assert.equal(result.cookieSecure, true);
-  assert.equal(result.publicBaseUrl, "https://example.com/datafoundry");
-  assert.equal(result.cookiePath, "/datafoundry");
+  assert.equal(result.publicBaseUrl, "https://example.com/agentx");
+  assert.equal(result.cookiePath, "/agentx");
 });
 
 test("validateAuthPublicUrl uses root cookie path for origin-only URLs", () => {
@@ -171,7 +171,7 @@ test("validateAuthPublicUrl rejects illegal URL shapes", () => {
 test("deploy ensureDeploymentEnvironment defaults are accepted by password auth config", () => {
   const secret = "deploy-default-session-secret-32b!!";
   const fresh = ensureDeploymentEnvironment("", { randomSecret: () => secret });
-  assert.equal(fresh.env.DATAFOUNDRY_AUTH_MODE, undefined);
+  assert.equal(fresh.env.AGENTX_AUTH_MODE, undefined);
   const freshConfig = loadPasswordAuthConfig(fresh.env);
   assert.equal(freshConfig.registrationMode, "open");
   assert.equal(freshConfig.emailDelivery, "test");
@@ -189,12 +189,12 @@ test("deploy ensureDeploymentEnvironment defaults are accepted by password auth 
   assert.equal(upgradedConfig.registrationMode, "open");
 });
 
-test("ignores legacy DATAFOUNDRY_AUTH_MODE=password and rejects removed modes", () => {
-  assert.doesNotThrow(() => loadPasswordAuthConfig(baseEnv({ DATAFOUNDRY_AUTH_MODE: "password" })));
-  assert.doesNotThrow(() => loadPasswordAuthConfig(baseEnv({ DATAFOUNDRY_AUTH_MODE: "" })));
+test("ignores legacy AGENTX_AUTH_MODE=password and rejects removed modes", () => {
+  assert.doesNotThrow(() => loadPasswordAuthConfig(baseEnv({ AGENTX_AUTH_MODE: "password" })));
+  assert.doesNotThrow(() => loadPasswordAuthConfig(baseEnv({ AGENTX_AUTH_MODE: "" })));
   assert.throws(
-    () => loadPasswordAuthConfig(baseEnv({ DATAFOUNDRY_AUTH_MODE: "dev" })),
-    /DATAFOUNDRY_AUTH_MODE/
+    () => loadPasswordAuthConfig(baseEnv({ AGENTX_AUTH_MODE: "dev" })),
+    /AGENTX_AUTH_MODE/
   );
 });
 
@@ -258,14 +258,14 @@ test("password config matrix", () => {
     {
       name: "https smtp allowed",
       env: baseEnv({
-        AUTH_PUBLIC_BASE_URL: "https://example.com/datafoundry",
+        AUTH_PUBLIC_BASE_URL: "https://example.com/agentx",
         AUTH_EMAIL_DELIVERY: "smtp",
         SMTP_HOST: "smtp.example.com",
         SMTP_FROM: "noreply@example.com"
       }),
       ok: true,
       cookieSecure: true,
-      cookiePath: "/datafoundry"
+      cookiePath: "/agentx"
     },
     {
       name: "https test mail rejected",
@@ -389,16 +389,16 @@ test("cookie helpers derive Path from deployment prefix", async () => {
       sessionToken: "session",
       csrfToken: "csrf",
       maxAgeSeconds: 60,
-      path: "/datafoundry",
+      path: "/agentx",
       secure: true
     });
   });
-  assert.ok(cookies.every((cookie) => /;\s*Path=\/datafoundry(?:;|$)/i.test(cookie)));
+  assert.ok(cookies.every((cookie) => /;\s*Path=\/agentx(?:;|$)/i.test(cookie)));
 
   const cleared = await captureSetCookie((res) => {
-    appendClearAuthCookies(res, { path: "/datafoundry", secure: true });
+    appendClearAuthCookies(res, { path: "/agentx", secure: true });
   });
-  assert.ok(cleared.every((cookie) => /;\s*Path=\/datafoundry(?:;|$)/i.test(cookie)));
+  assert.ok(cleared.every((cookie) => /;\s*Path=\/agentx(?:;|$)/i.test(cookie)));
 });
 
 test("cookie helpers no longer read NODE_ENV for Secure", async () => {
@@ -425,7 +425,7 @@ test("cookie helpers no longer read NODE_ENV for Secure", async () => {
 });
 
 async function withPasswordApi(envOverrides, run) {
-  const root = mkdtempSync(join(tmpdir(), "datafoundry-auth-foundation-"));
+  const root = mkdtempSync(join(tmpdir(), "agentx-auth-foundation-"));
   const previous = { ...process.env };
   Object.assign(process.env, {
     AUTH_SESSION_SECRET: SECRET,

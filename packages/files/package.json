@@ -1,5 +1,5 @@
 {
-  "name": "@datafoundry/files",
+  "name": "@agentx/files",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -10,6 +10,6 @@
     "typecheck": "tsc -p tsconfig.json --noEmit false"
   },
   "dependencies": {
-    "@datafoundry/metadata": "0.2.0"
+    "@agentx/metadata": "0.2.0"
   }
 }

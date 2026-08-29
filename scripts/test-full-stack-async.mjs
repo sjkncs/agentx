@@ -55,7 +55,7 @@ function runOne(test) {
     const env = {
       ...process.env,
       ...Object.fromEntries(Object.entries(portResult.ports).map(([k, v]) => [`PORT_${k.toUpperCase()}`, String(v)])),
-      DATA_FOUNDRY_TEST_PORTS: JSON.stringify(portResult.ports),
+      AGENTX_TEST_PORTS: JSON.stringify(portResult.ports),
     };
     const logDir = path.join(RUN_DIR, test.name);
     fs.mkdirSync(logDir, { recursive: true });

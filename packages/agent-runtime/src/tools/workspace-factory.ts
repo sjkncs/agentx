@@ -52,7 +52,7 @@ export type RunWorkspace = {
 
 /** Resolve the application-level workspace root. */
 export const resolveWorkspaceRoot = (injectedRoot?: string): string =>
-  path.resolve(injectedRoot ?? process.env.WORKSPACE_ROOT ?? path.join(os.tmpdir(), "open-data-foundry-workspace"));
+  path.resolve(injectedRoot ?? process.env.WORKSPACE_ROOT ?? path.join(os.tmpdir(), "open-agentx-workspace"));
 
 /** Resolve the root that stores materialized skill packages outside the visible workspace tree. */
 export const resolveSkillCacheRoot = (injectedWorkspaceRoot?: string): string => {

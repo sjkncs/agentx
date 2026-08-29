@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from ..client import ApiError, DataFoundryClient, NetworkError
+from ..client import ApiError, AgentXClient, NetworkError
 from ..config import load_config, save_config
 from ..ui import print_error, print_info, print_success, render_json, render_table
 
@@ -65,7 +65,7 @@ def _dispatch(args: argparse.Namespace) -> int:
 def _list(args: argparse.Namespace) -> int:
     cfg = load_config()
     try:
-        items = DataFoundryClient(cfg).list_notebooks()
+        items = AgentXClient(cfg).list_notebooks()
     except ApiError as err:
         print_error(str(err))
         return 1
@@ -88,7 +88,7 @@ def _list(args: argparse.Namespace) -> int:
 def _show(args: argparse.Namespace) -> int:
     cfg = load_config()
     try:
-        nb = DataFoundryClient(cfg).get_notebook(args.notebook_id)
+        nb = AgentXClient(cfg).get_notebook(args.notebook_id)
     except ApiError as err:
         print_error(str(err))
         return 1
@@ -101,7 +101,7 @@ def _show(args: argparse.Namespace) -> int:
 
 def _create(args: argparse.Namespace) -> int:
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     try:
         notebook = client.create_notebook(
             title=args.title,
@@ -123,7 +123,7 @@ def _create(args: argparse.Namespace) -> int:
 def _run(args: argparse.Namespace) -> int:
     cfg = load_config()
     try:
-        result = DataFoundryClient(cfg).run_notebook(args.notebook_id)
+        result = AgentXClient(cfg).run_notebook(args.notebook_id)
     except ApiError as err:
         print_error(str(err))
         return 1
@@ -144,7 +144,7 @@ def _export(args: argparse.Namespace) -> int:
     """
     fmt = "md" if args.format in {"md", "markdown"} else "json"
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     try:
         body = client.get(f"/api/v1/notebooks/{args.notebook_id}/export.{fmt}")
     except ApiError as err:
@@ -175,7 +175,7 @@ def _export(args: argparse.Namespace) -> int:
 def _runs(args: argparse.Namespace) -> int:
     """Print the cell-run audit log for a notebook."""
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     try:
         items = client.list_notebook_runs(args.notebook_id, limit=args.limit)
     except ApiError as err:

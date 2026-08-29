@@ -34,7 +34,7 @@ const runId = randomUUID();
 
 const payload = {
   method: "agent/run",
-  params: { agentId: "dataFoundry" },
+  params: { agentId: "agentX" },
   body: {
     threadId,
     runId,

@@ -1,6 +1,6 @@
 # Phase 3: Plugin System
 
-This document describes Phase 3 of the DataFoundry Harness upgrade.
+This document describes Phase 3 of the AgentX Harness upgrade.
 
 ## Overview
 
@@ -43,7 +43,7 @@ Phase 3 adds a comprehensive plugin system inspired by Cordis:
 ## Plugin Interface
 
 ```typescript
-import type { Plugin, PluginContext, PluginMetadata } from "@datafoundry/harness-core";
+import type { Plugin, PluginContext, PluginMetadata } from "@agentx/harness-core";
 
 class MyPlugin implements Plugin {
   readonly metadata: PluginMetadata = {
@@ -74,7 +74,7 @@ import {
   PluginManager, 
   createPluginContext,
   ServiceRegistryImpl,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 
 const services = new ServiceRegistryImpl();
 
@@ -116,7 +116,7 @@ if (services.has("logger")) {
 ## Tool Registry
 
 ```typescript
-import type { PluginContext } from "@datafoundry/harness-core";
+import type { PluginContext } from "@agentx/harness-core";
 
 function registerMyTools(context: PluginContext): void {
   // Register single tool
@@ -156,8 +156,8 @@ const profile: PluginProfile = {
 
 // Define a bundle
 const bundle: PluginBundle = {
-  id: "datafoundry-bundle",
-  name: "DataFoundry Bundle",
+  id: "agentx-bundle",
+  name: "AgentX Bundle",
   profiles: [profile, devProfile, prodProfile],
   defaultProfile: "default",
 };
@@ -176,7 +176,7 @@ import {
   ToolRegistryImpl,
   EventBusImpl,
   ConfigStoreImpl,
-} from "@datafoundry/harness-core";
+} from "@agentx/harness-core";
 import { MyPlugin, AnotherPlugin } from "./plugins";
 
 // Create core components

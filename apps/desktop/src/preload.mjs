@@ -1,5 +1,5 @@
 /**
- * DataFoundry Desktop — Preload
+ * AgentX Desktop — Preload
  *
  * Exposes a typed `window.dfd` API to the renderer for IPC calls.
  * No Node access leaks into the renderer.

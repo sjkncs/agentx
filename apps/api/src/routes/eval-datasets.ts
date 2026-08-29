@@ -17,14 +17,14 @@
  * (id starts with "builtin-") so they install on first boot.
  */
 
-import { createErrorResult, createSuccessResult } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult } from "@agentx/contracts";
 import type {
   EvalDatasetDomain,
   EvalScoringStrategy,
   EvalDatasetRecord,
   EvalTestCase
-} from "@datafoundry/metadata";
-import { supabase } from "@datafoundry/supabase-bridge";
+} from "@agentx/metadata";
+import { supabase } from "@agentx/supabase-bridge";
 import type { IncomingMessage } from "node:http";
 
 import type { ConfigApiContext, ConfigApiResponse } from "./types.js";

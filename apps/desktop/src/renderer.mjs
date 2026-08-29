@@ -1,5 +1,5 @@
 /**
- * DataFoundry Desktop — Renderer
+ * AgentX Desktop — Renderer
  *
  * Pure DOM logic. Communicates with the main process via window.dfd (preload).
  */
@@ -55,7 +55,7 @@ $('btn-restart').addEventListener('click', () => window.dfd.restart());
 
 // ----- CDL panel -----
 // The fork (regime-conditional α) is computed in the main process via
-// @datafoundry/counterfactual; the renderer only displays the result.
+// @agentx/counterfactual; the renderer only displays the result.
 $('cdl-run').addEventListener('click', async () => {
   const regime = $('cdl-regime').value;
   const phiSem = parseFloat($('cdl-phi-sem').value);

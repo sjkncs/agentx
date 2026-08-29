@@ -43,7 +43,7 @@
  *     timeoutMs: 30_000,
  *     audit: (record) => console.log("audit:", record),
  *     networkIsolation: { type: "stub", stubExe: "/usr/local/bin/df-sandbox-stub" }
- *       | { type: "docker", image: "datafoundry/python-sandbox:latest" }
+ *       | { type: "docker", image: "agentx/python-sandbox:latest" }
  *       | { type: "none" },   // dev only — no network blocking
  *   });
  *   const result = await runner.run(userSource);
@@ -373,7 +373,7 @@ const BLOCKED_ENV_PREFIXES = [
   "ANTHROPIC_",
   "DEEPSEEK_",
   "OPEN_AI_",
-  "LLM_",       // DataFoundry internal LLM config
+  "LLM_",       // AgentX internal LLM config
   "DATA_",
   "SENTRY_",
   "LOGGLY_",

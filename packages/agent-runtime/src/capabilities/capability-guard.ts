@@ -10,7 +10,7 @@
  *     value: 250,
  *   });
  */
-import type { WorkspaceRole } from "@datafoundry/metadata";
+import type { WorkspaceRole } from "@agentx/metadata";
 
 // ---------------------------------------------------------------------------
 // Types

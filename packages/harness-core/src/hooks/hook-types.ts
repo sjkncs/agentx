@@ -1,8 +1,8 @@
 /**
- * Hook System Types for DataFoundry Harness
+ * Hook System Types for AgentX Harness
  * 
  * 生命周期Hook系统，借鉴 Claude Code 的 Hook 架构，
- * 但保持与现有 DataFoundry 系统的向后兼容。
+ * 但保持与现有 AgentX 系统的向后兼容。
  */
 
 import { z } from "zod";
@@ -281,7 +281,7 @@ export type HookHandler = (
 // ============================================================================
 
 /**
- * DataFoundry/Mastra 事件到 Hook 事件的映射
+ * AgentX/Mastra 事件到 Hook 事件的映射
  */
 export const EVENT_SOURCE_MAP: Record<string, HookEvent> = {
   // Agent 事件

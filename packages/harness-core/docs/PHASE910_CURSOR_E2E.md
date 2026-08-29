@@ -46,7 +46,7 @@ import {
   CursorSdkAdapter,
   LocalCursorSdkAdapter,
   CloudCursorSdkAdapter,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 // Local (IDE-resident)
 const localAdapter = createCursorSdkAdapter({
@@ -102,7 +102,7 @@ for await (const event of adapter.stream({
 #### IDE-Resident Workflow
 
 ```typescript
-import { createIdeResidentWorkflow } from '@datafoundry/harness-core';
+import { createIdeResidentWorkflow } from '@agentx/harness-core';
 
 const adapter = createCursorSdkAdapter({ /* ... */ });
 const workflow = createIdeResidentWorkflow(adapter);
@@ -212,7 +212,7 @@ import {
   McpClient,
   McpServer,
   LocalCursorSdkAdapter,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 async function fullPipeline() {
   // 1. Subagent + Orchestration
@@ -269,8 +269,8 @@ async function fullPipeline() {
 After completing all 10 phases, the system is ready for:
 
 1. **Production Deployment**
-   - Deploy @datafoundry/harness-core as the core library
-   - Integrate with existing datafoundry-enhanced codebase
+   - Deploy @agentx/harness-core as the core library
+   - Integrate with existing agentx-enhanced codebase
    
 2. **Documentation**
    - API reference documentation

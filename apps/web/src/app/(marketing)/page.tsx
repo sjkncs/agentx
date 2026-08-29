@@ -85,12 +85,12 @@ const FEATURE_HIGHLIGHTS = [
     icon: "🛡",
     title: "Local-first data",
     body:
-      "Your data never leaves the machine you run DataFoundry on, unless you choose to. Datasource connections and knowledge bases live in a local SQLite file you control.",
+      "Your data never leaves the machine you run AgentX on, unless you choose to. Datasource connections and knowledge bases live in a local SQLite file you control.",
   },
 ];
 
 export default async function MarketingHome() {
-  const apiBase = process.env.NEXT_PUBLIC_DATAFOUNDRY_API_BASE ?? "http://127.0.0.1:8787";
+  const apiBase = process.env.NEXT_PUBLIC_AGENTX_API_BASE ?? "http://127.0.0.1:8787";
   const spotlight = await fetchSpotlight(apiBase);
 
   return (
@@ -101,7 +101,7 @@ export default async function MarketingHome() {
           An agent that knows what you work with.
         </h1>
         <p className={styles.heroSubtitle}>
-          DataFoundry turns the data stack you already have — datasources,
+          AgentX turns the data stack you already have — datasources,
           notebooks, models, skills — into a workspace an agent can drive
           end-to-end. Bring a question, watch the work product land.
         </p>

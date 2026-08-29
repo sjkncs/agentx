@@ -1,4 +1,4 @@
-# DataFoundry Desktop — Architecture Notes
+# AgentX Desktop — Architecture Notes
 
 **Status:** Electron 35 + Node 22 confirmed working. FTS5 limitation in Electron's bundled SQLite prevents running the full API server (which depends on `fts5` for knowledge document search). **Strategy: API is optional, with direct package import as the primary local path.**
 
@@ -16,7 +16,7 @@
 
 ## Why API fails
 
-The bundled `@datafoundry/knowledge` package creates `CREATE VIRTUAL TABLE ... USING fts5(...)` on init. Electron 35's Node runtime exposes `node:sqlite` but **does not compile FTS5** into the binary. There's no documented Electron flag to enable FTS5.
+The bundled `@agentx/knowledge` package creates `CREATE VIRTUAL TABLE ... USING fts5(...)` on init. Electron 35's Node runtime exposes `node:sqlite` but **does not compile FTS5** into the binary. There's no documented Electron flag to enable FTS5.
 
 Workarounds (not yet applied):
 
@@ -29,7 +29,7 @@ We choose option 3 for v0.1.0. Users who need the full API server should run `np
 ## Verification (just performed)
 
 ```powershell
-$ cmd /c "E:\FFD-Downloader-Windows\datafoundry-enhanced\.cache\electron35-final\electron.exe --version"
+$ cmd /c "E:\FFD-Downloader-Windows\agentx-enhanced\.cache\electron35-final\electron.exe --version"
 v35.0.0
 
 $ cmd /c "set ELECTRON_RUN_AS_NODE=1 && ...\electron35-final\electron.exe ...\test-sqlite.mjs"
@@ -42,7 +42,7 @@ The Electron 35 binary in `.cache/electron35-final/` is portable and can be used
 
 ```powershell
 # Use the cached Electron 35 (no npm install needed for the binary):
-cd E:\FFD-Downloader-Windows\datafoundry-enhanced
+cd E:\FFD-Downloader-Windows\agentx-enhanced
 .\.cache\electron35-final\electron.exe apps\desktop
 ```
 

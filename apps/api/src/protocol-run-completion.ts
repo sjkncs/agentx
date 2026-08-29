@@ -1,5 +1,5 @@
 import { EventType, type BaseEvent } from "@ag-ui/client";
-import type { ProtocolRunState } from "@datafoundry/agent-runtime";
+import type { ProtocolRunState } from "@agentx/agent-runtime";
 
 import type { RunFinalizer } from "./run-finalizer.js";
 

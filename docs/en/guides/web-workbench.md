@@ -1,6 +1,6 @@
 # Web workbench guide
 
-This guide is for users trying DataFoundry in the browser. After reading it, you can create data tasks, select resources, stop runs, view trace and outputs, and restore server sessions.
+This guide is for users trying AgentX in the browser. After reading it, you can create data tasks, select resources, stop runs, view trace and outputs, and restore server sessions.
 
 ## How to start
 
@@ -211,7 +211,7 @@ After refresh or reopening the workbench, restore prior tasks from the left task
 
 ### Re-ask and branch
 
-For a completed historical turn, edit or re-ask the earlier question to create a persistent child branch. You can also branch from a checkpoint exposed by the restored conversation. DataFoundry keeps the original history, switches the workbench to the child session, and exposes branch navigation at the fork point so alternative analyses remain comparable.
+For a completed historical turn, edit or re-ask the earlier question to create a persistent child branch. You can also branch from a checkpoint exposed by the restored conversation. AgentX keeps the original history, switches the workbench to the child session, and exposes branch navigation at the fork point so alternative analyses remain comparable.
 
 Branch creation requires a terminal run or persisted checkpoint. A running or suspended turn is not treated as a stable fork boundary.
 
@@ -219,7 +219,7 @@ Branch creation requires a terminal run or persisted checkpoint. A running or su
 
 **Data Link** opens a workspace graph for tables, columns, concepts, entities, and their relationships. It is available when the workspace has a compatible Data Link or DataGraph MCP server with the expected tools. Use the graph to search entry nodes, expand related structure, and inspect semantic context before asking the agent to analyze it.
 
-DataFoundry does not embed a semantic graph service. If no compatible MCP server is configured, the panel cannot provide graph data; configure the integration under Agent Tools first.
+AgentX does not embed a semantic graph service. If no compatible MCP server is configured, the panel cannot provide graph data; configure the integration under Agent Tools first.
 
 ## Example questions
 

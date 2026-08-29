@@ -20,13 +20,13 @@
  *   DATALINK_API_KEY  — Optional API key for DataLink auth
  *   DATALINK_TIMEOUT_MS — Request timeout (default: 30_000)
  */
-import type { LocalDataGateway, SchemaSummary } from "@datafoundry/data-gateway";
+import type { LocalDataGateway, SchemaSummary } from "@agentx/data-gateway";
 import type {
   SemanticProvider,
   SemanticRequest,
   SemanticProviderResult,
   SemanticTrust,
-} from "@datafoundry/agent-runtime/src/semantic/types.js";
+} from "@agentx/agent-runtime/src/semantic/types.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

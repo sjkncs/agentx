@@ -1,5 +1,5 @@
 /**
- * Unified Semantic Layer — TransE-style KG embedding for DataFoundry state.
+ * Unified Semantic Layer — TransE-style KG embedding for AgentX state.
  *
  * Entities:  Market, OrderBook, Position, Regime, Volatility, Liquidity, Fundamental, MacroIndicator
  * Relations: drives, lags, co_volatile_with, intervenes_on, gates, constrains

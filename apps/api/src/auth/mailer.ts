@@ -12,8 +12,8 @@ export class AuthMailer {
     const url = `${this.config.publicBaseUrl.replace(/\/$/u, "")}/data-tasks?verify=${encodeURIComponent(input.token)}`;
     return this.send({
       email: input.email,
-      subject: "Verify your DataFoundry account",
-      text: `Verify your DataFoundry account: ${url}`,
+      subject: "Verify your AgentX account",
+      text: `Verify your AgentX account: ${url}`,
       token: input.token
     });
   }
@@ -22,8 +22,8 @@ export class AuthMailer {
     const url = `${this.config.publicBaseUrl.replace(/\/$/u, "")}/data-tasks?reset=${encodeURIComponent(input.token)}`;
     return this.send({
       email: input.email,
-      subject: "Reset your DataFoundry password",
-      text: `Reset your DataFoundry password: ${url}`,
+      subject: "Reset your AgentX password",
+      text: `Reset your AgentX password: ${url}`,
       token: input.token
     });
   }

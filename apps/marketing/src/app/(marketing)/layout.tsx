@@ -21,9 +21,9 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className={styles.marketingRoot}>
       <header className={styles.nav}>
-        <Link href="/" className={styles.brand} aria-label="DataFoundry home">
+        <Link href="/" className={styles.brand} aria-label="AgentX home">
           <span className={styles.brandMark} aria-hidden />
-          <span>DataFoundry</span>
+          <span>AgentX</span>
         </Link>
         <nav className={styles.navLinks} aria-label="Primary">
           {NAV_LINKS.map((l) => (
@@ -50,7 +50,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       {children}
       <footer className={styles.footer}>
         <div>
-          © {new Date().getFullYear()} DataFoundry · An agent-driven data task
+          © {new Date().getFullYear()} AgentX · An agent-driven data task
           workspace.
         </div>
         <div className={styles.footerLinks}>

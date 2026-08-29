@@ -71,7 +71,7 @@ if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir
 if (-not (Test-Path $SourceDir)) { New-Item -ItemType Directory -Path $SourceDir -Force | Out-Null }
 
 Write-Host ""
-Write-Host "=== DataFoundry CLI MSI Builder ===" -ForegroundColor Cyan
+Write-Host "=== AgentX CLI MSI Builder ===" -ForegroundColor Cyan
 Write-Host "  Version    : $Version"
 Write-Host "  Output dir : $OutputDir"
 Write-Host "  Source dir : $SourceDir"
@@ -144,7 +144,7 @@ if (-not (Test-Path $ResourcesDir)) {
 $icoPath = Join-Path $ResourcesDir "dfcli.ico"
 Write-Host "  Generating dfcli.ico ..." -NoNewline
 
-# DataFoundry brand colours
+# AgentX brand colours
 $DF_BLUE   = [System.Drawing.Color]::FromArgb(255, 45, 82, 134)   # #2D5286
 $DF_TEAL   = [System.Drawing.Color]::FromArgb(255, 32,  137, 165)  # #2089A5
 $DF_LIGHT  = [System.Drawing.Color]::FromArgb(255, 240, 248, 255)  # #F0F8FF
@@ -388,7 +388,7 @@ function New-BannerBmp {
         [System.Drawing.Color]::FromArgb($AccentColor))
     $g.FillRectangle($accentBrush, $Width - 8, 0, 8, $Height)
 
-    # Brand name: "DataFoundry" in white, large
+    # Brand name: "AgentX" in white, large
     $whiteBrush = New-Object System.Drawing.SolidBrush(
         [System.Drawing.Color]::FromArgb(255, 255, 255, 255))
     $titleFont = New-Object System.Drawing.Font("Segoe UI",
@@ -400,7 +400,7 @@ function New-BannerBmp {
 
     # Left padding: 16px
     $textRect = New-Object System.Drawing.RectangleF(16, 0, $Width - 24, $Height)
-    $g.DrawString("DataFoundry", $titleFont, $whiteBrush, $textRect, $sf)
+    $g.DrawString("AgentX", $titleFont, $whiteBrush, $textRect, $sf)
 
     # Version tag in accent colour
     $tagFont = New-Object System.Drawing.Font("Segoe UI",

@@ -12,7 +12,7 @@
  * here to mirror the change to dfd_approvals so both stores stay in sync.
  */
 import { randomUUID } from "node:crypto";
-import { supabase } from "@datafoundry/supabase-bridge";
+import { supabase } from "@agentx/supabase-bridge";
 
 // ---------------------------------------------------------------------------
 // Types

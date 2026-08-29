@@ -1,4 +1,4 @@
-import type { WorkspaceRole } from "@datafoundry/metadata";
+import type { WorkspaceRole } from "@agentx/metadata";
 
 /** Minimum role required to perform an action. Higher = more privileged. */
 export const ROLE_PRIORITY: Record<WorkspaceRole, number> = {

@@ -1,5 +1,5 @@
 /**
- * In-memory Prometheus-style metrics for DataFoundry commercial monitoring.
+ * In-memory Prometheus-style metrics for AgentX commercial monitoring.
  *
  * Provides: Counter, Gauge, Histogram, Summary
  * Wire into: server.ts lifecycle hooks, executor, sandbox, agent-runtime events.

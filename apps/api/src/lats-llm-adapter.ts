@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import type { LLMAPI } from "@datafoundry/agent-runtime";
+import type { LLMAPI } from "@agentx/agent-runtime";
 
 /**
  * Adapts the resolved run's AI-SDK language model into the lightweight LLMAPI

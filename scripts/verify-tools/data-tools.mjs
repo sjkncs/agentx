@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import {
-  createDataFoundryRunContext,
-  createDataFoundryToolRegistry,
+  createAgentXRunContext,
+  createAgentXToolRegistry,
 } from "../../packages/agent-runtime/dist/index.js";
 import { LocalDataGateway } from "../../packages/data-gateway/dist/index.js";
 import { createMetadataStore } from "../../packages/metadata/dist/index.js";
@@ -67,7 +67,7 @@ store.runs.create({
   datasource_id,
 });
 
-const runContext = createDataFoundryRunContext({
+const runContext = createAgentXRunContext({
   user_id,
   session_id,
   run_id,
@@ -78,7 +78,7 @@ const runContext = createDataFoundryRunContext({
 });
 
 const events = [];
-const registry = createDataFoundryToolRegistry({
+const registry = createAgentXToolRegistry({
   dataGateway: gateway,
   emitter: { emit: (e) => events.push(e) },
   runContext,

@@ -1,5 +1,5 @@
 {
-  "name": "@datafoundry/data-gateway",
+  "name": "@agentx/data-gateway",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -12,9 +12,9 @@
   "dependencies": {
     "@elastic/elasticsearch": "^9.4.2",
     "@google-cloud/bigquery": "^8.3.1",
-    "@datafoundry/artifacts": "0.2.0",
-    "@datafoundry/contracts": "0.2.0",
-    "@datafoundry/metadata": "0.2.0",
+    "@agentx/artifacts": "0.2.0",
+    "@agentx/contracts": "0.2.0",
+    "@agentx/metadata": "0.2.0",
     "@opensearch-project/opensearch": "^3.6.0",
     "better-sqlite3": "^11.3.0",
     "duckdb": "^1.4.4",

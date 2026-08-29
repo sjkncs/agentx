@@ -73,10 +73,10 @@ export function deploymentHelp() {
 
 deploy   Configure, install, build (including TUI), start, and verify. Existing deployments use a maintenance window.
 start    Start an existing build. Does not install or build.
-stop     Stop only the managed DataFoundry process group. Keeps configuration and data.
+stop     Stop only the managed AgentX process group. Keeps configuration and data.
 restart  Stop and start an existing build. Does not install or build.
 status   Read process state and probe actual service health.
-logs     Show recent runtime logs and continue following them. Ctrl+C does not stop DataFoundry.
+logs     Show recent runtime logs and continue following them. Ctrl+C does not stop AgentX.
 doctor   Run read-only dependency, configuration, port, permission, disk, and health checks.
 tui      Optional: start the TUI client in the foreground after deploy (not a managed background service).
 help     Show this help.

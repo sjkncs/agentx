@@ -1,6 +1,6 @@
 import {
-  createDataFoundryRunContext,
-  createDataFoundryToolRegistry,
+  createAgentXRunContext,
+  createAgentXToolRegistry,
   createToolObservationBoundary,
   GovernedToolFactory,
   ToolObservationDispatcher
@@ -49,7 +49,7 @@ try {
     datasource_id: datasource_a
   });
 
-  const runContext = createDataFoundryRunContext({
+  const runContext = createAgentXRunContext({
     user_id,
     session_id,
     run_id,
@@ -74,7 +74,7 @@ try {
   });
 
   const events = [];
-  const registry = createDataFoundryToolRegistry({
+  const registry = createAgentXToolRegistry({
     dataGateway: gateway,
     runContext,
     emitter: { emit: (event) => events.push(event) }

@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .api.client import ApiError, DataFoundryClient, run_async
+from .api.client import ApiError, AgentXClient, run_async
 from .config.settings import (
     Settings,
     clear_password,
@@ -48,7 +48,7 @@ class LoginDialog(QDialog):
     def __init__(self, settings: Settings, parent=None) -> None:
         super().__init__(parent=parent)
         self._settings = settings
-        self.setWindowTitle(self.tr("Connect to DataFoundry"))
+        self.setWindowTitle(self.tr("Connect to AgentX"))
         self.setModal(True)
         self.setMinimumWidth(360)
 
@@ -56,7 +56,7 @@ class LoginDialog(QDialog):
 
         intro = QLabel(
             self.tr(
-                "Sign in to a DataFoundry workspace. Credentials are stored "
+                "Sign in to a AgentX workspace. Credentials are stored "
                 "in the OS keyring; only the API URL is written to disk."
             ),
             self,
@@ -141,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
 
     login = dialog.result_data()
     if login is None:
-        QMessageBox.warning(None, "DataFoundry", "Email and password are required.")
+        QMessageBox.warning(None, "AgentX", "Email and password are required.")
         return 1
 
     # Persist settings BEFORE attempting login so a bad URL still survives.
@@ -150,12 +150,12 @@ def main(argv: list[str] | None = None) -> int:
     save_password(login.email, dialog._password.text())  # noqa: SLF001 — dialog owns the field
     settings.save()
 
-    client = DataFoundryClient(base_url=login.api_url)
+    client = AgentXClient(base_url=login.api_url)
     try:
         run_async(lambda: client.login(login.email, dialog._password.text()))  # noqa: SLF001
     except ApiError as err:
         clear_password(login.email)
-        QMessageBox.critical(None, "DataFoundry", f"Login failed: {err}")
+        QMessageBox.critical(None, "AgentX", f"Login failed: {err}")
         return 2
 
     window = MainWindow(theme=get_theme(settings.theme))

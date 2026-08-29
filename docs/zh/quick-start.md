@@ -1,6 +1,6 @@
 # 快速开始
 
-这篇文档面向第一次部署 DataFoundry 的用户。正式态有两条路径，**启动后都是** `password` 认证的 Web 工作台（不要跑 `npm run dev`）：
+这篇文档面向第一次部署 AgentX 的用户。正式态有两条路径，**启动后都是** `password` 认证的 Web 工作台（不要跑 `npm run dev`）：
 
 | 路径 | 适用环境 | 入口 |
 | --- | --- | --- |
@@ -23,11 +23,11 @@
 
 ```bash
 git clone https://github.com/datagallery-lab/datafoundry.git
-cd datafoundry
+cd agentx
 ./deploy.sh
 ```
 
-部署成功后 Web + API 在后台常驻（独立进程组）。关闭终端，或在 `./deploy.sh logs` 中按 `Ctrl+C`，**都不会**停止 DataFoundry——停止请用 `./deploy.sh stop`。一键部署会一并构建 TUI，但 TUI **不会**随 stack 后台常驻；需要时另开终端按成功提示启动（见下文「启动 TUI」）。
+部署成功后 Web + API 在后台常驻（独立进程组）。关闭终端，或在 `./deploy.sh logs` 中按 `Ctrl+C`，**都不会**停止 AgentX——停止请用 `./deploy.sh stop`。一键部署会一并构建 TUI，但 TUI **不会**随 stack 后台常驻；需要时另开终端按成功提示启动（见下文「启动 TUI」）。
 
 打开 `http://127.0.0.1:3000/login`（若端口被改过，以脚本打印的 Web 地址为准），注册并登录，在模型配置中创建、测试并启用 OpenAI-compatible Profile，然后进入 `/data-tasks`。
 
@@ -139,7 +139,7 @@ AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
 AUTH_PUBLIC_BASE_URL=http://127.0.0.1:3000
 AUTH_REGISTRATION_MODE=open
 AUTH_EMAIL_DELIVERY=test
-AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
+AUTH_EMAIL_FROM=AgentX <no-reply@example.com>
 # smtp 相关可先留空
 ```
 
@@ -160,10 +160,10 @@ API_PROXY_TARGET=http://127.0.0.1:8787
 
 ```bash
 AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
-AUTH_PUBLIC_BASE_URL=https://datafoundry.example.com
+AUTH_PUBLIC_BASE_URL=https://agentx.example.com
 AUTH_REGISTRATION_MODE=closed
 AUTH_EMAIL_DELIVERY=smtp
-AUTH_EMAIL_FROM=DataFoundry <no-reply@example.com>
+AUTH_EMAIL_FROM=AgentX <no-reply@example.com>
 AUTH_SMTP_HOST=smtp.example.com
 AUTH_SMTP_PORT=587
 AUTH_SMTP_SECURE=false

@@ -16,7 +16,7 @@ import { LocalDataGateway } from "../packages/data-gateway/dist/index.js";
 import { RunEventWriter, createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createAuthenticatedTestClient } from "./lib/authenticated-test-client.mjs";
 
-const root = mkdtempSync(join(tmpdir(), "open-data-foundry-config-smoke-"));
+const root = mkdtempSync(join(tmpdir(), "open-agentx-config-smoke-"));
 const datasourcePath = join(root, "source.sqlite");
 const source = new DatabaseSync(datasourcePath);
 source.exec(`

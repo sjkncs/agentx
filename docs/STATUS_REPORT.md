@@ -1,7 +1,7 @@
-# DataFoundry Enhanced — Status Report
+# AgentX Enhanced — Status Report
 
 **Generated:** 2026-08-09
-**Location:** `E:\FFD-Downloader-Windows\datafoundry-enhanced\`
+**Location:** `E:\FFD-Downloader-Windows\agentx-enhanced\`
 **Source:** Forked from [datagallery-lab/datafoundry](https://github.com/datagallery-lab/datafoundry) v0.2.0 (Apache-2.0)
 **linux.do reference:** Topic #2526680 (community discussion)
 **Clone size:** 1,583 npm packages installed
@@ -44,7 +44,7 @@ ok 4 - CDL async — concurrent allocation of many engines
 # pass 4, fail 0  ✓
 ```
 
-### DataFoundry full stack (43 tests, isolated)
+### AgentX full stack (43 tests, isolated)
 
 ```
 $ node scripts/test-full-stack-async.mjs --skip-build --timeout=30000
@@ -72,13 +72,13 @@ Total elapsed: 205,319 ms (~3.4 min)
 ## Quick start
 
 ```powershell
-cd e:\FFD-Downloader-Windows\datafoundry-enhanced
+cd e:\FFD-Downloader-Windows\agentx-enhanced
 
 # Run CDL tests
 node packages\counterfactual\test\connectivity.test.mjs
 node packages\counterfactual\test\async.test.mjs
 
-# Run any DataFoundry script in isolation
+# Run any AgentX script in isolation
 node scripts\dev-isolated.mjs -- node scripts\async-memo.test.mjs
 node scripts\dev-isolated.mjs -- npm run smoke:sql
 
@@ -103,4 +103,4 @@ Remove-Item .run -Recurse -Force
 - CDL design doc — `E:\FFD-Downloader-Windows\_workspace\COUNTERFACTUAL_DIAGNOSIS_EXTENSION.md`
 - Ying et al. 2025 (preprint) — DOI 10.20944/preprints202512.2718.v1
 - DataFoundry GitHub — https://github.com/datagallery-lab/datafoundry
-- DataFoundry README — see `README.md` in this repo (18.4 KB)
+- AgentX README — see `README.md` in this repo (18.4 KB)

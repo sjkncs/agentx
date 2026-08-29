@@ -1,6 +1,6 @@
 """`df upgrade` — informational self-update check.
 
-DataFoundry ships via PyPI, so the canonical upgrade command is
+AgentX ships via PyPI, so the canonical upgrade command is
 `pip install --upgrade df-cli`. We surface that hint along with the installed
 version and the latest version on the index.
 """

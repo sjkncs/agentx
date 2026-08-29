@@ -13,7 +13,7 @@
  * - `force=true`: always re-run.
  */
 
-import type { LocalDataGateway } from "@datafoundry/data-gateway";
+import type { LocalDataGateway } from "@agentx/data-gateway";
 
 import type { DashboardWidget } from "./types.js";
 

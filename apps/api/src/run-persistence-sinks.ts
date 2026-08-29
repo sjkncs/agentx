@@ -21,7 +21,7 @@
  * All sinks are no-op when Supabase is not configured (SupabaseClient.enabled).
  */
 import { EventType, type BaseEvent } from "@ag-ui/core";
-import { supabase } from "@datafoundry/supabase-bridge";
+import { supabase } from "@agentx/supabase-bridge";
 
 import { registerSink } from "./event-bus.js";
 

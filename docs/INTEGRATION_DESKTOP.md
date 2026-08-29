@@ -1,12 +1,12 @@
-# Integration Guide - Harness Core with DataFoundry Desktop
+# Integration Guide - Harness Core with AgentX Desktop
 
-This guide explains how the Harness Core package (Phase 1-4) integrates with the DataFoundry Desktop application.
+This guide explains how the Harness Core package (Phase 1-4) integrates with the AgentX Desktop application.
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        DataFoundry Desktop (Electron)                         │
+│                        AgentX Desktop (Electron)                         │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -77,9 +77,9 @@ Located in `apps/desktop/src/main.mjs`, the loader uses a resilient multi-path r
 
 ```typescript
 // In a React component
-import type { DataFoundryDesktopAPI } from './types/harness.d';
+import type { AgentXDesktopAPI } from './types/harness.d';
 
-const dfd = window.dfd as DataFoundryDesktopAPI;
+const dfd = window.dfd as AgentXDesktopAPI;
 
 // Check if harness-core is available
 const info = await dfd.harness.getInfo();
@@ -220,7 +220,7 @@ async function loadHarnessCore() {
     // 1) node_modules (production)
     () => ({
       kind: 'node_modules',
-      spec: require.resolve('@datafoundry/harness-core'),
+      spec: require.resolve('@agentx/harness-core'),
     }),
     // 2) Workspace source (development)
     () => ({
@@ -238,7 +238,7 @@ async function loadHarnessCore() {
       // Try next candidate
     }
   }
-  throw new Error('Failed to load @datafoundry/harness-core');
+  throw new Error('Failed to load @agentx/harness-core');
 }
 ```
 
@@ -249,8 +249,8 @@ async function loadHarnessCore() {
 ```json
 {
   "dependencies": {
-    "@datafoundry/harness-core": "*",
-    "@datafoundry/counterfactual": "*"
+    "@agentx/harness-core": "*",
+    "@agentx/counterfactual": "*"
   }
 }
 ```
@@ -260,7 +260,7 @@ async function loadHarnessCore() {
 ```json
 {
   "peerDependencies": {
-    "@datafoundry/agent-runtime": ">=0.2.0"
+    "@agentx/agent-runtime": ">=0.2.0"
   }
 }
 ```
@@ -296,5 +296,5 @@ Type definitions are available at:
 Import in your TypeScript files:
 
 ```typescript
-import type { DataFoundryDesktopAPI, HarnessAPI } from './types/harness.d';
+import type { AgentXDesktopAPI, HarnessAPI } from './types/harness.d';
 ```

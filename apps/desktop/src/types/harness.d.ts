@@ -1,5 +1,5 @@
 /**
- * DataFoundry Desktop - Harness Core API Types
+ * AgentX Desktop - Harness Core API Types
  * 
  * TypeScript types for the window.dfd.harness API exposed via preload
  */
@@ -73,7 +73,7 @@ export interface HarnessAPI {
   createPluginManager(): Promise<{ ok: boolean; result?: PluginStats; error?: string }>;
 }
 
-export interface DataFoundryDesktopAPI {
+export interface AgentXDesktopAPI {
   getInfo(): Promise<{
     name: string;
     version: string;
@@ -116,7 +116,7 @@ export interface DataFoundryDesktopAPI {
 
 declare global {
   interface Window {
-    dfd: DataFoundryDesktopAPI;
+    dfd: AgentXDesktopAPI;
   }
 }
 

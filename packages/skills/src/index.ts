@@ -1,5 +1,5 @@
-import type { FileAssetService } from "@datafoundry/files";
-import type { ConfigResourceRecord, MetadataStore } from "@datafoundry/metadata";
+import type { FileAssetService } from "@agentx/files";
+import type { ConfigResourceRecord, MetadataStore } from "@agentx/metadata";
 import * as yaml from "js-yaml";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";

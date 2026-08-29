@@ -4,7 +4,7 @@ import type {
   MetadataStore,
   UserRecord,
   WorkspaceRecord
-} from "@datafoundry/metadata";
+} from "@agentx/metadata";
 
 import type { PasswordAuthConfig } from "./config.js";
 import { AuthMailer } from "./mailer.js";

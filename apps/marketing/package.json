@@ -2,7 +2,7 @@
   "name": "@agentx/marketing",
   "version": "0.1.0",
   "private": true,
-  "description": "DataFoundry marketing site — standalone Next.js project with output:export, built for GitHub Pages deploy. Mirrors apps/web/src/app/(marketing)/* but stripped of all runtime dependencies (no API fetch, no CopilotKit).",
+  "description": "AgentX marketing site — standalone Next.js project with output:export, built for GitHub Pages deploy. Mirrors apps/web/src/app/(marketing)/* but stripped of all runtime dependencies (no API fetch, no CopilotKit).",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

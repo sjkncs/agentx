@@ -1,4 +1,4 @@
-import { createMetadataStore, createVerifiedTestIdentity } from "@datafoundry/metadata";
+import { createMetadataStore, createVerifiedTestIdentity } from "@agentx/metadata";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

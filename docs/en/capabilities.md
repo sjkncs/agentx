@@ -1,6 +1,6 @@
 # Capabilities
 
-This guide helps you evaluate DataFoundry's capability scope. After reading it, you can tell what Web, TUI, and API each support, and which features depend on backend capabilities or external resource configuration.
+This guide helps you evaluate AgentX's capability scope. After reading it, you can tell what Web, TUI, and API each support, and which features depend on backend capabilities or external resource configuration.
 
 Status is based on current code:
 

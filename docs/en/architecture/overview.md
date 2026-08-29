@@ -1,6 +1,6 @@
 # Architecture overview
 
-DataFoundry uses a local-first workbench architecture. Web and TUI are user entry points; the backend unifies Agent Runtime, configuration management, data source access, knowledge retrieval, files, and artifact management.
+AgentX uses a local-first workbench architecture. Web and TUI are user entry points; the backend unifies Agent Runtime, configuration management, data source access, knowledge retrieval, files, and artifact management.
 
 ## High-level structure
 
@@ -22,7 +22,7 @@ A curated architecture diagram is available in the repository home runtime flow 
 | `apps/web` | Web data task workbench: graphical conversation, resource management, trace, and outputs. |
 | `apps/tui` | Terminal UI: CLI conversation, data source and Skill selection, stats, and outputs. |
 | `apps/api` | Backend HTTP service: `/api/copilotkit` and `/api/v1/*`. |
-| Agent Runtime | Creates DataFoundry, manages tools, run context, and AG-UI events. |
+| Agent Runtime | Creates AgentX, manages tools, run context, and AG-UI events. |
 | Data Gateway | Data sources, schema checks, preview, and read-only SQL execution. |
 | Knowledge | Knowledge base documents, chunking, retrieval, and citation boundaries. |
 | MCP | External tool services with allowlist and timeout policy. |
@@ -91,7 +91,7 @@ This keeps left-panel workspace configuration, per-conversation selection, and b
 
 ## Identity scope
 
-DataFoundry only supports cookie-based password sessions. Each registered user gets a personal workspace; Web v1 keeps workspace switching out of the UI and scopes browser state by user. REST configuration requests and CopilotKit AG-UI runs must use the same authenticated session.
+AgentX only supports cookie-based password sessions. Each registered user gets a personal workspace; Web v1 keeps workspace switching out of the UI and scopes browser state by user. REST configuration requests and CopilotKit AG-UI runs must use the same authenticated session.
 
 `/api/v1/auth/*` covers registration, login, email verification, password reset, logout, and session revocation. Unsafe methods require CSRF checks.
 

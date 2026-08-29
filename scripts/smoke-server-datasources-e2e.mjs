@@ -9,7 +9,7 @@ import { LocalDataGateway } from "../packages/data-gateway/dist/index.js";
 import { createMetadataStore } from "../packages/metadata/dist/index.js";
 import { createAuthenticatedTestClient } from "./lib/authenticated-test-client.mjs";
 
-const root = mkdtempSync(join(tmpdir(), "open-data-foundry-server-datasources-e2e-"));
+const root = mkdtempSync(join(tmpdir(), "open-agentx-server-datasources-e2e-"));
 process.env.AUTH_SESSION_SECRET = "server-datasources-e2e-session-secret-32b!";
 process.env.AUTH_PUBLIC_BASE_URL = "http://127.0.0.1:3000";
 process.env.AUTH_EMAIL_DELIVERY = "test";

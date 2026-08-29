@@ -13,8 +13,8 @@ export const THEMES: Array<{ id: ThemeId; swatch: string; surface: string; descr
   { id: "soft", swatch: "#a07a4a", surface: "#f4ecdc", description: "soft (low contrast)" },
 ];
 
-const THEME_KEY = "datafoundry-theme";
-const ACCENT_KEY = "datafoundry-accent";
+const THEME_KEY = "agentx-theme";
+const ACCENT_KEY = "agentx-accent";
 
 /**
  * Stored custom accent color — independently of the chosen theme.

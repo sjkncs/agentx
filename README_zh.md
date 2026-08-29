@@ -29,7 +29,7 @@
 
 ## 🤔 什么是 AgentX
 
-AgentX 是基于 DataFoundry 架构的 **DeepSeek 原生 AI 编程 Agent 工作台**。它利用 Prefix-Cache 稳定性来降低长会话的 Token 成本，融合了 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 和 [DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) 的最佳实践，提供企业级工作流编排能力。
+AgentX 是基于 AgentX 架构的 **DeepSeek 原生 AI 编程 Agent 工作台**。它利用 Prefix-Cache 稳定性来降低长会话的 Token 成本，融合了 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 和 [DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) 的最佳实践，提供企业级工作流编排能力。
 
 ### 核心特性
 

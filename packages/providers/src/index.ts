@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { createEnvConfig } from "@datafoundry/contracts";
+import { createEnvConfig } from "@agentx/contracts";
 
 export type ChatProviderConfig = {
   provider: string;

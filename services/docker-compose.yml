@@ -1,6 +1,6 @@
 version: "3.9"
 
-# datafoundry-enhanced/services/docker-compose.yml
+# agentx-enhanced/services/docker-compose.yml
 # 启动：
 #   docker compose -f services/docker-compose.yml up -d inngest-bridge
 #   docker compose -f services/docker-compose.yml --profile subscriber up -d
@@ -19,7 +19,7 @@ services:
     build:
       context: ..
       dockerfile: docker/inngest-bridge/Dockerfile
-    image: datafoundry/inngest-bridge:latest
+    image: agentx/inngest-bridge:latest
     container_name: df-inngest-bridge
     restart: unless-stopped
     environment:
@@ -46,7 +46,7 @@ services:
     build:
       context: ..
       dockerfile: docker/inngest-bridge/Dockerfile
-    image: datafoundry/inngest-bridge:latest
+    image: agentx/inngest-bridge:latest
     container_name: df-subscriber-default
     restart: unless-stopped
     profiles: ["subscriber"]
@@ -72,7 +72,7 @@ services:
     build:
       context: ..
       dockerfile: docker/inngest-bridge/Dockerfile
-    image: datafoundry/inngest-bridge:latest
+    image: agentx/inngest-bridge:latest
     container_name: df-subscriber-secondary
     restart: unless-stopped
     profiles: ["subscriber"]

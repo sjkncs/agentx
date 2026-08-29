@@ -1,5 +1,5 @@
 /**
- * Intent Classifier — classifies user queries into DataFoundry protocol domains.
+ * Intent Classifier — classifies user queries into AgentX protocol domains.
  *
  * This is the "Router Agent" in the reference architecture.
  * It classifies incoming queries into one of three protocol domains:
@@ -10,7 +10,7 @@
  *
  * The classifier uses keyword matching + semantic scoring. It is NOT a separate
  * LLM call — it runs synchronously on the server to minimize latency.
- * When DATAFOUNDRY_LLM_INTENT_CLASSIFIER=true, it falls back to an LLM call.
+ * When AGENTX_LLM_INTENT_CLASSIFIER=true, it falls back to an LLM call.
  */
 import type { ProtocolClassifier, ProtocolRouteClassification, ProtocolIdentity } from "../protocol/protocol-router.js";
 
@@ -67,7 +67,7 @@ export class IntentClassifier {
 
   constructor() {
     this.llmFallbackEnabled =
-      process.env.DATAFOUNDRY_LLM_INTENT_CLASSIFIER === "true";
+      process.env.AGENTX_LLM_INTENT_CLASSIFIER === "true";
   }
 
   /**

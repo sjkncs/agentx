@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 
 from .. import __version__
-from ..client import ApiError, DataFoundryClient
+from ..client import ApiError, AgentXClient
 from ..config import load_config
 from ..ui import print_error, print_info, print_success, render_json
 
@@ -28,7 +28,7 @@ def run(args: argparse.Namespace) -> int:
     if cfg.workspace_id:
         print_info(f"Workspace: {cfg.workspace_id}")
     try:
-        client = DataFoundryClient(cfg)
+        client = AgentXClient(cfg)
         me = client.me()
     except ApiError as err:
         print_error(str(err))

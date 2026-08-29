@@ -7,7 +7,7 @@ describe("CopilotKitClient auth transport", () => {
     const calls: string[] = [];
     const client = new CopilotKitClient({
       runtimeUrl: "http://127.0.0.1:8787/api/copilotkit",
-      agent: "dataFoundry",
+      agent: "agentX",
       fetchImpl: async (input, init) => {
         calls.push(`${String(init?.method ?? "GET")} ${String(input)}`);
         return new Response("event: RUN_FINISHED\ndata: {}\n\n", {

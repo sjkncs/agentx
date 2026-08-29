@@ -1,4 +1,4 @@
-import { createErrorResult, createSuccessResult, type AppErrorCode } from "@datafoundry/contracts";
+import { createErrorResult, createSuccessResult, type AppErrorCode } from "@agentx/contracts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthIdentity, AuthService } from "./service.js";
 import { AuthError, userDto, workspaceDto } from "./service.js";

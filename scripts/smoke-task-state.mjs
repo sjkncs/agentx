@@ -6,7 +6,7 @@ import { rmSync } from "node:fs";
 import {
   CONVERSATION_WORKING_MEMORY_CONFIG,
   createAgentMemoryRuntime,
-  createDataFoundry,
+  createAgentX,
   MastraTaskStateContextProcessor
 } from "../packages/agent-runtime/dist/testing.js";
 
@@ -53,7 +53,7 @@ try {
 
   const completed = await taskCompleteTool.execute({ id: "inspect" }, secondContext);
   assert(completed.tasks[0].status === "completed", "task_complete should persist the status transition");
-  const configured = await createDataFoundry({
+  const configured = await createAgentX({
     dataGateway: {},
     emitter: { emit: () => undefined },
     messages: [],

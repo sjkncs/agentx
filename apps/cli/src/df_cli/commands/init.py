@@ -19,7 +19,7 @@ CMD_HELP = "Configure API URL and store the access token in the OS keyring."
 
 def register(subparsers: argparse._SubParsersAction) -> None:
     parser = subparsers.add_parser(CMD_NAME, help=CMD_HELP)
-    parser.add_argument("--api-base", help="API base URL (e.g. https://api.datafoundry.dev)")
+    parser.add_argument("--api-base", help="API base URL (e.g. https://api.agentx.dev)")
     parser.add_argument("--email", help="Login email (used as the keyring username)")
     parser.add_argument("--token", help="Access token to store in the keyring")
     parser.add_argument(

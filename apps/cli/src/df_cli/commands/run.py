@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import time
 
-from ..client import ApiError, DataFoundryClient
+from ..client import ApiError, AgentXClient
 from ..config import load_config
 from ..ui import console, print_error, print_info
 
@@ -38,7 +38,7 @@ def register(subparsers: argparse._SubParsersAction) -> None:
 
 def run(args: argparse.Namespace) -> int:
     cfg = load_config()
-    client = DataFoundryClient(cfg)
+    client = AgentXClient(cfg)
     url = f"/api/v1/sessions/{args.session_id}/stream"
     print_info(f"Streaming {url} from {cfg.api_base}")
 

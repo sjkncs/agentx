@@ -1,5 +1,5 @@
 import type { BaseEvent } from "@ag-ui/core";
-import type { EvidenceRef } from "@datafoundry/contracts";
+import type { EvidenceRef } from "@agentx/contracts";
 
 /** Per-run @ mention focus (R-019). Each kind lists focused IDs (subset of enabled*Ids). */
 export type PerRunMention = {

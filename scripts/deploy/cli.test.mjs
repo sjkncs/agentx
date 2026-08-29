@@ -81,7 +81,7 @@ test("legacy complete env missing AUTH_REGISTRATION_MODE fills default and skips
     "AUTH_SESSION_SECRET=existing-session-secret-value",
     "SECRET_MASTER_KEY=existing-master-secret-value",
     "AUTH_PUBLIC_BASE_URL=http://127.0.0.1:3310",
-    "DATAFOUNDRY_AUTH_MODE=password",
+    "AGENTX_AUTH_MODE=password",
     "AUTH_EMAIL_DELIVERY=test",
     "WEB_HOST=0.0.0.0",
     "API_HOST=127.0.0.1",
@@ -105,8 +105,8 @@ test("legacy complete env missing AUTH_REGISTRATION_MODE fills default and skips
   assert.equal(result.env.WEB_PORT, "3310");
   assert.equal(result.env.AUTH_REGISTRATION_MODE, "open");
   assert.match(result.envText, /^AUTH_REGISTRATION_MODE=open$/m);
-  assert.equal(result.env.DATAFOUNDRY_AUTH_MODE, undefined);
-  assert.doesNotMatch(result.envText, /DATAFOUNDRY_AUTH_MODE/);
+  assert.equal(result.env.AGENTX_AUTH_MODE, undefined);
+  assert.doesNotMatch(result.envText, /AGENTX_AUTH_MODE/);
 });
 
 test("partial .env is not treated as complete before fill and still prompts", async () => {
@@ -144,7 +144,7 @@ test("non-interactive never calls ask and uses loopback defaults", async () => {
   assert.equal(result.env.WEB_HOST, "127.0.0.1");
   assert.equal(result.env.API_HOST, "127.0.0.1");
   assert.equal(result.env.AUTH_PUBLIC_BASE_URL, "http://127.0.0.1:3000");
-  assert.equal(result.env.DATAFOUNDRY_AUTH_MODE, undefined);
+  assert.equal(result.env.AGENTX_AUTH_MODE, undefined);
   assert.equal(result.env.DATALINK_ENABLED, undefined);
 });
 
@@ -293,7 +293,7 @@ test("non-interactive fails when ports are occupied without a running managed st
     "AUTH_SESSION_SECRET=existing-session-secret-value",
     "SECRET_MASTER_KEY=existing-master-secret-value",
     "AUTH_PUBLIC_BASE_URL=http://127.0.0.1:3310",
-    "DATAFOUNDRY_AUTH_MODE=password",
+    "AGENTX_AUTH_MODE=password",
     "AUTH_EMAIL_DELIVERY=test",
     "WEB_HOST=0.0.0.0",
     "API_HOST=127.0.0.1",
@@ -352,7 +352,7 @@ test("reconfigure reuses managed listening ports only for a verified running sta
     print: () => {},
     probe: async (port) => {
       probes.push(port);
-      return { available: false, owner: `datafoundry pid=${process.pid}` };
+      return { available: false, owner: `agentx pid=${process.pid}` };
     },
     collectManagedPortsOptions: {
       readLaunchId: async () => "launch-managed",
@@ -406,7 +406,7 @@ test("process env may inject secrets only when disk is empty/placeholder or expl
     {
       AUTH_SESSION_SECRET: "ci-session-secret-value-at-least-32",
       SECRET_MASTER_KEY: "ci-master-secret-value-at-least-32x",
-      DATAFOUNDRY_ALLOW_PROCESS_SECRET_OVERLAY: "1"
+      AGENTX_ALLOW_PROCESS_SECRET_OVERLAY: "1"
     },
     { allowProcessSecretOverlay: true }
   );

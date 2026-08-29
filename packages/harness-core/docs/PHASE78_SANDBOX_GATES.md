@@ -1,6 +1,6 @@
 # Phase 7 & 8: Sandbox + Deterministic Gates
 
-This document describes Phase 7 and Phase 8 of the DataFoundry Harness upgrade.
+This document describes Phase 7 and Phase 8 of the AgentX Harness upgrade.
 
 ## Phase 7: Sandbox Isolation
 
@@ -77,7 +77,7 @@ interface SandboxResourceLimits {
 #### VM Sandbox (Lightweight)
 
 ```typescript
-import { createSandbox } from '@datafoundry/harness-core';
+import { createSandbox } from '@agentx/harness-core';
 
 const sandbox = createSandbox({
   type: 'vm',
@@ -131,7 +131,7 @@ const result = await sandbox.execute({
 #### Sandbox Manager
 
 ```typescript
-import { createSandboxManager } from '@datafoundry/harness-core';
+import { createSandboxManager } from '@agentx/harness-core';
 
 const manager = createSandboxManager({
   maxSandboxes: 10,
@@ -210,7 +210,7 @@ Provides quality gates for CI/CD workflows:
 #### Single Gate
 
 ```typescript
-import { createGateManager } from '@datafoundry/harness-core';
+import { createGateManager } from '@agentx/harness-core';
 
 const manager = createGateManager({
   defaultTimeout: 60000,
@@ -344,7 +344,7 @@ import {
   createGateManager,
   createSandbox,
   type GatePipeline,
-} from '@datafoundry/harness-core';
+} from '@agentx/harness-core';
 
 async function runCI(changedFiles: string[]) {
   // 1. Setup gate manager

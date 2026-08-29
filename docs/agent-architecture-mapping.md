@@ -1,4 +1,4 @@
-# DataFoundry ↔ Full-Stack AI Agent Architecture Mapping
+# AgentX ↔ Full-Stack AI Agent Architecture Mapping
 
 > Reference: [Shen Sean Chen — Sketch the AI Agent System Design](https://www.youtube.com/watch?v=CyLYY_xb5bQ)
 > Excalidraw: https://excalidraw.com/#json=XmBaOu2WBkIjHwrs4cJlY,hPW1MOB24bPHbLzHFDt9ww
@@ -22,9 +22,9 @@ Target KPIs: Automation ≥ 70%, CSAT > 4.5, p50 < 1s, p95 < 2.5s
 
 ---
 
-## 2. DataFoundry Mapping
+## 2. AgentX Mapping
 
-| Reference concept | DataFoundry today | Next step |
+| Reference concept | AgentX today | Next step |
 |-------------------|-------------------|-----------|
 | Observability / Metrics | `metrics.ts`, `alerts.ts`, Admin panels at `/admin/metrics`, `/admin/alerts` | OpenTelemetry exporter; eval harness |
 | Gateway Auth/SSO | Auth service, CSRF, workspace membership | PII scrubber; request dedupe |

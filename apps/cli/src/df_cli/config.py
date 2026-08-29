@@ -18,7 +18,7 @@ import platformdirs
 import yaml
 from pydantic import BaseModel, Field, field_validator
 
-CONFIG_DIR = platformdirs.user_config_dir("df-cli", "DataFoundry", roaming=False)
+CONFIG_DIR = platformdirs.user_config_dir("df-cli", "AgentX", roaming=False)
 CONFIG_PATH = Path(CONFIG_DIR) / "config.yaml"
 KEYRING_SERVICE = "df-cli"
 

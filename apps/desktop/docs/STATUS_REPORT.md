@@ -1,8 +1,8 @@
 # Electron 35 Desktop Integration — Status Report
 
 **Generated:** 2026-08-09
-**Working dir:** `E:\FFD-Downloader-Windows\datafoundry-enhanced\apps\desktop\`
-**Cached binary:** `E:\FFD-Downloader-Windows\datafoundry-enhanced\.cache\electron35-final\electron.exe`
+**Working dir:** `E:\FFD-Downloader-Windows\agentx-enhanced\apps\desktop\`
+**Cached binary:** `E:\FFD-Downloader-Windows\agentx-enhanced\.cache\electron35-final\electron.exe`
 
 ---
 
@@ -35,8 +35,8 @@ apps/desktop/
 |--------------|--------|
 | Electron 35 binary extracted to `.cache/electron35-final/` | ✅ 199 MB electron.exe + Node 22.14.0 |
 | `node:sqlite` available in Electron 35 | ✅ `[ 'DatabaseSync', 'StatementSync', 'constants', 'default' ]` |
-| DataFoundry API server boots to AUTH validation | ✅ Loaded all packages, env validation works |
-| DataFoundry API server reaches FTS5 init | ✅ Confirms Electron 35 → package chain works |
+| AgentX API server boots to AUTH validation | ✅ Loaded all packages, env validation works |
+| AgentX API server reaches FTS5 init | ✅ Confirms Electron 35 → package chain works |
 | `electron-builder` config validates | ✅ Author + devDependencies + icon OK |
 | `.ico` file is valid Windows ICO | ✅ 2,120 bytes PNG-in-ICO container |
 | Icon PNG signature is valid | ✅ `89 50 4E 47 0D 0A 1A 0A` |
@@ -49,14 +49,14 @@ apps/desktop/
 
 ## Known limitation
 
-**Electron 35's bundled `node:sqlite` lacks the FTS5 module**, which the DataFoundry `@datafoundry/knowledge` package requires for full-text search:
+**Electron 35's bundled `node:sqlite` lacks the FTS5 module**, which the AgentX `@agentx/knowledge` package requires for full-text search:
 
 ```
 Error: no such module: fts5
     at LocalSqliteKnowledgeDocumentStore.initializeSchema
 ```
 
-This is a documented Electron limitation. The DataFoundry API server reaches this error during initialization when run inside Electron 35. The desktop app gracefully falls back to **standalone mode** (CDL Panel + Status tab work without API server, Workbench iframe shows informative fallback message).
+This is a documented Electron limitation. The AgentX API server reaches this error during initialization when run inside Electron 35. The desktop app gracefully falls back to **standalone mode** (CDL Panel + Status tab work without API server, Workbench iframe shows informative fallback message).
 
 ## Workarounds (not applied — documented for future)
 
@@ -68,7 +68,7 @@ This is a documented Electron limitation. The DataFoundry API server reaches thi
 
 ```powershell
 # Direct (uses cached Electron 35):
-cd E:\FFD-Downloader-Windows\datafoundry-enhanced
+cd E:\FFD-Downloader-Windows\agentx-enhanced
 .\.cache\electron35-final\electron.exe apps\desktop
 
 # After `npm install` (workspaces installs electron + electron-builder):
@@ -76,9 +76,9 @@ cd apps\desktop
 npm start
 
 # Build an installer:
-npm run dist:dir         # → dist\win-unpacked\DataFoundry Desktop.exe
-npm run dist             # → dist\DataFoundry Desktop-0.1.0-x64.exe (NSIS)
-                        # → dist\DataFoundry Desktop-0.1.0-portable.exe
+npm run dist:dir         # → dist\win-unpacked\AgentX Desktop.exe
+npm run dist             # → dist\AgentX Desktop-0.1.0-x64.exe (NSIS)
+                        # → dist\AgentX Desktop-0.1.0-portable.exe
 ```
 
 ## Why this environment cannot fully test the app
